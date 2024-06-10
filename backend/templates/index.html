@@ -1,11 +1,54 @@
-\<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Embedding Model Selection</title>
+    <script>
+        async function submitForm() {
+            const ontology = document.querySelector('input[name="ontology"]:checked').value;
+            const algorithm = document.querySelector('input[name="algorithm"]:checked').value;
+            
+            const response = await fetch('/embed_predict', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    ontology: ontology,
+                    algorithm: algorithm
+                })
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                alert('Embedding model created successfully!');
+            } else {
+                alert('Error creating embedding model');
+            }
+        }
+    </script>
 </head>
 <body>
-    <h1>Welcome to the backend</h1>
+    <h1>Embedding Model Selection</h1>
+    <form id="embeddingForm" onsubmit="event.preventDefault(); submitForm();">
+        <h2>Select Ontology</h2>
+        <input type="radio" id="helis" name="ontology" value="Helis" required>
+        <label for="helis">Helis</label><br>
+        <input type="radio" id="foodon" name="ontology" value="Foodon" required>
+        <label for="foodon">Foodon</label><br>
+        
+        <h2>Select Algorithm</h2>
+        <input type="radio" id="alg1" name="algorithm" value="Algorithm1" required>
+        <label for="alg1">Algorithm 1</label><br>
+        <input type="radio" id="alg2" name="algorithm" value="Algorithm2" required>
+        <label for="alg2">Algorithm 2</label><br>
+        <input type="radio" id="alg3" name="algorithm" value="Algorithm3" required>
+        <label for="alg3">Algorithm 3</label><br>
+        <input type="radio" id="alg4" name="algorithm" value="Algorithm4" required>
+        <label for="alg4">Algorithm 4</label><br>
+        
+        <button type="submit">Submit</button>
+    </form>
 </body>
 </html>
