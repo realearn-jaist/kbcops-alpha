@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,8 +9,8 @@
         async function submitForm() {
             const ontology = document.querySelector('input[name="ontology"]:checked').value;
             const algorithm = document.querySelector('input[name="algorithm"]:checked').value;
-            
-            const response = await fetch('/embed_predict', {
+
+            const response = await fetch('/embed', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -29,6 +30,7 @@
         }
     </script>
 </head>
+
 <body>
     <h1>Embedding Model Selection</h1>
     <form id="embeddingForm" onsubmit="event.preventDefault(); submitForm();">
@@ -37,18 +39,19 @@
         <label for="helis">Helis</label><br>
         <input type="radio" id="foodon" name="ontology" value="Foodon" required>
         <label for="foodon">Foodon</label><br>
-        
+
         <h2>Select Algorithm</h2>
-        <input type="radio" id="alg1" name="algorithm" value="Algorithm1" required>
-        <label for="alg1">Algorithm 1</label><br>
-        <input type="radio" id="alg2" name="algorithm" value="Algorithm2" required>
-        <label for="alg2">Algorithm 2</label><br>
+        <input type="radio" id="alg1" name="algorithm" value="owl2vec_star" required>
+        <label for="alg1">owl2vec_star</label><br>
+        <input type="radio" id="alg2" name="algorithm" value="rdf2vec" required>
+        <label for="alg2">rdf2vec</label><br>
         <input type="radio" id="alg3" name="algorithm" value="Algorithm3" required>
         <label for="alg3">Algorithm 3</label><br>
         <input type="radio" id="alg4" name="algorithm" value="Algorithm4" required>
         <label for="alg4">Algorithm 4</label><br>
-        
+
         <button type="submit">Submit</button>
     </form>
 </body>
+
 </html>
