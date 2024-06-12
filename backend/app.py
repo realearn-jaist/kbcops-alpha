@@ -7,7 +7,7 @@ def create_app():
     app = Flask(__name__, static_folder='../frontend/dist')
     CORS(app)
 
-    STORAGE_FOLDER = os.path.join("backend", "storage")
+    STORAGE_FOLDER = "storage"
     app.config["STORAGE_FOLDER"] = STORAGE_FOLDER
 
     app.register_blueprint(ontology_blueprint, url_prefix="/")  # Assuming your API endpoints are under /api
