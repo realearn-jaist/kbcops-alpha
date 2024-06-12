@@ -1,6 +1,6 @@
 import React from "react";
 import { Box, Typography, Grid, Paper, Link, styled, IconButton, Divider, FormControl, InputLabel, MenuItem, Select } from "@mui/material";
-import StatCard from "../StatCard";
+import StatCard from "./MainComponents/StatCard";
 
 function Copyright(props: any) {
   return (
