@@ -1,7 +1,6 @@
 from flask import jsonify, render_template, request
 import joblib
 import numpy as np
-from backend import app
 import os
 import time
 import argparse
