@@ -1,7 +1,8 @@
 import os
 import time
-from backend.controllers.embed_controller import embed_func
-from backend.controllers.extract_controller import extract_data
+from controllers.evaluator import predict_func
+from controllers.embed_controller import embed_func
+from controllers.extract_controller import extract_data
 from flask import jsonify, request, Blueprint  # type: ignore
 from controllers.ontology_controller import getAll_ontology, upload_ontology
 
@@ -69,3 +70,9 @@ def embed_route(ontology):
     result = embed_func(ontology_name=ontology, algorithm=algorithm)
     print(result, f"{algorithm}")
     return jsonify({"message": result, "model_id": f"{algorithm}"})
+
+@ontology_blueprint.route("/evaluate/<ontology>/<model_id>", methods=["GET"])
+def predict_route(ontology, model_id):
+
+    result = predict_func(ontology_file=ontology, model_id=model_id)
+    return jsonify({"message": result})

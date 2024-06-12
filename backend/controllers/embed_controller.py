@@ -12,10 +12,10 @@ import nltk
 
 nltk.download("punkt")
 
-from backend.models.ontology_model import getPath_ontology
-from owl2vec_star.lib.RDF2Vec_Embed import get_rdf2vec_walks, get_rdf2vec_embed
-from owl2vec_star.lib.Label import pre_process_words, URI_parse
-from owl2vec_star.lib.Onto_Projection import Reasoner, OntologyProjection
+from models.ontology_model import getPath_ontology
+from owl2vec_star.RDF2Vec_Embed import get_rdf2vec_walks, get_rdf2vec_embed
+from owl2vec_star.Label import pre_process_words, URI_parse
+from owl2vec_star.Onto_Projection import Reasoner, OntologyProjection
 
 
 def opa2vec_or_onto2vec(
