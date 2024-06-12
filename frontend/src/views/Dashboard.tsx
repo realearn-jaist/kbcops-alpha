@@ -97,7 +97,7 @@ export default function Dashboard() {
     axios
       .get("http://127.0.0.1:5000/embed/" + onto_id + "?algo=" + algo)
       .then((response) => {
-        console.log("load successful:", response.data);
+        console.log("embed successful:", response.data);
       })
       .catch((error) => {
         console.error("load failed:", error);

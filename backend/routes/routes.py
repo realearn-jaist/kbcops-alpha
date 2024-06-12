@@ -1,7 +1,7 @@
 import os
 import time
-from controllers import embed
-from controllers.extract_controller import extract_data
+from backend.controllers.embed_controller import embed_func
+from backend.controllers.extract_controller import extract_data
 from flask import jsonify, request, Blueprint  # type: ignore
 from controllers.ontology_controller import getAll_ontology, upload_ontology
 
@@ -54,30 +54,18 @@ def list_ontologies():
     )
 
 
-# @ontology_blueprint.route('/embed-predict', methods=['GET'])
-# def embed_predict():
-#     data = request.json
-#     ontology = data['ontology']
-#     algorithm = data['algorithm']
-#     print(f"Ontology: {ontology}, Algorithm: {algorithm}")
-#     start_time = time.time()
-#     result = embedAndPredict.embed_predict_func(
-#         ontology_file="backend/ontologies/foodon-merged.train.owl",
-#         embedding_dir="backend/cache/output",
-#         config_file="backend/controller/default.cfg",
-#         algorithm=algorithm
-#     )
-#     end_time = time.time()
-
-#     execution_time = end_time - start_time
-#     print(f"Execution time: {execution_time} seconds")
-
-
-#     return jsonify({"message": result})
 @ontology_blueprint.route("/embed/<ontology>", methods=["GET"])
 def embed_route(ontology):
-
-    algorithm = request.args.get('algo')
+    algorithm = request.args.get("algo")
     print(f"Ontology: {ontology}, Algorithm: {algorithm}")
-    # result = embed.embed_func(ontology_file=ontology, algorithm=algorithm)
-    return jsonify({"message": 0})
+
+    # check if system have ontology file and algorithm so that it can directly return the result
+    if os.path.exists(f"backend/storage/{ontology}/{algorithm}"):
+        result = f"{algorithm} model already exists for {ontology} ontology"
+        print(result, f"{algorithm}")
+        return jsonify({"message": result, "model_id": f"{algorithm}"})
+
+    # if not then call the embed_func to generate the model
+    result = embed_func(ontology_name=ontology, algorithm=algorithm)
+    print(result, f"{algorithm}")
+    return jsonify({"message": result, "model_id": f"{algorithm}"})
