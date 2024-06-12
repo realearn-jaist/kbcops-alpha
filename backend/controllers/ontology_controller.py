@@ -1,6 +1,6 @@
 import os
 
-from backend.models.ontology_model import list_ontology, save_ontology
+from models.ontology_model import list_ontology, save_ontology
 
 def upload_ontology(file, id):
     if id.endswith('.owl'):

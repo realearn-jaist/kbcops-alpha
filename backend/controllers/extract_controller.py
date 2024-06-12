@@ -1,8 +1,8 @@
-from backend.models.extract_model import save_annotations, save_axioms, save_classes, save_individuals
-from backend.models.ontology_model import getPath_ontology
+from models.extract_model import save_annotations, save_axioms, save_classes, save_individuals
+from models.ontology_model import getPath_ontology
 
-from backend.owl2vec_star.Onto_Projection import Reasoner, OntologyProjection # type: ignore
-from backend.owl2vec_star.Label import pre_process_words # type: ignore
+from owl2vec_star.Onto_Projection import Reasoner, OntologyProjection # type: ignore
+from owl2vec_star.Label import pre_process_words # type: ignore
 
 def extract_data(id):
     onto_file = getPath_ontology(id)

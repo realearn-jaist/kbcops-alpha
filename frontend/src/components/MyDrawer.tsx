@@ -1,8 +1,8 @@
 import React from 'react';
-import { Drawer as MuiDrawer, IconButton, Divider, TextField, Button, Toolbar, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Drawer } from '@mui/material';
+import { Drawer, IconButton, Divider, TextField, Button } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
-import { ChevronLeft, ChevronRight, Inbox, Mail, UploadFile } from '@mui/icons-material';
+import { UploadFile } from '@mui/icons-material';
 import FileUpload from './DrawerComponents/FileUpload.tsx';
 import EmbeddingForm from './DrawerComponents/EmbeddingForm.tsx';
 

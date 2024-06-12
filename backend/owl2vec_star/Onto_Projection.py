@@ -7,11 +7,11 @@ Created on 16 Oct 2020
 
 import time
 import sys
-from backend.owl2vec_star.Onto_Access import OntologyAccess, Reasoner
+from owl2vec_star.Onto_Access import OntologyAccess, Reasoner
 from rdflib import Graph, URIRef
 from rdflib.namespace import RDF, RDFS
 import logging
-from backend.owl2vec_star.Onto_Annotations import AnnotationURIs
+from owl2vec_star.Onto_Annotations import AnnotationURIs
 ######
 
 

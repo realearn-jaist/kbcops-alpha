@@ -1,7 +1,7 @@
 from hashlib import md5
-from backend.owl2vec_star.rdf2vec.walkers.random import RandomWalker
+from owl2vec_star.rdf2vec.walkers.random import RandomWalker
 from collections import defaultdict
-from backend.owl2vec_star.rdf2vec.graph import Vertex
+from owl2vec_star.rdf2vec.graph import Vertex
 
 
 class WeisfeilerLehmanWalker(RandomWalker):

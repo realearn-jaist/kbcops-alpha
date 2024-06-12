@@ -1,16 +1,12 @@
 import * as React from 'react';
-import { createTheme, styled, ThemeProvider } from '@mui/material/styles';
+import { createTheme, ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import Box from '@mui/material/Box';
 import axios from 'axios';
-import MuiAppBar, { AppBarProps as MuiAppBarProps } from '@mui/material/AppBar';
-import ChevronLeft from '@mui/icons-material/ChevronLeft';
-import { ChevronRight, Inbox, Mail } from '@mui/icons-material';
 
 import MyAppBar from '../components/MyAppBar';
 import MyDrawer from '../components/MyDrawer'
 import Main from '../components/Main';
-import { Divider, Drawer, IconButton, List, ListItem, ListItemButton, ListItemIcon, ListItemText, useTheme } from '@mui/material';
 
 const defaultTheme = createTheme();
 

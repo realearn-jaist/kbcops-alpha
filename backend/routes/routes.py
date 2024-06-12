@@ -1,9 +1,9 @@
 import os
 import time
-from backend.controllers import embed
-from backend.controllers.extract_controller import extract_data
+from controllers import embed
+from controllers.extract_controller import extract_data
 from flask import jsonify, request, Blueprint  # type: ignore
-from backend.controllers.ontology_controller import getAll_ontology, upload_ontology
+from controllers.ontology_controller import getAll_ontology, upload_ontology
 
 
 ontology_blueprint = Blueprint("ontology", __name__)

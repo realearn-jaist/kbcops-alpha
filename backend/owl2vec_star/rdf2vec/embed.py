@@ -3,7 +3,7 @@ from sklearn.utils.validation import check_is_fitted
 from gensim.models.word2vec import Word2Vec
 
 import sys
-from backend.owl2vec_star.rdf2vec.walkers.random import RandomWalker
+from owl2vec_star.rdf2vec.walkers.random import RandomWalker
 import numpy as np
 import multiprocessing
 

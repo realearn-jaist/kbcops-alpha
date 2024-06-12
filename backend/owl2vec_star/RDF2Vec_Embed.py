@@ -2,10 +2,10 @@ import rdflib
 import sys
 import numpy as np
 
-from backend.owl2vec_star.rdf2vec.embed import RDF2VecTransformer
-from backend.owl2vec_star.rdf2vec.graph import KnowledgeGraph, Vertex
-from backend.owl2vec_star.rdf2vec.walkers.random import RandomWalker
-from backend.owl2vec_star.rdf2vec.walkers.weisfeiler_lehman import WeisfeilerLehmanWalker
+from owl2vec_star.rdf2vec.embed import RDF2VecTransformer
+from owl2vec_star.rdf2vec.graph import KnowledgeGraph, Vertex
+from owl2vec_star.rdf2vec.walkers.random import RandomWalker
+from owl2vec_star.rdf2vec.walkers.weisfeiler_lehman import WeisfeilerLehmanWalker
 
 
 def construct_kg_walker(onto_file, walker_type, walk_depth):

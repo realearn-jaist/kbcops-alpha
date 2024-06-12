@@ -1,7 +1,7 @@
 import os
 from flask import current_app # type: ignore
 
-from backend.utils.file_handler import load_file, replace_or_create_folder, save_file
+from utils.file_handler import load_file, replace_or_create_folder, save_file
 
 def save_ontology(file, id, filename):
     STORAGE_FOLDER = current_app.config['STORAGE_FOLDER']

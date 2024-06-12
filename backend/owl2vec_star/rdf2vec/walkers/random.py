@@ -1,5 +1,5 @@
-from backend.owl2vec_star.rdf2vec.walkers.walker import Walker
-from backend.owl2vec_star.rdf2vec.graph import Vertex
+from owl2vec_star.rdf2vec.walkers.walker import Walker
+from owl2vec_star.rdf2vec.graph import Vertex
 import numpy as np
 from hashlib import md5
 
