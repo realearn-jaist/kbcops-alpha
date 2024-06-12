@@ -74,11 +74,10 @@ def list_ontologies():
 
 
 #     return jsonify({"message": result})
-@ontology_blueprint.route("/embed", methods=["POST"])
-def embed_route():
-    data = request.json
-    ontology = data["ontology"]
-    algorithm = data["algorithm"]
+@ontology_blueprint.route("/embed/<ontology>", methods=["GET"])
+def embed_route(ontology):
+
+    algorithm = request.args.get('algo')
     print(f"Ontology: {ontology}, Algorithm: {algorithm}")
-    result = embed.embed_func(ontology_file=ontology, algorithm=algorithm)
-    return jsonify({"message": result})
+    # result = embed.embed_func(ontology_file=ontology, algorithm=algorithm)
+    return jsonify({"message": 0})

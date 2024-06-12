@@ -14,11 +14,6 @@ import { Divider, Drawer, IconButton, List, ListItem, ListItemButton, ListItemIc
 
 const defaultTheme = createTheme();
 
-const drawerWidth: number = 240;
-
-
-
-
 export default function Dashboard() {
 
   const [open, setOpen] = React.useState(true);
@@ -102,6 +97,17 @@ export default function Dashboard() {
       });
   }
 
+  const run_embedder = (onto_id: string, algo: string) => {
+    axios
+      .get("http://127.0.0.1:5000/embed/" + onto_id + "?algo=" + algo)
+      .then((response) => {
+        console.log("load successful:", response.data);
+      })
+      .catch((error) => {
+        console.error("load failed:", error);
+        // Handle error
+      });
+  }
 
   return (
     <ThemeProvider theme={defaultTheme}>
@@ -117,6 +123,7 @@ export default function Dashboard() {
           handleUpload={handleUpload}
           ontologyList={ontology_list}
           handleFilesSelected={handleFilesSelected}
+          run_embedder={run_embedder}
         />
         
         <Main
