@@ -1,4 +1,5 @@
 from flask import jsonify, render_template, request
+import joblib
 import numpy as np
 from backend import app
 import os
@@ -31,8 +32,13 @@ def opa2vec_or_onto2vec(
         additional_synonyms_annotations=set(),
         memory_reasoner="13351",
     )
+
+    if not os.path.exists(f"backend/storage/{ontology_name}/{algorithm}"):
+        print(f"backend/storage/{ontology_name}/{algorithm}")
+        os.makedirs(f"backend/storage/{ontology_name}/{algorithm}")
+
     if not os.path.exists(f"backend/cache-{algorithm}-{ontology_name}"):
-        os.mkdir(f"backend/cache-{algorithm}-{ontology_name}")
+        os.makedirs(f"backend/cache-{algorithm}-{ontology_name}")
 
     projection.createManchesterSyntaxAxioms()
     with open(
@@ -86,9 +92,12 @@ def opa2vec_or_onto2vec(
     )
 
     if algorithm.lower() == "opa2vec":
-        lines = open(axiom_file).readlines() + open(annotation_file).readlines()
+        lines = (
+            open(axiom_file, encoding="utf-8").readlines()
+            + open(annotation_file, encoding="utf-8").readlines()
+        )
     else:  # embedding_type.lower() == 'onto2vec'
-        lines = open(axiom_file).readlines()
+        lines = open(axiom_file, encoding="utf-8").readlines()
 
     sentences = [
         [item.strip().lower() for item in line.strip().split()] for line in lines
@@ -135,14 +144,20 @@ def opa2vec_or_onto2vec(
         for i in individuals
     ]
     individuals_e = np.array(individuals_e)
+    w2v.save(embedding_dir)
     return classes_e, individuals_e
 
 
 def owl2vec_star(ontology_file, ontology_name, embedding_dir, config_file, algorithm):
     config = configparser.ConfigParser()
     config.read(config_file)
+
+    if not os.path.exists(f"backend/storage/{ontology_name}/{algorithm}"):
+        print(f"backend/storage/{ontology_name}/{algorithm}")
+        os.makedirs(f"backend/storage/{ontology_name}/{algorithm}")
+
     if not os.path.exists(f"backend/cache-{algorithm}-{ontology_name}"):
-        os.mkdir(f"backend/cache-{algorithm}-{ontology_name}")
+        os.makedirs(f"backend/cache-{algorithm}-{ontology_name}")
     start_time = time.time()
     if (
         (
@@ -385,6 +400,10 @@ def owl2vec_star(ontology_file, ontology_name, embedding_dir, config_file, algor
 
 
 def rdf2vec(ontology_file, ontology_name, embedding_dir, config_file, algorithm):
+
+    if not os.path.exists(f"backend/storage/{ontology_name}/{algorithm}"):
+        os.makedirs(f"backend/storage/{ontology_name}/{algorithm}")
+
     config = configparser.ConfigParser()
     config.read(config_file)
     projection = OntologyProjection(
@@ -404,10 +423,9 @@ def rdf2vec(ontology_file, ontology_name, embedding_dir, config_file, algorithm)
     classes = list(classes)
     individuals = projection.getIndividualURIs()
     individuals = list(individuals)
-
     candidate_num = len(classes)
 
-    all_e = get_rdf2vec_embed(
+    all_e, model_rdf2vec = get_rdf2vec_embed(
         onto_file=ontology_file,
         walker_type=config["MODEL_RDF2VEC"]["walker"],
         walk_depth=int(config["MODEL_RDF2VEC"]["walk_depth"]),
@@ -415,7 +433,7 @@ def rdf2vec(ontology_file, ontology_name, embedding_dir, config_file, algorithm)
         classes=classes + individuals,
     )
     classes_e, individuals_e = all_e[: len(classes)], all_e[len(classes) :]
-
+    joblib.dump(model_rdf2vec, embedding_dir)
     print("classes_e: ", classes_e[0:5])
     print("class num", candidate_num, classes_e.shape)
     print("individuals_e: ", individuals_e[0:5])
@@ -428,8 +446,10 @@ def embed_func(ontology_file, algorithm):
         ontology_file = "backend/ontologies/helis_v1.00.train.owl"
 
     ontology_name = ontology_file.split("backend/ontologies/")[-1]
+    # extract before first dot
+    ontology_name = ontology_name.split(".")[0]
     print(ontology_name)
-    embedding_dir = f"backend/cache-{algorithm}-{ontology_name}/{algorithm}.model"
+    embedding_dir = f"backend/storage/{ontology_name}/{algorithm}/model"
     config_file = "backend/controller/default.cfg"
 
     algorithms = {
