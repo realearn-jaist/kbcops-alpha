@@ -12,6 +12,7 @@ import nltk
 
 nltk.download("punkt")
 
+from backend.models.ontology_model import getPath_ontology
 from owl2vec_star.lib.RDF2Vec_Embed import get_rdf2vec_walks, get_rdf2vec_embed
 from owl2vec_star.lib.Label import pre_process_words, URI_parse
 from owl2vec_star.lib.Onto_Projection import Reasoner, OntologyProjection
@@ -120,7 +121,7 @@ def opa2vec_or_onto2vec(
     ]
     individuals_e = np.array(individuals_e)
     w2v.save(embedding_dir)
-    return classes_e, individuals_e
+    return f"{algorithm} embedded success!!"
 
 
 def owl2vec_star(ontology_file, ontology_name, embedding_dir, config_file, algorithm):
@@ -340,8 +341,7 @@ def owl2vec_star(ontology_file, ontology_name, embedding_dir, config_file, algor
     print(
         "Time for learning the embedding model: %s seconds" % (time.time() - start_time)
     )
-    print("Model saved. Done!")
-    return "Embed Model created successfully!"
+    return f"{algorithm} embedded success!!"
 
 
 def rdf2vec(ontology_file, ontology_name, embedding_dir, config_file, algorithm):
@@ -376,28 +376,18 @@ def rdf2vec(ontology_file, ontology_name, embedding_dir, config_file, algorithm)
         embed_size=int(config["BASIC"]["embed_size"]),
         classes=classes + individuals,
     )
-    classes_e, individuals_e = all_e[: len(classes)], all_e[len(classes) :]
+    # classes_e, individuals_e = all_e[: len(classes)], all_e[len(classes) :]
     joblib.dump(model_rdf2vec, embedding_dir)
-    print("classes_e: ", classes_e[0:5])
-    print("class num", candidate_num, classes_e.shape)
-    print("individuals_e: ", individuals_e[0:5])
+    return f"{algorithm} embedded success!!"
 
 
-def embed_func(ontology_file, algorithm):
-    if ontology_file.lower() == "foodon":
-        ontology_file = "backend/ontologies/foodon-merged.train.owl"
-    elif ontology_file.lower() == "helis":
-        ontology_file = "backend/ontologies/helis_v1.00.train.owl"
-
-    ontology_name = ontology_file.split("backend/ontologies/")[-1]
-    # extract before first dot
-    ontology_name = ontology_name.split(".")[0]
-    print(ontology_name)
+def embed_func(ontology_name, algorithm):
+    ontology_file = getPath_ontology(ontology_name)
     embedding_dir = f"backend/storage/{ontology_name}/{algorithm}/model"
-    config_file = "backend/controller/default.cfg"
+    config_file = "backend/controllers/default.cfg"
 
     algorithms = {
-        "owl2vec_star": owl2vec_star,
+        "owl2vec-star": owl2vec_star,
         "rdf2vec": rdf2vec,
         "opa2vec": opa2vec_or_onto2vec,
         "onto2vec": opa2vec_or_onto2vec,
@@ -412,6 +402,6 @@ def embed_func(ontology_file, algorithm):
             config_file=config_file,
             algorithm=algorithm_key,
         )
-        print(result)
+        return result
     else:
         raise ValueError(f"Unsupported algorithm: {algorithm}")
