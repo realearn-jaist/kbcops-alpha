@@ -1,3 +1,4 @@
+from utils.file_handler import replace_or_create_folder
 from flask import Flask, send_from_directory
 from flask_cors import CORS
 from routes.routes import ontology_blueprint
@@ -9,7 +10,7 @@ def create_app():
 
     STORAGE_FOLDER = "storage"
     app.config["STORAGE_FOLDER"] = STORAGE_FOLDER
-
+    
     app.register_blueprint(ontology_blueprint, url_prefix="/")  # Assuming your API endpoints are under /api
 
     # Route for serving the index.html

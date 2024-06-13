@@ -1,9 +1,9 @@
 import os
-from flask import current_app # type: ignore
+
+from models.ontology_model import getPath_ontology_directory # type: ignore
 
 def save_axioms(id, axioms):
-    STORAGE_FOLDER = current_app.config['STORAGE_FOLDER']
-    path = os.path.join(STORAGE_FOLDER, id, "axioms.txt")
+    path = os.path.join(getPath_ontology_directory(id), "axioms.txt")
     
     with open( path, "w", encoding="utf-8" ) as f:
         for axiom in axioms:
@@ -12,8 +12,7 @@ def save_axioms(id, axioms):
     return axioms
 
 def save_classes(id, classes):
-    STORAGE_FOLDER = current_app.config['STORAGE_FOLDER']
-    path = os.path.join(STORAGE_FOLDER, id, "classes.txt")
+    path = os.path.join(getPath_ontology_directory(id), "classes.txt")
     
     with open( path, "w", encoding="utf-8" ) as f:
         for cl in classes:
@@ -22,8 +21,7 @@ def save_classes(id, classes):
     return classes
 
 def save_individuals(id, individuals):
-    STORAGE_FOLDER = current_app.config['STORAGE_FOLDER']
-    path = os.path.join(STORAGE_FOLDER, id, "individuals.txt")
+    path = os.path.join(getPath_ontology_directory(id), "individuals.txt")
     
     with open( path, "w", encoding="utf-8" ) as f:
         for individual in individuals:
@@ -32,8 +30,7 @@ def save_individuals(id, individuals):
     return individuals
 
 def save_annotations(id, annotations, projection):
-    STORAGE_FOLDER = current_app.config['STORAGE_FOLDER']
-    path = os.path.join(STORAGE_FOLDER, id, "annotations.txt")
+    path = os.path.join(getPath_ontology_directory(id), "annotations.txt")
     
     with open( path, "w", encoding="utf-8" ) as f:
         for e in projection.entityToPreferredLabels:
@@ -45,3 +42,27 @@ def save_annotations(id, annotations, projection):
     with open(path, 'r', encoding="utf-8" ) as file:
         lines = file.readlines()
         return lines
+    
+def load_axioms(id):
+    path = os.path.join(getPath_ontology_directory(id), "axioms.txt")
+    
+    with open( path, "r", encoding="utf-8" ) as f:
+        return f.readlines()
+
+def load_classes(id):
+    path = os.path.join(getPath_ontology_directory(id), "classes.txt")
+    
+    with open( path, "r", encoding="utf-8" ) as f:
+        return set(f.readlines())
+
+def load_individuals(id):
+    path = os.path.join(getPath_ontology_directory(id), "individuals.txt")
+    
+    with open( path, "r", encoding="utf-8" ) as f:
+        return set(f.readlines())
+
+def load_annotations(id):
+    path = os.path.join(getPath_ontology_directory(id), "annotations.txt")
+    
+    with open( path, "r", encoding="utf-8" ) as f:
+        return f.readlines()

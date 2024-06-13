@@ -1,6 +1,8 @@
 import React from "react";
 import { Box, Typography, Grid, Paper, Link, styled, Divider, FormControl, InputLabel, MenuItem, Select } from "@mui/material";
 import StatCard from "./MainComponents/StatCard";
+import Title from "./MainComponents/Title";
+import { useTheme } from "@emotion/react";
 
 function Copyright(props: any) {
   return (
@@ -124,24 +126,97 @@ const Main: React.FC<MainProps> = ({ open, onto_id, onto_data }) => {
             {"<Embedding Algorithm>"}
           </Typography>
           <Grid container spacing={3}>
-            {modelStats.map((stat, index) => (
-              <Grid item xs={12} md={6} lg={3} key={index}>
-                <Paper
+            <Grid item xs={12} md={12} lg={6}>
+              <Paper
+                sx={{
+                  p: 2,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  height: 150,
+                }}
+              >
+                <Title>{"Hit@K"}</Title>
+
+                <Box
                   sx={{
-                    p: 2,
                     display: 'flex',
-                    flexDirection: 'column',
-                    height: 150,
+                    alignItems: 'center',
+
+                    bgcolor: 'background.paper',
+                    color: 'text.secondary',
+                    '& svg': {
+                      m: 1,
+                    },
+                    '& hr': {
+                      mx: 0.5,
+                    },
                   }}
                 >
-                  <StatCard name={stat.name} data={stat.data} />
-                </Paper>
-              </Grid>
-            ))}
+                  <Box sx={{ display: "flex", flexGrow: 1 }}>
+                    <Typography component="p" variant="h6" color="primary">
+                      {"1"}
+                    </Typography>
+                    <Box sx={{ flexGrow: 1, display: "flex", justifyContent: "center" }}>
+                      <Typography component="p" variant="h4" color="black">
+                        {"0.79"}
+                      </Typography>
+                    </Box>
+                  </Box>
+                  <Divider orientation="vertical" flexItem/>
+                  <Box sx={{ display: "flex", flexGrow: 1 }}>
+                    <Typography component="p" variant="h6" color="primary">
+                      {"5"}
+                    </Typography>
+                    <Box sx={{ flexGrow: 1, display: "flex", justifyContent: "center" }}>
+                      <Typography component="p" variant="h4" color="black">
+                        {"0.79"}
+                      </Typography>
+                    </Box>
+                  </Box>
+                  <Divider orientation="vertical" flexItem/>
+                  <Box sx={{ display: "flex", flexGrow: 1 }}>
+                    <Typography component="p" variant="h6" color="primary">
+                      {"10"}
+                    </Typography>
+                    <Box sx={{ flexGrow: 1, display: "flex", justifyContent: "center" }}>
+                      <Typography component="p" variant="h4" color="black">
+                        {"0.79"}
+                      </Typography>
+                    </Box>
+                  </Box>
+                </Box>
+
+              </Paper>
+            </Grid>
+            <Grid item xs={12} md={12} lg={3}>
+              <Paper
+                sx={{
+                  p: 2,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  height: 150,
+                }}
+              >
+                <StatCard name={"MRR"} data={0} />
+              </Paper>
+            </Grid>
+            <Grid item xs={12} md={12} lg={3}>
+              <Paper
+                sx={{
+                  p: 2,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  height: 150,
+                }}
+              >
+                <StatCard name={"Garbage"} data={0} />
+              </Paper>
+            </Grid>
+
 
           </Grid>
 
-          <FormControl fullWidth sx={{margin: "20px 0px"}}>
+          <FormControl fullWidth sx={{ margin: "20px 0px" }}>
             <InputLabel id="select-garbage-label">Select Garbage</InputLabel>
             <Select
               labelId="select-garbage-label"
@@ -153,7 +228,7 @@ const Main: React.FC<MainProps> = ({ open, onto_id, onto_data }) => {
               <MenuItem value={30}>garbage 3</MenuItem>
             </Select>
           </FormControl>
-          
+
           <Paper
             sx={{
               p: 2,
@@ -166,6 +241,7 @@ const Main: React.FC<MainProps> = ({ open, onto_id, onto_data }) => {
           </Paper>
           <br />
           <Grid container spacing={3}>
+
             <Grid item xs={12} md={6} lg={3}>
               <Paper
                 sx={{

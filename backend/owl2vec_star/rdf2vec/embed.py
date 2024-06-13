@@ -91,8 +91,8 @@ class RDF2VecTransformer():
             self.walks_ += list(walker.extract(graph, instances))
         print('Extracted {} walks for {} instances!'.format(len(self.walks_), len(instances)))
         sentences = [list(map(str, x)) for x in self.walks_]
-        self.model_ = Word2Vec(sentences, size=self.vector_size,
-                               window=self.window, workers=self.n_jobs, sg=self.sg, iter=self.max_iter,
+        self.model_ = Word2Vec(sentences, vector_size=self.vector_size,
+                               window=self.window, workers=self.n_jobs, sg=self.sg, epochs=self.max_iter,
                                negative=self.negative, min_count=self.min_count, seed=42)
 
     def transform(self, instances):
