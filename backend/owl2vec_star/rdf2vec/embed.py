@@ -8,7 +8,7 @@ import numpy as np
 import multiprocessing
 
 
-class RDF2VecTransformer():
+class RDF2VecTransformer:
     """Project random walks or subtrees in graphs into embeddings, suited
     for classification.
 
@@ -58,11 +58,23 @@ class RDF2VecTransformer():
 
     """
 
-    def __init__(self, vector_size=500, walkers=RandomWalker(2, float('inf')),
-                 window=5, sg=1, max_iter=10, negative=25, min_count=1):
+    def __init__(
+        self,
+        vector_size=500,
+        walkers=RandomWalker(2, float("inf")),
+        window=5,
+        sg=1,
+        max_iter=10,
+        negative=25,
+        min_count=1,
+    ):
         self.vector_size = vector_size
         self.walkers = walkers
-        self.n_jobs = int(multiprocessing.cpu_count()/2) if int(multiprocessing.cpu_count()/2) > 1 else 1
+        self.n_jobs = (
+            int(multiprocessing.cpu_count() / 2)
+            if int(multiprocessing.cpu_count() / 2) > 1
+            else 1
+        )
         self.window = window
         self.sg = sg
         self.max_iter = max_iter
@@ -89,11 +101,23 @@ class RDF2VecTransformer():
         self.walks_ = []
         for walker in self.walkers:
             self.walks_ += list(walker.extract(graph, instances))
-        print('Extracted {} walks for {} instances!'.format(len(self.walks_), len(instances)))
+        print(
+            "Extracted {} walks for {} instances!".format(
+                len(self.walks_), len(instances)
+            )
+        )
         sentences = [list(map(str, x)) for x in self.walks_]
-        self.model_ = Word2Vec(sentences, vector_size=self.vector_size,
-                               window=self.window, workers=self.n_jobs, sg=self.sg, epochs=self.max_iter,
-                               negative=self.negative, min_count=self.min_count, seed=42)
+        self.model_ = Word2Vec(
+            sentences,
+            vector_size=self.vector_size,
+            window=self.window,
+            workers=self.n_jobs,
+            sg=self.sg,
+            epochs=self.max_iter,
+            negative=self.negative,
+            min_count=self.min_count,
+            seed=42,
+        )
 
     def transform(self, instances):
         """Construct a feature vector for the provided instances.
@@ -115,7 +139,7 @@ class RDF2VecTransformer():
         embeddings: array-like
             The embeddings of the provided instances.
         """
-        check_is_fitted(self, ['model_'])
+        check_is_fitted(self, ["model_"])
 
         feature_vectors = []
         for instance in instances:

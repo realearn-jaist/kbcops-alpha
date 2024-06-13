@@ -60,11 +60,17 @@ def embed_route(ontology):
     algorithm = request.args.get("algo")
     print(f"Ontology: {ontology}, Algorithm: {algorithm}")
 
+    # check if system have ontology file and algorithm so that it can directly return the result
+    if os.path.exists(f"backend/storage/{ontology}/{algorithm}/model"):
+        result = f"{algorithm} model already exists for {ontology} ontology"
+        print(result, f"{algorithm}")
+        return jsonify({"message": result, "model_id": f"{algorithm}"})
+
     # if not then call the embed_func to generate the model
     result = embed_func(ontology_name=ontology, algorithm=algorithm)
-    
     print(result, f"{algorithm}")
     return jsonify({"message": result, "model_id": f"{algorithm}"})
+
 
 @ontology_blueprint.route("/evaluate/<ontology>/<model_id>", methods=["GET"])
 def predict_route(ontology, model_id):
