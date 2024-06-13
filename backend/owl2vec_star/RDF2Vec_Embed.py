@@ -40,7 +40,7 @@ def get_rdf2vec_embed(onto_file, walker_type, walk_depth, embed_size, classes):
     transformer = RDF2VecTransformer(walkers=[walker], vector_size=embed_size)
     instances = [rdflib.URIRef(c) for c in classes]
     walk_embeddings = transformer.fit_transform(graph=kg, instances=instances)
-    return np.array(walk_embeddings)
+    return np.array(walk_embeddings), transformer
 
 
 def get_rdf2vec_walks(onto_file, walker_type, walk_depth, classes):

@@ -34,4 +34,13 @@ def getPath_ontology(id):
         return path
     except FileNotFoundError:
         return None
+    
+def getPath_ontology_directory(id):
+    try:
+        STORAGE_FOLDER = current_app.config['STORAGE_FOLDER']
+        path = os.path.join(STORAGE_FOLDER, id)
+        
+        return path
+    except FileNotFoundError:
+        return None
 

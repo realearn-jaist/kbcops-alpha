@@ -170,7 +170,16 @@ def predict_func(ontology_file, model_id):
     # evaluate
     evaluate = InclusionEvaluator(valid_samples, test_samples, train_X, train_y)
     e_MRR, hits1, hits5, hits10, DLcount = evaluate.run_random_forest(classes, classes_e, inferred_ancestors, ontology_file)
-
+    
+    performance_csv_file_path = f'backend\storage\\{ontology_file}\\performance.txt'
+    
+    if not os.path.isfile(performance_csv_file_path):
+        with open(performance_csv_file_path, 'w', newline='') as csv_file:
+            column_names = list(data[0].keys())
+            csv_writer = csv.DictWriter(csv_file, fieldnames=column_names)
+            csv_writer.writeheader()
+            print(f'File {csv_file_path} created.')
+    
     return {
         "mrr": e_MRR, 
         "hit_at_1": hits1,

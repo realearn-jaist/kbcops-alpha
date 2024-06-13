@@ -12,214 +12,73 @@ import nltk
 
 nltk.download("punkt")
 
-from models.ontology_model import getPath_ontology
+from models.extract_model import load_annotations, load_axioms, load_classes, load_individuals
+from utils.file_handler import replace_or_create_folder
+from models.embed_model import isModelExist, save_model
+from models.ontology_model import getPath_ontology, getPath_ontology_directory
 from owl2vec_star.RDF2Vec_Embed import get_rdf2vec_walks, get_rdf2vec_embed
 from owl2vec_star.Label import pre_process_words, URI_parse
 from owl2vec_star.Onto_Projection import Reasoner, OntologyProjection
 
 
 def opa2vec_or_onto2vec(
-    ontology_file, ontology_name, embedding_dir, config_file, algorithm
+    ontology_name, config_file, algorithm
 ):
-    projection = OntologyProjection(
-        ontology_file,
-        reasoner=Reasoner.STRUCTURAL,
-        only_taxonomy=False,
-        bidirectional_taxonomy=True,
-        include_literals=True,
-        avoid_properties=set(),
-        additional_preferred_labels_annotations=set(),
-        additional_synonyms_annotations=set(),
-        memory_reasoner="13351",
-    )
+    # get config
+    config = configparser.ConfigParser()
+    config.read(config_file)
 
-    if not os.path.exists(f"backend/storage/{ontology_name}/{algorithm}"):
-        print(f"backend/storage/{ontology_name}/{algorithm}")
-        os.makedirs(f"backend/storage/{ontology_name}/{algorithm}")
+    # retrieve file
+    axioms = load_axioms(ontology_name)
+    classes = load_classes(ontology_name)
+    individuals = load_individuals(ontology_name)
+    annotations = load_annotations(ontology_name)
 
-    axiom_file = os.path.join(f"backend/storage/{ontology_name}/", "axioms.txt")
-    projection.extractEntityURIs()
-    classes = projection.getClassURIs()
-    individuals = projection.getIndividualURIs()
-    entities = classes.union(individuals)
-    projection.indexAnnotations()
-    uri_label, annotations = dict(), list()
-    for e in entities:
-        if (
-            e in projection.entityToPreferredLabels
-            and len(projection.entityToPreferredLabels[e]) > 0
-        ):
-            label = list(projection.entityToPreferredLabels[e])[0]
-            uri_label[e] = pre_process_words(words=label.split())
-    for e in entities:
-        if e in projection.entityToAllLexicalLabels:
-            for v in projection.entityToAllLexicalLabels[e]:
-                if (v is not None) and (
-                    not (
-                        e in projection.entityToPreferredLabels
-                        and v in projection.entityToPreferredLabels[e]
-                    )
-                ):
-                    annotation = [e] + v.split()
-                    annotations.append(annotation)
-
-    annotation_file = os.path.join(
-        f"backend/storage/{ontology_name}/", "annotations.txt"
-    )
-
-    if algorithm.lower() == "opa2vec":
-        lines = (
-            open(axiom_file, encoding="utf-8").readlines()
-            + open(annotation_file, encoding="utf-8").readlines()
-        )
+    if algorithm == "opa2vec":
+        lines = ( axioms + annotations )
     else:  # embedding_type.lower() == 'onto2vec'
-        lines = open(axiom_file, encoding="utf-8").readlines()
+        lines = axioms
 
     sentences = [
         [item.strip().lower() for item in line.strip().split()] for line in lines
     ]
-    config = configparser.ConfigParser()
-    config.read(config_file)
-
-    if (
-        config["MODEL_OPA2VEC_ONTO2VEC"]["pretrained"] == "none"
-        or config["MODEL_OPA2VEC_ONTO2VEC"]["pretrained"] == ""
-    ):
-        sg_v = 1 if config["MODEL_OPA2VEC_ONTO2VEC"]["model"] == "sg" else 0
-        w2v = gensim.models.Word2Vec(
-            sentences,
-            sg=sg_v,
-            min_count=int(config["MODEL_OPA2VEC_ONTO2VEC"]["mincount"]),
-            vector_size=int(config["BASIC"]["embed_size"]),
-            window=int(config["MODEL_OPA2VEC_ONTO2VEC"]["windsize"]),
-            workers=multiprocessing.cpu_count(),
-        )
-    else:
-        w2v = gensim.models.Word2Vec.load(
-            config["MODEL_OPA2VEC_ONTO2VEC"]["pretrained"]
-        )
-        w2v.min_count = int(config["MODEL_OPA2VEC_ONTO2VEC"]["mincount"])
-        w2v.build_vocab(sentences, update=True)
-        w2v.train(sentences, total_examples=w2v.corpus_count, epochs=100)
-
-    classes_e = [
-        (
-            w2v.wv.get_vector(c.lower())
-            if c.lower() in w2v.wv.index_to_key
-            else np.zeros(w2v.vector_size)
-        )
-        for c in classes
-    ]
-    classes_e = np.array(classes_e)
-    individuals_e = [
-        (
-            w2v.wv.get_vector(i.lower())
-            if i.lower() in w2v.wv.index_to_key
-            else np.zeros(w2v.vector_size)
-        )
-        for i in individuals
-    ]
-    individuals_e = np.array(individuals_e)
-    w2v.save(embedding_dir)
+    
+    # model word2vec
+    sg_v = 1 if config["MODEL_OPA2VEC_ONTO2VEC"]["model"] == "sg" else 0
+    w2v = gensim.models.Word2Vec(
+        sentences,
+        sg=sg_v,
+        min_count=int(config["MODEL_OPA2VEC_ONTO2VEC"]["mincount"]),
+        vector_size=int(config["BASIC"]["embed_size"]),
+        window=int(config["MODEL_OPA2VEC_ONTO2VEC"]["windsize"]),
+        workers=multiprocessing.cpu_count(),
+    )
+    
+    save_model(ontology_name, algorithm, w2v)
     return f"{algorithm} embedded success!!"
 
 
-def owl2vec_star(ontology_file, ontology_name, embedding_dir, config_file, algorithm):
+def owl2vec_star(ontology_name, config_file, algorithm):
     config = configparser.ConfigParser()
     config.read(config_file)
+    
+    # retrieve file
+    axioms = load_axioms(ontology_name)
+    classes = load_classes(ontology_name)
+    individuals = load_individuals(ontology_name)
+    entities = classes.union(individuals)
+    annotations_load = load_annotations(ontology_name)
 
-    if not os.path.exists(f"backend/storage/{ontology_name}/{algorithm}"):
-        print(f"backend/storage/{ontology_name}/{algorithm}")
-        os.makedirs(f"backend/storage/{ontology_name}/{algorithm}")
-
-    start_time = time.time()
-    if (
-        (
-            "ontology_projection" in config["DOCUMENT_OWL2VECSTAR"]
-            and config["DOCUMENT_OWL2VECSTAR"]["ontology_projection"] == "yes"
-        )
-        or "pre_entity_file" not in config["DOCUMENT_OWL2VECSTAR"]
-        or "pre_axiom_file" not in config["DOCUMENT_OWL2VECSTAR"]
-        or "pre_annotation_file" not in config["DOCUMENT_OWL2VECSTAR"]
-    ):
-        print("\n Access the ontology ...")
-        projection = OntologyProjection(
-            ontology_file,
-            reasoner=Reasoner.STRUCTURAL,
-            only_taxonomy=False,
-            bidirectional_taxonomy=True,
-            include_literals=True,
-            avoid_properties=set(),
-            additional_preferred_labels_annotations=set(),
-            additional_synonyms_annotations=set(),
-            memory_reasoner="13351",
-        )
-    else:
-        projection = None
-
-    if (
-        "ontology_projection" in config["DOCUMENT_OWL2VECSTAR"]
-        and config["DOCUMENT_OWL2VECSTAR"]["ontology_projection"] == "yes"
-    ):
-        print("\nCalculate the ontology projection ...")
-        projection.extractProjection()
-        onto_projection_file = os.path.join(
-            f"backend/storage/{ontology_name}/", "projection.ttl"
-        )
-        print("Save the projection graph to %s" % onto_projection_file)
-        projection.saveProjectionGraph(onto_projection_file)
-        ontology_file = onto_projection_file
-    else:
-        ontology_file = config["BASIC"]["ontology_file"]
-
-    if "pre_entity_file" in config["DOCUMENT_OWL2VECSTAR"]:
-        entities = [
-            line.strip()
-            for line in open(
-                config["DOCUMENT_OWL2VECSTAR"]["pre_entity_file"]
-            ).readlines()
-        ]
-    else:
-        print("\nExtract classes and individuals ...")
-        projection.extractEntityURIs()
-        classes = projection.getClassURIs()
-        individuals = projection.getIndividualURIs()
-        entities = classes.union(individuals)
-
-    if "pre_axiom_file" not in config["DOCUMENT_OWL2VECSTAR"]:
-        print("\nExtract axioms ...")
-        projection.createManchesterSyntaxAxioms()
+    # preprocess annotations file
     uri_label, annotations = dict(), list()
-
-    if "pre_annotation_file" in config["DOCUMENT_OWL2VECSTAR"]:
-        with open(config["DOCUMENT_OWL2VECSTAR"]["pre_annotation_file"]) as f:
-            for line in f.readlines():
-                tmp = line.strip().split()
-                if tmp[1] == "http://www.w3.org/2000/01/rdf-schema#label":
-                    uri_label[tmp[0]] = pre_process_words(tmp[2:])
-                else:
-                    annotations.append([tmp[0]] + tmp[2:])
-    else:
-        print("\nExtract annotations ...")
-        projection.indexAnnotations()
-        for e in entities:
-            if (
-                e in projection.entityToPreferredLabels
-                and len(projection.entityToPreferredLabels[e]) > 0
-            ):
-                label = list(projection.entityToPreferredLabels[e])[0]
-                uri_label[e] = pre_process_words(words=label.split())
-        for e in entities:
-            if e in projection.entityToAllLexicalLabels:
-                for v in projection.entityToAllLexicalLabels[e]:
-                    if (v is not None) and (
-                        not (
-                            e in projection.entityToPreferredLabels
-                            and v in projection.entityToPreferredLabels[e]
-                        )
-                    ):
-                        annotation = [e] + v.split()
-                        annotations.append(annotation)
+    for line in annotations_load:
+        tmp = line.strip().split()
+        if tmp[1] == "http://www.w3.org/2000/01/rdf-schema#label":
+            uri_label[tmp[0]] = pre_process_words(tmp[2:])
+        else:
+            annotations.append([tmp[0]] + tmp[2:])
+            
+    # structural doc
     walk_sentences, axiom_sentences, URI_Doc = list(), list(), list()
     if (
         "URI_Doc" in config["DOCUMENT_OWL2VECSTAR"]
@@ -227,7 +86,7 @@ def owl2vec_star(ontology_file, ontology_name, embedding_dir, config_file, algor
     ):
         print("\nGenerate URI document ...")
         walks_ = get_rdf2vec_walks(
-            onto_file=ontology_file,
+            onto_file=getPath_ontology(ontology_name),
             walker_type=config["DOCUMENT_OWL2VECSTAR"]["walker"],
             walk_depth=int(config["DOCUMENT_OWL2VECSTAR"]["walk_depth"]),
             classes=entities,
@@ -235,11 +94,9 @@ def owl2vec_star(ontology_file, ontology_name, embedding_dir, config_file, algor
         print("Extracted %d walks for %d seed entities" % (len(walks_), len(entities)))
         walk_sentences += [list(map(str, x)) for x in walks_]
 
-        axiom_file = os.path.join(f"backend/storage/{ontology_name}/", "axioms.txt")
-        if os.path.exists(axiom_file):
-            for line in open(axiom_file).readlines():
-                axiom_sentence = [item for item in line.strip().split()]
-                axiom_sentences.append(axiom_sentence)
+        for line in axioms:
+            axiom_sentence = [item for item in line.strip().split()]
+            axiom_sentences.append(axiom_sentence)
         print("Extracted %d axiom sentences" % len(axiom_sentences))
         URI_Doc = walk_sentences + axiom_sentences
 
@@ -253,6 +110,7 @@ def owl2vec_star(ontology_file, ontology_name, embedding_dir, config_file, algor
         else:
             return [item.lower()]
 
+    # lit doc
     Lit_Doc = list()
     if (
         "Lit_Doc" in config["DOCUMENT_OWL2VECSTAR"]
@@ -277,6 +135,7 @@ def owl2vec_star(ontology_file, ontology_name, embedding_dir, config_file, algor
                 lit_sentence += label_item(item=item)
             Lit_Doc.append(lit_sentence)
 
+    # mix doc
     Mix_Doc = list()
     if (
         "Mix_Doc" in config["DOCUMENT_OWL2VECSTAR"]
@@ -305,86 +164,57 @@ def owl2vec_star(ontology_file, ontology_name, embedding_dir, config_file, algor
     )
     all_doc = URI_Doc + Lit_Doc + Mix_Doc
 
-    print("Time for document construction: %s seconds" % (time.time() - start_time))
     random.shuffle(all_doc)
-
-    start_time = time.time()
-    if "pre_train_model" not in config["MODEL_OWL2VECSTAR"] or not os.path.exists(
-        config["MODEL_OWL2VECSTAR"]["pre_train_model"]
-    ):
-        print("\nTrain the embedding model ...")
-        model_ = gensim.models.Word2Vec(
-            all_doc,
-            vector_size=int(config["BASIC"]["embed_size"]),
-            window=int(config["MODEL_OWL2VECSTAR"]["window"]),
-            workers=multiprocessing.cpu_count(),
-            sg=1,
-            epochs=int(config["MODEL_OWL2VECSTAR"]["iteration"]),
-            negative=int(config["MODEL_OWL2VECSTAR"]["negative"]),
-            min_count=int(config["MODEL_OWL2VECSTAR"]["min_count"]),
-            seed=int(config["MODEL_OWL2VECSTAR"]["seed"]),
-        )
-    else:
-        print("\nFine-tune the pre-trained embedding model ...")
-        model_ = gensim.models.Word2Vec.load(
-            config["MODEL_OWL2VECSTAR"]["pre_train_model"]
-        )
-        if len(all_doc) > 0:
-            model_.min_count = int(config["MODEL_OWL2VECSTAR"]["min_count"])
-            model_.build_vocab(all_doc, update=True)
-            model_.train(
-                all_doc,
-                total_examples=model_.corpus_count,
-                epochs=int(config["MODEL_OWL2VECSTAR"]["epoch"]),
-            )
-    model_.save(embedding_dir)
-    print(
-        "Time for learning the embedding model: %s seconds" % (time.time() - start_time)
+    
+    # word2vec model
+    print("\nTrain the embedding model ...")
+    model_ = gensim.models.Word2Vec(
+        all_doc,
+        vector_size=int(config["BASIC"]["embed_size"]),
+        window=int(config["MODEL_OWL2VECSTAR"]["window"]),
+        workers=multiprocessing.cpu_count(),
+        sg=1,
+        epochs=int(config["MODEL_OWL2VECSTAR"]["iteration"]),
+        negative=int(config["MODEL_OWL2VECSTAR"]["negative"]),
+        min_count=int(config["MODEL_OWL2VECSTAR"]["min_count"]),
+        seed=int(config["MODEL_OWL2VECSTAR"]["seed"]),
     )
+
+    save_model(ontology_name, algorithm, model_)
     return f"{algorithm} embedded success!!"
 
 
-def rdf2vec(ontology_file, ontology_name, embedding_dir, config_file, algorithm):
-    if not os.path.exists(f"backend/storage/{ontology_name}/{algorithm}"):
-        os.makedirs(f"backend/storage/{ontology_name}/{algorithm}")
-
+def rdf2vec(ontology_name, config_file, algorithm):
     config = configparser.ConfigParser()
     config.read(config_file)
-    projection = OntologyProjection(
-        ontology_file,
-        reasoner=Reasoner.STRUCTURAL,
-        only_taxonomy=False,
-        bidirectional_taxonomy=True,
-        include_literals=True,
-        avoid_properties=set(),
-        additional_preferred_labels_annotations=set(),
-        additional_synonyms_annotations=set(),
-        memory_reasoner="13351",
-    )
-
-    projection.extractEntityURIs()
-    classes = projection.getClassURIs()
-    classes = list(classes)
-    individuals = projection.getIndividualURIs()
-    individuals = list(individuals)
+    
+    # retrieve file
+    axioms = load_axioms(ontology_name)
+    classes = load_classes(ontology_name)
+    individuals = load_individuals(ontology_name)
+    entities = classes.union(individuals)
+    annotations_load = load_annotations(ontology_name)
     candidate_num = len(classes)
 
-    all_e, model_rdf2vec = get_rdf2vec_embed(
-        onto_file=ontology_file,
+    _temp, model_rdf2vec = get_rdf2vec_embed(
+        onto_file=getPath_ontology(ontology_name),
         walker_type=config["MODEL_RDF2VEC"]["walker"],
         walk_depth=int(config["MODEL_RDF2VEC"]["walk_depth"]),
         embed_size=int(config["BASIC"]["embed_size"]),
-        classes=classes + individuals,
+        classes=entities,
     )
-    # classes_e, individuals_e = all_e[: len(classes)], all_e[len(classes) :]
-    joblib.dump(model_rdf2vec, embedding_dir)
+    
+    save_model(ontology_name, algorithm, model_rdf2vec)
     return f"{algorithm} embedded success!!"
 
 
 def embed_func(ontology_name, algorithm):
-    ontology_file = getPath_ontology(ontology_name)
-    embedding_dir = f"backend/storage/{ontology_name}/{algorithm}/model"
-    config_file = "backend/controllers/default.cfg"
+    # check if system have ontology file and algorithm so that it can directly return the result
+    if isModelExist(ontology_name, algorithm):
+        result = f"{algorithm} model already exists for {ontology_name} ontology"
+        return result
+    
+    config_file = "controllers/default.cfg"
 
     algorithms = {
         "owl2vec-star": owl2vec_star,
@@ -392,15 +222,12 @@ def embed_func(ontology_name, algorithm):
         "opa2vec": opa2vec_or_onto2vec,
         "onto2vec": opa2vec_or_onto2vec,
     }
-
-    algorithm_key = algorithm.lower()
-    if algorithm_key in algorithms:
-        result = algorithms[algorithm_key](
-            ontology_file=ontology_file,
+    
+    if algorithm in algorithms:
+        result = algorithms[algorithm](
             ontology_name=ontology_name,
-            embedding_dir=embedding_dir,
             config_file=config_file,
-            algorithm=algorithm_key,
+            algorithm=algorithm,
         )
         return result
     else:
