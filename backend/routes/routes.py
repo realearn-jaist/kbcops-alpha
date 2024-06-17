@@ -61,6 +61,14 @@ def get_ontology_stat(ontology):
         jsonify({"message": "Ontologies listed successfully", "data": data}),
         200,
     )
+    
+@ontology_blueprint.route("/ontology/<ontology>", methods=["GET"])
+def get_ontology_stat(ontology):
+    data = get_onto_stat(ontology)
+    return (
+        jsonify({"message": "Ontologies listed successfully", "data": data}),
+        200,
+    )
 
 
 @ontology_blueprint.route("/embed/<ontology>", methods=["GET"])
@@ -71,10 +79,14 @@ def embed_route(ontology):
     # if not then call the embed_func to generate the model
     result = embed_func(ontology_name=ontology, algorithm=algorithm)
     
+    
     print(result, f"{algorithm}")
+    return jsonify({"message": result, "onto_id": ontology, "algo": algorithm})
     return jsonify({"message": result, "onto_id": ontology, "algo": algorithm})
 
 
+@ontology_blueprint.route("/evaluate/<ontology>/<algorithm>", methods=["GET"])
+def predict_route(ontology, algorithm):
 @ontology_blueprint.route("/evaluate/<ontology>/<algorithm>", methods=["GET"])
 def predict_route(ontology, algorithm):
 
