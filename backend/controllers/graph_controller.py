@@ -5,13 +5,13 @@ import matplotlib.pyplot as plt
 import models.extract_model as em
 from owlready2 import *
 
-def load_file(id):
+def load_file(id, model):
     # load garbage information
-    grabage_file_path = f'backend\storage\{id}\{id}_garbage.csv'
+    grabage_file_path = f'storage\{id}\{model}\garbage.csv'
     grabage_file = pd.read_csv(os.path.abspath(grabage_file_path))
 
     # load onto file
-    onto_file_path = f'backend\storage\{id}\{id}.owl'
+    onto_file_path = f'storage\{id}\{id}.owl'
     onto_file = get_ontology(os.path.abspath(onto_file_path)).load()
 
     return onto_file, grabage_file
@@ -43,14 +43,14 @@ def get_prefix(value):
     prefix = value.rsplit(delimiter, 1)[0] + delimiter
     return prefix
 
-def graph_maker(onto_type, entity_prefix, individual_list, truth_list, predict_list):
+def graph_maker(onto_type, onto_file, entity_prefix, individual_list, truth_list, predict_list, fig_directory):
     # hard code first for foodon
-    entity_prefix = 'http://purl.obolibrary.org/obo/'
+    # entity_prefix = 'http://purl.obolibrary.org/obo/'
 
     for i, v in enumerate(individual_list):
 
         entity_uri = entity_prefix + v
-        entity = ONTO.search(iri = entity_uri)[0]
+        entity = onto_file.search(iri = entity_uri)[0]
         subs = entity.INDIRECT_is_a
 
         relations = list()
@@ -84,11 +84,15 @@ def graph_maker(onto_type, entity_prefix, individual_list, truth_list, predict_l
             x = (pos[edge[0]][0] + pos[edge[1]][0]) / 2
             y = (pos[edge[0]][1] + pos[edge[1]][1]) / 2
             plt.text(x, y, label, horizontalalignment='center', verticalalignment='center')
+        
+        if not os.path.exists(fig_directory):
+            os.makedirs(fig_directory)
+        plt.savefig(f'{fig_directory}\graph_{i+1}.png', format="PNG")
 
-        plt.savefig(f'backend\storage\{id}\{id}\graph_fig\graph_{i+1}.png', format="PNG")
-
-def create_graph(id):
+def create_graph(id, model):
     # load omdividuals for checking whether it Tbox or not. And find its prefix
+    fig_directory = f'storage\{id}\{model}\graph_fig' # where graph fig save
+
     individuals = em.load_individuals(id)
 
     individuals_count = len(em.load_individuals(id))
@@ -96,8 +100,8 @@ def create_graph(id):
     
     entity_prefix = get_prefix(individuals.pop())
     
-    onto_file, grabage_file = load_file(id)
+    onto_file, grabage_file = load_file(id, model)
     individual_list, truth_list, predict_list = extract_grabage_value(grabage_file)
-    graph_maker(onto_type, entity_prefix, individual_list, truth_list, predict_list)
+    graph_maker(onto_type, onto_file, entity_prefix, individual_list, truth_list, predict_list, fig_directory)
 
     return f"create graphs success!!"

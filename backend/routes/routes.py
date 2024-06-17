@@ -81,8 +81,13 @@ def predict_route(ontology, algorithm):
     result = predict_func(ontology=ontology, algorithm=algorithm)
     return jsonify(result)
 
-@ontology_blueprint.route("/graph/<ontology>", methods=["GET"])
-def make_graph_route(ontology):
+@ontology_blueprint.route("/graph/<ontology>/<algorithm>", methods=["GET"])
+def make_graph_route(ontology, algorithm):
 
-    result = create_graph(ontology_file=ontology)
+    result = create_graph(id=ontology, model=algorithm)
     return jsonify({"message": result})
+
+# @ontology_blueprint.route("/test", methods=["GET"])
+# def test_fragment():
+
+#     return redirect("http://localhost:5000/graph/foodon-merged")

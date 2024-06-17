@@ -260,7 +260,7 @@ const Main: React.FC<MainProps> = ({ open, onto_id, onto_data, algo, eval_metric
               height: 500,
             }}
           >
-            <StatCard name={"Display Garbage Graph"} data={0} type={"int"} />
+            <img src="../../../backend/storage/foodon-merged/onto2vec/graph_fig/graph_1.png" alt="Garbage Graph" style={{ maxWidth: '100%', maxHeight: '100%' }} />
           </Paper>
           <br />
           <Grid container spacing={3}>
