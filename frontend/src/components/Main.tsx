@@ -1,5 +1,5 @@
 import React from "react";
-import { Box, Typography, Grid, Paper, Link, styled, Divider, FormControl, InputLabel, MenuItem, Select } from "@mui/material";
+import { Box, Typography, Grid, Paper, Link, styled, Divider, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent } from "@mui/material";
 import StatCard from "./MainComponents/StatCard";
 import Title from "./MainComponents/Title";
 import { useTheme } from "@emotion/react";
@@ -80,6 +80,12 @@ const Main: React.FC<MainProps> = ({ open, onto_id, onto_data, algo, eval_metric
     { name: 'Axioms', data: onto_data.no_axiom },
     { name: 'Annotations', data: onto_data.no_annotation }
   ];
+
+  const [garbageIndex, setGarbageIndex] = React.useState<number>(0);
+
+  const handleGarbageChange = (event: SelectChangeEvent<string>) => {
+    setGarbageIndex(parseInt(event.target.value, 10));
+  };
 
 
   return (
@@ -236,10 +242,13 @@ const Main: React.FC<MainProps> = ({ open, onto_id, onto_data, algo, eval_metric
               labelId="select-garbage-label"
               id="select-garbage"
               label="Select Garbage"
+              onChange={handleGarbageChange}
             >
-              <MenuItem value={10}>garbage 1</MenuItem>
-              <MenuItem value={20}>garbage 2</MenuItem>
-              <MenuItem value={30}>garbage 3</MenuItem>
+              {garbage_metric.map((garbage, index) => (
+              <MenuItem key={index} value={index}>
+                {garbage.Individual}
+              </MenuItem>
+            ))}
             </Select>
           </FormControl>
 
@@ -266,7 +275,11 @@ const Main: React.FC<MainProps> = ({ open, onto_id, onto_data, algo, eval_metric
                 }}
               >
                 <Typography variant="h6">
-                  Ground Truth Score: {0.00}
+                  Ground Truth Score: {
+                    (garbage_metric.length > 0) ? 
+                    (Math.round(garbage_metric[garbageIndex].Score_true * 100) / 100).toFixed(2) : 
+                    (Math.round(0)).toFixed(2)
+                  }
                 </Typography>
               </Paper>
             </Grid>
@@ -280,7 +293,11 @@ const Main: React.FC<MainProps> = ({ open, onto_id, onto_data, algo, eval_metric
                 }}
               >
                 <Typography variant="h6">
-                  Ground Truth Rank: {0}
+                  Ground Truth Rank: {
+                    (garbage_metric.length > 0) ? 
+                    garbage_metric[garbageIndex].True_rank : 
+                    0
+                  }
                 </Typography>
               </Paper>
             </Grid>
@@ -294,7 +311,11 @@ const Main: React.FC<MainProps> = ({ open, onto_id, onto_data, algo, eval_metric
                 }}
               >
                 <Typography variant="h6">
-                  Garbage Score: {0}
+                  Garbage Score: {
+                    (garbage_metric.length > 0) ? 
+                    (Math.round(garbage_metric[garbageIndex].Score_predict * 100) / 100).toFixed(2) : 
+                    (Math.round(0)).toFixed(2)
+                  }
                 </Typography>
               </Paper>
             </Grid>
@@ -308,7 +329,11 @@ const Main: React.FC<MainProps> = ({ open, onto_id, onto_data, algo, eval_metric
                 }}
               >
                 <Typography variant="h6">
-                  Garbage Rank: {0}
+                  Garbage Rank: {
+                    (garbage_metric.length > 0) ? 
+                    garbage_metric[garbageIndex].Predicted_rank : 
+                    0
+                  }
                 </Typography>
               </Paper>
             </Grid>

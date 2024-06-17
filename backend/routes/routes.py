@@ -3,9 +3,8 @@ import time
 from controllers.graph_controller import create_graph
 from controllers.evaluator import predict_func
 from controllers.embed_controller import embed_func
-from controllers.extract_controller import extract_data
 from flask import jsonify, request, Blueprint  # type: ignore
-from controllers.ontology_controller import getAll_ontology, upload_ontology
+from controllers.ontology_controller import get_onto_stat, getAll_ontology, upload_ontology, extract_data
 
 
 ontology_blueprint = Blueprint("ontology", __name__)
@@ -54,6 +53,14 @@ def list_ontologies():
         jsonify({"message": "Ontologies listed successfully", "onto_list": ontologies}),
         200,
     )
+    
+@ontology_blueprint.route("/ontology/<ontology>", methods=["GET"])
+def get_ontology_stat(ontology):
+    data = get_onto_stat(ontology)
+    return (
+        jsonify({"message": "Ontologies listed successfully", "data": data}),
+        200,
+    )
 
 
 @ontology_blueprint.route("/embed/<ontology>", methods=["GET"])
@@ -61,26 +68,21 @@ def embed_route(ontology):
     algorithm = request.args.get("algo")
     print(f"Ontology: {ontology}, Algorithm: {algorithm}")
 
-    # check if system have ontology file and algorithm so that it can directly return the result
-    if os.path.exists(f"backend/storage/{ontology}/{algorithm}/model"):
-        result = f"{algorithm} model already exists for {ontology} ontology"
-        print(result, f"{algorithm}")
-        return jsonify({"message": result, "model_id": f"{algorithm}"})
-
     # if not then call the embed_func to generate the model
     result = embed_func(ontology_name=ontology, algorithm=algorithm)
+    
     print(result, f"{algorithm}")
-    return jsonify({"message": result, "model_id": f"{algorithm}"})
+    return jsonify({"message": result, "onto_id": ontology, "algo": algorithm})
 
 
-@ontology_blueprint.route("/evaluate/<ontology>/<model_id>", methods=["GET"])
-def predict_route(ontology, model_id):
+@ontology_blueprint.route("/evaluate/<ontology>/<algorithm>", methods=["GET"])
+def predict_route(ontology, algorithm):
 
-    result = predict_func(ontology_file=ontology, model_id=model_id)
-    return jsonify({"message": result})
+    result = predict_func(ontology=ontology, algorithm=algorithm)
+    return jsonify(result)
 
 @ontology_blueprint.route("/graph/<ontology>", methods=["GET"])
-def predict_route(ontology):
+def make_graph_route(ontology):
 
     result = create_graph(ontology_file=ontology)
     return jsonify({"message": result})

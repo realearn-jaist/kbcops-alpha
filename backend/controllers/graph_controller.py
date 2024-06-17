@@ -2,7 +2,7 @@ import networkx as nx
 import pandas as pd
 import os
 import matplotlib.pyplot as plt
-import extract_model as em
+import models.extract_model as em
 from owlready2 import *
 
 def load_file(id):
