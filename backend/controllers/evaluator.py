@@ -167,7 +167,8 @@ def predict_func(ontology, algorithm):
     # load infer file
     print(f"load {ontology} inferences")
     inferred_ancestors = dict()
-    with open(os.path.join(getPath_ontology_directory(ontology), 'inferred_ancestors.txt')) as f:
+    infer_path = os.path.join(getPath_ontology_directory(ontology), 'inferred_ancestors.txt')
+    with open(infer_path, "r", encoding="utf-8") as f:
         for line in f.readlines():
             all_infer_classes = line.strip().split(',')
             cls = all_infer_classes[0]
