@@ -3,6 +3,7 @@ import { Box, Typography, Grid, Paper, Link, styled, Divider, FormControl, Input
 import StatCard from "./MainComponents/StatCard";
 import Title from "./MainComponents/Title";
 import { useTheme } from "@emotion/react";
+import RequestComponent from "./request_sender";
 
 function Copyright(props: any) {
   return (
@@ -40,6 +41,17 @@ const MainWrapper = styled('main', { shouldForwardProp: (prop) => prop !== 'open
   }),
 }));
 
+type GarbageMetric = {
+  Individual: string;
+  Predicted: string;
+  Predicted_rank: number;
+  True: string;
+  True_rank: number;
+  Score_predict: number;
+  Score_true: number;
+  Dif: number;
+};
+
 interface MainProps {
   open: boolean;
   onto_id: string;
@@ -50,21 +62,23 @@ interface MainProps {
     no_axiom: number;
     no_annotation: number;
   };
+  algo: string;
+  eval_metric: {
+    mrr: number,
+    hit_at_1: number,
+    hit_at_5: number,
+    hit_at_10: number,
+    garbage: number,
+  };
+  garbage_metric: GarbageMetric[],
 }
 
-const Main: React.FC<MainProps> = ({ open, onto_id, onto_data }) => {
+const Main: React.FC<MainProps> = ({ open, onto_id, onto_data, algo, eval_metric, garbage_metric }) => {
   const StatCards = [
     { name: 'Classes', data: onto_data.no_class },
     { name: 'Individuals', data: onto_data.no_indiviual },
     { name: 'Axioms', data: onto_data.no_axiom },
     { name: 'Annotations', data: onto_data.no_annotation }
-  ];
-
-  const modelStats = [
-    { name: 'Hit@K', data: onto_data.no_class },
-    { name: 'MR', data: onto_data.no_indiviual },
-    { name: 'MRR', data: onto_data.no_axiom },
-    { name: 'Garbage', data: onto_data.no_annotation }
   ];
 
 
@@ -112,7 +126,7 @@ const Main: React.FC<MainProps> = ({ open, onto_id, onto_data }) => {
                     height: 150,
                   }}
                 >
-                  <StatCard name={stat.name} data={stat.data} />
+                  <StatCard name={stat.name} data={stat.data} type="int" />
                 </Paper>
               </Grid>
             ))}
@@ -123,7 +137,7 @@ const Main: React.FC<MainProps> = ({ open, onto_id, onto_data }) => {
           <br />
 
           <Typography variant="h2" gutterBottom>
-            {"<Embedding Algorithm>"}
+            {algo}
           </Typography>
           <Grid container spacing={3}>
             <Grid item xs={12} md={12} lg={6}>
@@ -158,29 +172,29 @@ const Main: React.FC<MainProps> = ({ open, onto_id, onto_data }) => {
                     </Typography>
                     <Box sx={{ flexGrow: 1, display: "flex", justifyContent: "center" }}>
                       <Typography component="p" variant="h4" color="black">
-                        {"0.79"}
+                        {(Math.round(eval_metric.hit_at_1 * 100) / 100).toFixed(2)}
                       </Typography>
                     </Box>
                   </Box>
-                  <Divider orientation="vertical" flexItem/>
+                  <Divider orientation="vertical" flexItem />
                   <Box sx={{ display: "flex", flexGrow: 1 }}>
                     <Typography component="p" variant="h6" color="primary">
                       {"5"}
                     </Typography>
                     <Box sx={{ flexGrow: 1, display: "flex", justifyContent: "center" }}>
                       <Typography component="p" variant="h4" color="black">
-                        {"0.79"}
+                        {(Math.round(eval_metric.hit_at_5 * 100) / 100).toFixed(2)}
                       </Typography>
                     </Box>
                   </Box>
-                  <Divider orientation="vertical" flexItem/>
+                  <Divider orientation="vertical" flexItem />
                   <Box sx={{ display: "flex", flexGrow: 1 }}>
                     <Typography component="p" variant="h6" color="primary">
                       {"10"}
                     </Typography>
                     <Box sx={{ flexGrow: 1, display: "flex", justifyContent: "center" }}>
                       <Typography component="p" variant="h4" color="black">
-                        {"0.79"}
+                        {(Math.round(eval_metric.hit_at_10 * 100) / 100).toFixed(2)}
                       </Typography>
                     </Box>
                   </Box>
@@ -197,7 +211,7 @@ const Main: React.FC<MainProps> = ({ open, onto_id, onto_data }) => {
                   height: 150,
                 }}
               >
-                <StatCard name={"MRR"} data={0} />
+                <StatCard name={"MRR"} data={eval_metric.mrr} type="float" />
               </Paper>
             </Grid>
             <Grid item xs={12} md={12} lg={3}>
@@ -209,7 +223,7 @@ const Main: React.FC<MainProps> = ({ open, onto_id, onto_data }) => {
                   height: 150,
                 }}
               >
-                <StatCard name={"Garbage"} data={0} />
+                <StatCard name={"Garbage"} data={eval_metric.garbage} type="int" />
               </Paper>
             </Grid>
 
@@ -237,7 +251,7 @@ const Main: React.FC<MainProps> = ({ open, onto_id, onto_data }) => {
               height: 500,
             }}
           >
-            <StatCard name={"Display Garbage Graph"} data={0} />
+            <StatCard name={"Display Garbage Graph"} data={0} type={"int"} />
           </Paper>
           <br />
           <Grid container spacing={3}>
@@ -303,6 +317,7 @@ const Main: React.FC<MainProps> = ({ open, onto_id, onto_data }) => {
 
         </Box>
         <Copyright />
+        <RequestComponent />
       </Box>
     </MainWrapper>
   );

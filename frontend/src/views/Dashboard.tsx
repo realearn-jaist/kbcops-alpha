@@ -24,6 +24,29 @@ export default function Dashboard() {
     no_axiom: number;
     no_annotation: number;
   }>({ abox: false, no_class: 0, no_indiviual: 0, no_axiom: 0, no_annotation: 0 })
+  const [display_algo, set_display_algo] = React.useState<string>("<Embedding Algorithm>");
+  const [display_eval_metric, set_display_eval_metric] = React.useState<{
+    mrr: number, 
+    hit_at_1: number, 
+    hit_at_5: number, 
+    hit_at_10: number, 
+    garbage: number 
+  }>({mrr: 0, hit_at_1: 0, hit_at_5: 0, hit_at_10: 0, garbage: 0 })
+
+  type GarbageMetric = {
+    Individual: string;
+    Predicted: string;
+    Predicted_rank: number;
+    True: string;
+    True_rank: number;
+    Score_predict: number;
+    Score_true: number;
+    Dif: number;
+  };
+  const [displayGarbageMetric, setDisplayGarbageMetric] = React.useState<GarbageMetric[]>([]);
+  const appendGarbageMetric = (newData: GarbageMetric) => {
+    setDisplayGarbageMetric((prevData) => [...prevData, newData]);
+  };
 
   React.useEffect(() => {
     getOntologyList();
@@ -58,7 +81,7 @@ export default function Dashboard() {
       .then((response) => {
         console.log("Upload successful:", response.data);
         getOntologyList();
-        getOntologyStat(response.data.onto_id);
+        extractOntology(response.data.onto_id);
       })
       .catch((error) => {
         console.error("Upload failed:", error);
@@ -66,7 +89,7 @@ export default function Dashboard() {
       });
   };
 
-  const getOntologyStat = (onto_id: string) => {
+  const extractOntology = (onto_id: string) => {
     axios
       .get("http://127.0.0.1:5000/extract/" + onto_id)
       .then((response) => {
@@ -76,6 +99,20 @@ export default function Dashboard() {
       })
       .catch((error) => {
         console.error("Extract failed:", error);
+        // Handle error
+      });
+  }
+
+  const getOntologyStat = (onto_id: string) => {
+    axios
+      .get("http://127.0.0.1:5000/ontology/" + onto_id)
+      .then((response) => {
+        console.log("Get stat successful:", response.data);
+        set_display_onto_id(onto_id)
+        set_display_onto_data(response.data.data)
+      })
+      .catch((error) => {
+        console.error("Get stat failed:", error);
         // Handle error
       });
   }
@@ -93,14 +130,31 @@ export default function Dashboard() {
       });
   }
 
-  const run_embedder = (onto_id: string, algo: string) => {
+  const train_embedder = (onto_id: string, algo: string) => {
     axios
       .get("http://127.0.0.1:5000/embed/" + onto_id + "?algo=" + algo)
       .then((response) => {
         console.log("embed successful:", response.data);
+        evaluate_embedder(response.data.onto_id, response.data.algo)
       })
       .catch((error) => {
-        console.error("load failed:", error);
+        console.error("embed failed:", error);
+        // Handle error
+      });
+  }
+
+  const evaluate_embedder = (onto_id: string, algo: string) => {
+    axios
+      .get("http://127.0.0.1:5000/evaluate/" + onto_id + "/" + algo)
+      .then((response) => {
+        console.log("evaluate successful:", response.data);
+        getOntologyStat(onto_id)
+        set_display_algo(algo)
+        set_display_eval_metric(response.data.performance)
+        response.data.garbage.forEach(appendGarbageMetric)
+      })
+      .catch((error) => {
+        console.error("evaluate failed:", error);
         // Handle error
       });
   }
@@ -119,13 +173,16 @@ export default function Dashboard() {
           handleUpload={handleUpload}
           ontologyList={ontology_list}
           handleFilesSelected={handleFilesSelected}
-          run_embedder={run_embedder}
+          train_embedder={train_embedder}
         />
         
         <Main
           open={open}
           onto_id={display_onto_id}
           onto_data={display_onto_data}
+          algo={display_algo}
+          eval_metric={display_eval_metric}
+          garbage_metric={displayGarbageMetric}
         />
       </Box>
 

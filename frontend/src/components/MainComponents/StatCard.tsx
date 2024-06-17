@@ -6,12 +6,13 @@ import Title from './Title';
 const StatC: React.FC<{
   name: string;
   data: number;
-}> = ({ name, data }) => {
+  type: string;
+}> = ({ name, data, type }) => {
   return (
     <React.Fragment>
       <Title>{name}</Title>
       <Typography component="p" variant="h4">
-        {data}
+        {type == "float" ? (Math.round(data * 100) / 100).toFixed(2) : Math.round(data)}
       </Typography>
     </React.Fragment>
   );

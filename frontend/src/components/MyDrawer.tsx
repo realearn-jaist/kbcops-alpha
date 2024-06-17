@@ -27,10 +27,10 @@ interface DrawerProps {
   handleUpload: () => void;
   ontologyList: string[];
   handleFilesSelected: (files: File[]) => void;
-  run_embedder: (onto_id: string, algo: string) => void;
+  train_embedder: (onto_id: string, algo: string) => void;
 }
 
-const CustomDrawer: React.FC<DrawerProps> = ({ open, toggleDrawer, selectedFiles, fileId, setFileId, handleUpload, ontologyList, handleFilesSelected, run_embedder }) => {
+const CustomDrawer: React.FC<DrawerProps> = ({ open, toggleDrawer, selectedFiles, fileId, setFileId, handleUpload, ontologyList, handleFilesSelected, train_embedder }) => {
   return (
     <Drawer
       sx={{
@@ -74,7 +74,7 @@ const CustomDrawer: React.FC<DrawerProps> = ({ open, toggleDrawer, selectedFiles
         Upload file
       </Button>
       <Divider />
-      <EmbeddingForm ontologyList={ontologyList} run_embedder={run_embedder} />
+      <EmbeddingForm ontologyList={ontologyList} train_embedder={train_embedder} />
     </Drawer>
   );
 };
