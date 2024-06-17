@@ -54,6 +54,10 @@ def opa2vec_or_onto2vec(
         workers=multiprocessing.cpu_count(),
     )
     
+    # path = os.path.join(getPath_ontology_directory(ontology_name), algorithm, "model")
+    # w2v.save(path)
+    # gensim.models.word2vec.Word2Vec.load(path)
+    
     save_model(ontology_name, algorithm, w2v)
     return f"{algorithm} embedded success!!"
 
