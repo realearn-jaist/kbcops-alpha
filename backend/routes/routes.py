@@ -1,5 +1,6 @@
 import os
 import time
+from controllers.graph_controller import create_graph
 from controllers.evaluator import predict_func
 from controllers.embed_controller import embed_func
 from controllers.extract_controller import extract_data
@@ -76,4 +77,10 @@ def embed_route(ontology):
 def predict_route(ontology, model_id):
 
     result = predict_func(ontology_file=ontology, model_id=model_id)
+    return jsonify({"message": result})
+
+@ontology_blueprint.route("/graph/<ontology>", methods=["GET"])
+def predict_route(ontology):
+
+    result = create_graph(ontology_file=ontology)
     return jsonify({"message": result})
