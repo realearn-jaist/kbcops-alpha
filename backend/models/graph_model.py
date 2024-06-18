@@ -1,0 +1,24 @@
+import base64
+import os
+
+from flask import jsonify
+
+from models.ontology_model import getPath_ontology_directory
+
+def load_graph(onto, algo):
+    directory = os.path.join(getPath_ontology_directory(onto), algo, 'graph_fig') # where graph fig save
+    
+    images = []
+    
+    if not os.path.exists(directory):
+        raise ValueError(f"Directory '{directory}' does not exist.")
+    
+    for i, filename in enumerate(os.listdir(directory)):
+        if filename.endswith('.png') or filename.endswith('.jpg') or filename.endswith('.jpeg'):
+            image_path = os.path.join(directory, filename)
+            with open(image_path, 'rb') as img_file:
+                img_data = img_file.read()
+                img_base64 = base64.b64encode(img_data).decode('utf-8')
+                images.append({"image": img_base64})
+    
+    return images
