@@ -11,7 +11,8 @@ import math
 
 from tqdm import tqdm
 
-from models.evaluator_model import write_garbage_metrics, write_json_file
+from controllers.graph_controller import create_graph
+from models.evaluator_model import write_garbage_metrics, write_evaluate
 from models.ontology_model import getPath_ontology, getPath_ontology_directory
 from models.embed_model import load_model
 from models.extract_model import load_classes
@@ -108,7 +109,7 @@ class InclusionEvaluator(Evaluator):
         performance_data = {"mrr": e_MRR, "hit_at_1": hits1, "hit_at_5": hits5, 
                             "hit_at_10": hits10, "garbage": DLcount}
 
-        write_json_file(self.ontology, self.algorithm, performance_data)
+        write_evaluate(self.ontology, self.algorithm, performance_data)
 
         self.result = {
             "message": "evaluate successful!",
@@ -177,5 +178,8 @@ def predict_func(ontology, algorithm):
     print(f"evaluate {ontology} with {algorithm} embedding algorithm on random forest")
     evaluate = InclusionEvaluator(valid_samples, test_samples, train_X, train_y, classes, classes_e, inferred_ancestors, ontology, algorithm)
     evaluate.run_random_forest()
-
+    
+    # load image
+    evaluate.result["images"] = create_graph(ontology, algorithm)
+    
     return evaluate.result

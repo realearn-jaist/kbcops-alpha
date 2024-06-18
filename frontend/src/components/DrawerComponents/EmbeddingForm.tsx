@@ -6,18 +6,21 @@ import { SelectChangeEvent } from '@mui/material/Select';
 interface EmbeddingFormProps {
   ontologyList: string[];
   train_embedder: (onto_id: string, algo: string) => void;
+  get_evaluate: (onto_id: string, algo: string) => void;
 }
 
-const EmbeddingForm: React.FC<EmbeddingFormProps> = ({ ontologyList, train_embedder }) => {
+const EmbeddingForm: React.FC<EmbeddingFormProps> = ({ ontologyList, train_embedder, get_evaluate }) => {
   const [selectedOntology, setSelectedOntology] = useState('');
   const [selectedAlgorithm, setSelectedAlgorithm] = useState('');
 
   const handleOntologyChange = (event: SelectChangeEvent<string>) => {
     setSelectedOntology(event.target.value as string);
+    get_evaluate(selectedOntology, selectedAlgorithm)
   };
 
   const handleAlgorithmChange = (event: SelectChangeEvent<string>) => {
     setSelectedAlgorithm(event.target.value as string);
+    get_evaluate(selectedOntology, selectedAlgorithm)
   };
 
   const handleRunClick = () => {
