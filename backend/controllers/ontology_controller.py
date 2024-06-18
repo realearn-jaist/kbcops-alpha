@@ -1,42 +1,53 @@
 import os
 
-from models.extract_model import load_annotations, load_axioms, load_classes, load_individuals, save_annotations, save_axioms, save_classes, save_individuals
+from models.extract_model import (
+    load_annotations,
+    load_axioms,
+    load_classes,
+    load_individuals,
+    save_annotations,
+    save_axioms,
+    save_classes,
+    save_individuals,
+)
 from models.ontology_model import list_ontology, save_ontology, getPath_ontology
 
-from owl2vec_star.Onto_Projection import Reasoner, OntologyProjection # type: ignore
-from owl2vec_star.Label import pre_process_words # type: ignore
+from owl2vec_star.Onto_Projection import Reasoner, OntologyProjection  # type: ignore
+from owl2vec_star.Label import pre_process_words  # type: ignore
 
 
 def upload_ontology(file, id):
-    if id.endswith('.owl'):
+    if id.endswith(".owl"):
         id = id[:-4]
-    
-    filename = id + '.owl'
-    
+
+    filename = id + ".owl"
+
     return save_ontology(file, id, filename)
+
 
 def getAll_ontology():
     return list_ontology()
+
 
 def get_onto_stat(id):
     axioms = load_axioms(id)
     classes = load_classes(id)
     individuals = load_individuals(id)
     annotations = load_annotations(id)
-    
+
     return {
-        "no_class": len(classes), 
-        "no_indiviual": len(individuals), 
-        "no_axiom": len(axioms), 
-        "no_annotation": len(annotations)
+        "no_class": len(classes),
+        "no_indiviual": len(individuals),
+        "no_axiom": len(axioms),
+        "no_annotation": len(annotations),
     }
-        
+
 
 def extract_data(id):
     onto_file = getPath_ontology(id)
-    
+
     print(onto_file)
-    
+
     projection = OntologyProjection(
         onto_file,
         reasoner=Reasoner.STRUCTURAL,
@@ -48,17 +59,17 @@ def extract_data(id):
         additional_synonyms_annotations=set(),
         memory_reasoner="13351",
     )
-    
+
     # axioms
     projection.createManchesterSyntaxAxioms()
     axioms = projection.axioms_manchester
-    
+
     # entities (classes and individuals)
     projection.extractEntityURIs()
     classes = projection.getClassURIs()
     individuals = projection.getIndividualURIs()
     entities = classes.union(individuals)
-    
+
     # annotations
     projection.indexAnnotations()
     uri_label, annotations = dict(), list()
@@ -80,15 +91,15 @@ def extract_data(id):
                 ):
                     annotation = [e] + v.split()
                     annotations.append(annotation)
-                    
+
     axioms = save_axioms(id, axioms)
     classes = save_classes(id, classes)
     individuals = save_individuals(id, individuals)
     annotations = save_annotations(id, annotations, projection)
-    
+
     return {
-        "no_class": len(classes), 
-        "no_indiviual": len(individuals), 
-        "no_axiom": len(axioms), 
-        "no_annotation": len(annotations)
+        "no_class": len(classes),
+        "no_indiviual": len(individuals),
+        "no_axiom": len(axioms),
+        "no_annotation": len(annotations),
     }
