@@ -9,6 +9,7 @@ from models.ontology_model import getPath_ontology, getPath_ontology_directory
 from models.extract_model import load_individuals
 from owlready2 import *
 
+
 def extract_garbage_value(onto_data):
     # Extract columns into lists
     individual_list = onto_data['Individual'].tolist()
@@ -23,32 +24,34 @@ def find_parents_with_relations(cls, relation_list):
         parents = cls.is_a
         for parent in parents:
             if parent != owl.Thing:
-                relation_list.append([str(cls).split('obo.')[-1].split(')')[0], 'subclassOf', str(parent).split('obo.')[-1].split(')')[0]])
+                relation_list.append(
+                    [
+                        str(cls).split("obo.")[-1].split(")")[0],
+                        "subclassOf",
+                        str(parent).split("obo.")[-1].split(")")[0],
+                    ]
+                )
                 find_parents_with_relations(parent, relation_list)
             else:
-                relation_list.append([str(cls).split('obo.')[-1].split(')')[0], 'subclassOf', str(parent).split('obo.')[-1].split(')')[0]])
+                relation_list.append(
+                    [
+                        str(cls).split("obo.")[-1].split(")")[0],
+                        "subclassOf",
+                        str(parent).split("obo.")[-1].split(")")[0],
+                    ]
+                )
     except Exception as e:
         pass
-    
-    
-    # relation_list = []
-    
-    # for parent in cls.is_a:
-    #     if parent != owl.Thing:
-    #         relation_list.append(parent)
-    #         relation_list.extend(find_parents_with_relations(parent))
-    #     else:
-    #         relation_list.append(parent)
-    
-    # return relation_list
 
 
 def get_prefix(value):
-    delimiter = '#' if '#' in value else '/'
+    delimiter = "#" if "#" in value else "/"
     prefix = value.rsplit(delimiter, 1)[0] + delimiter
     return prefix
 
 def graph_maker(onto_type, onto_file, entity_prefix, individual_list, truth_list, predict_list, fig_directory):
+
+def graph_maker(onto_type, entity_prefix, individual_list, truth_list, predict_list):
     # hard code first for foodon
     # entity_prefix = 'http://purl.obolibrary.org/obo/'
     print(individual_list)
@@ -61,32 +64,55 @@ def graph_maker(onto_type, onto_file, entity_prefix, individual_list, truth_list
 
         relations = list()
 
-        # if onto_type == 'TBox': 
-        find_parents_with_relations(entity, relations)
-        # else:
-        #     subs = sorted(list(subs), key=lambda sub: len(list(sub.INDIRECT_is_a)))
-        #     subs = [str(sub).split('.')[-1] if str(sub) != 'owl.Thing' else str(sub) for sub in subs]
-        #     for i in range(len(subs)-1):
-        #         relations.append([subs[i+1], 'subclassOf', subs[i]])
-        #     relations.append([str(entity).split('.')[-1], 'isA', subs[-1]])
+        if onto_type == "TBox":
+            find_parents_with_relations(entity, relations)
+        else:
+            subs = sorted(list(subs), key=lambda sub: len(list(sub.INDIRECT_is_a)))
+            subs = [
+                str(sub).split(".")[-1] if str(sub) != "owl.Thing" else str(sub)
+                for sub in subs
+            ]
+            for i in range(len(subs) - 1):
+                relations.append([subs[i + 1], "subclassOf", subs[i]])
+            relations.append([str(entity).split(".")[-1], "isA", subs[-1]])
 
         relations = [relation for relation in relations if relation[0] != relation[2]]
 
         G = nx.DiGraph()
         for rel in relations:
             source, relation, target = rel
-            G.add_edge(source, target, label='subclassOf')
+            G.add_edge(source, target, label="subclassOf")
             G.add_nodes_from([source, target])
-            
-        node_colors = ['gray' if node not in truth_list[i] and node not in individual_list[i] and node not in predict_list[i] 
-                        else '#94F19C' if node in truth_list[i] else '#FC865A' if node in predict_list[i] else '#9DF1F0' for node in G.nodes()]
+
+        node_colors = [
+            (
+                "gray"
+                if node not in truth_list[i]
+                and node not in individual_list[i]
+                and node not in predict_list[i]
+                else (
+                    "#94F19C"
+                    if node in truth_list[i]
+                    else "#FC865A" if node in predict_list[i] else "#9DF1F0"
+                )
+            )
+            for node in G.nodes()
+        ]
 
         # Draw the graph
-        plt.figure(figsize=(20, len(relations)*2))
-        pos = nx.nx_pydot.graphviz_layout(G, prog='dot')
-        nx.draw(G, pos, with_labels=True, node_size=1500, node_color=node_colors, font_size=12, font_weight="bold")
+        plt.figure(figsize=(20, len(relations) * 2))
+        pos = nx.nx_pydot.graphviz_layout(G, prog="dot")
+        nx.draw(
+            G,
+            pos,
+            with_labels=True,
+            node_size=1500,
+            node_color=node_colors,
+            font_size=12,
+            font_weight="bold",
+        )
 
-        for edge, label in nx.get_edge_attributes(G, 'label').items():
+        for edge, label in nx.get_edge_attributes(G, "label").items():
             x = (pos[edge[0]][0] + pos[edge[1]][0]) / 2
             y = (pos[edge[0]][1] + pos[edge[1]][1]) / 2
             plt.text(x, y, label, horizontalalignment='center', verticalalignment='center')
