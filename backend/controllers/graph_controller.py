@@ -20,26 +20,16 @@ def extract_garbage_value(onto_data):
 
 def find_parents_with_relations(cls, relation_list):
     # find its relations
+    # temp = 'obo.'
+    temp = 'helis_v1.00.origin.'
     try:
         parents = cls.is_a
         for parent in parents:
             if parent != owl.Thing:
-                relation_list.append(
-                    [
-                        str(cls).split("obo.")[-1].split(")")[0],
-                        "subclassOf",
-                        str(parent).split("obo.")[-1].split(")")[0],
-                    ]
-                )
+                relation_list.append([str(cls).split(temp)[-1].split(')')[0], 'subclassOf', str(parent).split(temp)[-1].split(')')[0]])
                 find_parents_with_relations(parent, relation_list)
             else:
-                relation_list.append(
-                    [
-                        str(cls).split("obo.")[-1].split(")")[0],
-                        "subclassOf",
-                        str(parent).split("obo.")[-1].split(")")[0],
-                    ]
-                )
+                relation_list.append([str(cls).split(temp)[-1].split(')')[0], 'subclassOf', str(parent).split(temp)[-1].split(')')[0]])
     except Exception as e:
         pass
 
@@ -50,11 +40,6 @@ def get_prefix(value):
     return prefix
 
 def graph_maker(onto_type, onto_file, entity_prefix, individual_list, truth_list, predict_list, fig_directory):
-
-def graph_maker(onto_type, entity_prefix, individual_list, truth_list, predict_list):
-    # hard code first for foodon
-    # entity_prefix = 'http://purl.obolibrary.org/obo/'
-    print(individual_list)
     for i, v in enumerate(individual_list):
         print(i, v)
 
@@ -81,36 +66,21 @@ def graph_maker(onto_type, entity_prefix, individual_list, truth_list, predict_l
         G = nx.DiGraph()
         for rel in relations:
             source, relation, target = rel
-            G.add_edge(source, target, label="subclassOf")
+            G.add_edge(source, target, label=relation)
             G.add_nodes_from([source, target])
 
-        node_colors = [
-            (
-                "gray"
-                if node not in truth_list[i]
-                and node not in individual_list[i]
-                and node not in predict_list[i]
-                else (
-                    "#94F19C"
-                    if node in truth_list[i]
-                    else "#FC865A" if node in predict_list[i] else "#9DF1F0"
-                )
-            )
-            for node in G.nodes()
-        ]
+        for node in G.nodes():
+            print(node)
+            print(type(truth_list[1]))
+
+        node_colors = ['gray' if node != truth_list[i] and node != individual_list[i] and node != predict_list[i] 
+                        else '#94F19C' if node == truth_list[i] else '#FC865A' if node == predict_list[i] else '#9DF1F0' for node in G.nodes()]
 
         # Draw the graph
-        plt.figure(figsize=(20, len(relations) * 2))
-        pos = nx.nx_pydot.graphviz_layout(G, prog="dot")
-        nx.draw(
-            G,
-            pos,
-            with_labels=True,
-            node_size=1500,
-            node_color=node_colors,
-            font_size=12,
-            font_weight="bold",
-        )
+        plt.figure(figsize=(20, len(relations)*2))
+        pos = nx.nx_pydot.graphviz_layout(G, prog='dot')
+        nx.draw(G, pos, with_labels=True, node_size=1500, node_color=node_colors, font_size=12, font_weight="bold")
+        # nx.draw(G, with_labels=True, node_size=1500, node_color=node_colors, font_size=12, font_weight="bold")
 
         for edge, label in nx.get_edge_attributes(G, "label").items():
             x = (pos[edge[0]][0] + pos[edge[1]][0]) / 2
@@ -129,6 +99,7 @@ def create_graph(onto, algo):
 
     individuals = load_individuals(onto)
 
+    individuals_count = len(individuals)
     individuals_count = len(individuals)
     onto_type = 'TBox' if individuals_count > 0 else 'ABox'
     

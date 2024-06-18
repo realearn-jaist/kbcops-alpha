@@ -66,3 +66,12 @@ def load_annotations(id):
     
     with open( path, "r", encoding="utf-8" ) as f:
         return f.readlines()
+    
+def save_infer(id, infers):
+    path = os.path.join(getPath_ontology_directory(id), "inferred_ancestors.txt")
+    
+    with open( path, "w", encoding="utf-8" ) as f:
+        for result in infers:
+            f.write(result + "\n")
+            
+    return infers
