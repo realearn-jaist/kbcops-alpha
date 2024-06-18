@@ -2,16 +2,18 @@ import csv
 import json
 import os
 
+import pandas as pd
+
 from models.ontology_model import getPath_ontology_directory
 
-def write_json_file(ontology, algorithm, data):
+def write_evaluate(ontology, algorithm, data):
     
     file_path = os.path.join(getPath_ontology_directory(ontology), algorithm, "performance.json")
     
     with open(file_path, 'w') as json_file:
         json.dump(data, json_file, indent=4)
         
-def read_json_file(ontology, algorithm):
+def read_evaluate(ontology, algorithm):
     
     file_path = os.path.join(getPath_ontology_directory(ontology), algorithm, "performance.json")
     
@@ -49,3 +51,10 @@ def read_garbage_metrics(ontology, algorithm):
             json_output.append(row_dict)
     
     return json_output
+
+def read_garbage_metrics_pd(ontology, algorithm):
+    file_path = os.path.join(getPath_ontology_directory(ontology), algorithm, "garbage.csv")
+
+    garbage_file = pd.read_csv(file_path)
+    
+    return garbage_file

@@ -18,12 +18,11 @@ export default function Dashboard() {
   const [ontology_list, set_onto_list] = React.useState<string[]>([]);
   const [display_onto_id, set_display_onto_id] = React.useState<string>("<Ontology>");
   const [display_onto_data, set_display_onto_data] = React.useState<{
-    abox: boolean;
     no_class: number;
     no_indiviual: number;
     no_axiom: number;
     no_annotation: number;
-  }>({ abox: false, no_class: 0, no_indiviual: 0, no_axiom: 0, no_annotation: 0 })
+  }>({ no_class: 0, no_indiviual: 0, no_axiom: 0, no_annotation: 0 })
   const [display_algo, set_display_algo] = React.useState<string>("<Embedding Algorithm>");
   const [display_eval_metric, set_display_eval_metric] = React.useState<{
     mrr: number, 
@@ -44,9 +43,7 @@ export default function Dashboard() {
     Dif: number;
   };
   const [displayGarbageMetric, setDisplayGarbageMetric] = React.useState<GarbageMetric[]>([]);
-  const appendGarbageMetric = (newData: GarbageMetric) => {
-    setDisplayGarbageMetric((prevData) => [...prevData, newData]);
-  };
+  const [displayGarbageImage, setDisplayGarbageImage] = React.useState<[]>([]);
 
   React.useEffect(() => {
     getOntologyList();
@@ -151,7 +148,25 @@ export default function Dashboard() {
         getOntologyStat(onto_id)
         set_display_algo(algo)
         set_display_eval_metric(response.data.performance)
-        response.data.garbage.forEach(appendGarbageMetric)
+        setDisplayGarbageMetric(response.data.garbage)
+        setDisplayGarbageImage(response.data.images)
+      })
+      .catch((error) => {
+        console.error("evaluate failed:", error);
+        // Handle error
+      });
+  }
+
+  const get_evaluate = (onto_id: string, algo: string) => {
+    axios
+      .get("http://127.0.0.1:5000/evaluate/" + onto_id + "/" + algo + "/stat")
+      .then((response) => {
+        console.log("evaluate successful:", response.data);
+        getOntologyStat(onto_id)
+        set_display_algo(algo)
+        set_display_eval_metric(response.data.performance)
+        setDisplayGarbageMetric(response.data.garbage)
+        setDisplayGarbageImage(response.data.images)
       })
       .catch((error) => {
         console.error("evaluate failed:", error);
@@ -174,6 +189,7 @@ export default function Dashboard() {
           ontologyList={ontology_list}
           handleFilesSelected={handleFilesSelected}
           train_embedder={train_embedder}
+          get_evaluate={get_evaluate}
         />
         
         <Main
@@ -183,6 +199,7 @@ export default function Dashboard() {
           algo={display_algo}
           eval_metric={display_eval_metric}
           garbage_metric={displayGarbageMetric}
+          garbage_image={displayGarbageImage}
         />
       </Box>
 

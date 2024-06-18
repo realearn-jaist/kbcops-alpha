@@ -2,30 +2,21 @@ import networkx as nx
 import pandas as pd
 import os
 import matplotlib.pyplot as plt
-import models.extract_model as em
+from models.graph_model import load_graph
+from utils.file_handler import replace_or_create_folder
+from models.evaluator_model import read_garbage_metrics_pd
+from models.ontology_model import getPath_ontology, getPath_ontology_directory
+from models.extract_model import load_individuals
 from owlready2 import *
 
 
-def load_file(id):
-    # load garbage information
-    grabage_file_path = f"backend\storage\{id}\{id}_garbage.csv"
-    grabage_file = pd.read_csv(os.path.abspath(grabage_file_path))
-
-    # load onto file
-    onto_file_path = f"backend\storage\{id}\{id}.owl"
-    onto_file = get_ontology(os.path.abspath(onto_file_path)).load()
-
-    return onto_file, grabage_file
-
-
-def extract_grabage_value(onto_data):
-    # turn csv into list
-    individual_list = [x for x in list(onto_data["Individual"].tolist())]
-    truth_list = [x for x in list(onto_data["True"].tolist())]
-    predict_list = [x for x in list(onto_data["Predicted"].tolist())]
+def extract_garbage_value(onto_data):
+    # Extract columns into lists
+    individual_list = onto_data['Individual'].tolist()
+    truth_list = onto_data['True'].tolist()
+    predict_list = onto_data['Predicted'].tolist()
 
     return individual_list, truth_list, predict_list
-
 
 def find_parents_with_relations(cls, relation_list):
     # find its relations
@@ -58,15 +49,17 @@ def get_prefix(value):
     prefix = value.rsplit(delimiter, 1)[0] + delimiter
     return prefix
 
+def graph_maker(onto_type, onto_file, entity_prefix, individual_list, truth_list, predict_list, fig_directory):
 
 def graph_maker(onto_type, entity_prefix, individual_list, truth_list, predict_list):
     # hard code first for foodon
-    entity_prefix = "http://purl.obolibrary.org/obo/"
-
+    # entity_prefix = 'http://purl.obolibrary.org/obo/'
+    print(individual_list)
     for i, v in enumerate(individual_list):
+        print(i, v)
 
         entity_uri = entity_prefix + v
-        entity = ONTO.search(iri=entity_uri)[0]
+        entity = onto_file.search(iri = entity_uri)[0]
         subs = entity.INDIRECT_is_a
 
         relations = list()
@@ -122,26 +115,30 @@ def graph_maker(onto_type, entity_prefix, individual_list, truth_list, predict_l
         for edge, label in nx.get_edge_attributes(G, "label").items():
             x = (pos[edge[0]][0] + pos[edge[1]][0]) / 2
             y = (pos[edge[0]][1] + pos[edge[1]][1]) / 2
-            plt.text(
-                x, y, label, horizontalalignment="center", verticalalignment="center"
-            )
+            plt.text(x, y, label, horizontalalignment='center', verticalalignment='center')
+        
+        if not os.path.exists(fig_directory):
+            os.makedirs(fig_directory)
+        plt.savefig(f'{fig_directory}\graph_{i}.png', format="PNG")
 
-        plt.savefig(
-            f"backend\storage\{id}\{id}\graph_fig\graph_{i+1}.png", format="PNG"
-        )
-
-
-def create_graph(id):
+def create_graph(onto, algo):
     # load omdividuals for checking whether it Tbox or not. And find its prefix
-    individuals = em.load_individuals(id)
+    fig_directory = os.path.join(getPath_ontology_directory(onto), algo, 'graph_fig') # where graph fig save
+    
+    replace_or_create_folder(fig_directory)
 
-    individuals_count = len(em.load_individuals(id))
-    onto_type = "TBox" if individuals_count > 0 else "ABox"
+    individuals = load_individuals(onto)
 
+    individuals_count = len(individuals)
+    onto_type = 'TBox' if individuals_count > 0 else 'ABox'
+    
     entity_prefix = get_prefix(individuals.pop())
+    
+    onto_file_path = getPath_ontology(onto)
+    onto_file = get_ontology(onto_file_path).load()
+    garbage_file = read_garbage_metrics_pd(onto, algo)
+    
+    individual_list, truth_list, predict_list = extract_garbage_value(garbage_file)
+    graph_maker(onto_type, onto_file, entity_prefix, individual_list, truth_list, predict_list, fig_directory)
 
-    onto_file, grabage_file = load_file(id)
-    individual_list, truth_list, predict_list = extract_grabage_value(grabage_file)
-    graph_maker(onto_type, entity_prefix, individual_list, truth_list, predict_list)
-
-    return f"create graphs success!!"
+    return load_graph(onto, algo)

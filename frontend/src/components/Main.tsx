@@ -2,7 +2,6 @@ import React from "react";
 import { Box, Typography, Grid, Paper, Link, styled, Divider, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent } from "@mui/material";
 import StatCard from "./MainComponents/StatCard";
 import Title from "./MainComponents/Title";
-import { useTheme } from "@emotion/react";
 import RequestComponent from "./request_sender";
 
 function Copyright(props: any) {
@@ -56,7 +55,6 @@ interface MainProps {
   open: boolean;
   onto_id: string;
   onto_data: {
-    abox: boolean;
     no_class: number;
     no_indiviual: number;
     no_axiom: number;
@@ -71,9 +69,10 @@ interface MainProps {
     garbage: number,
   };
   garbage_metric: GarbageMetric[],
+  garbage_image: [],
 }
 
-const Main: React.FC<MainProps> = ({ open, onto_id, onto_data, algo, eval_metric, garbage_metric }) => {
+const Main: React.FC<MainProps> = ({ open, onto_id, onto_data, algo, eval_metric, garbage_metric, garbage_image }) => {
   const StatCards = [
     { name: 'Classes', data: onto_data.no_class },
     { name: 'Individuals', data: onto_data.no_indiviual },
@@ -115,7 +114,7 @@ const Main: React.FC<MainProps> = ({ open, onto_id, onto_data, algo, eval_metric
             </Typography>
             <Box component="section" sx={{ p: 2, border: '1px dashed grey', height: "72px", margin: "0px 0px 21px 20px", borderRadius: "10px", background: "gray" }}>
               <Typography variant="h4" gutterBottom>
-                {onto_data.abox ? "TBox & Abox" : "TBox"}
+                {onto_data.no_indiviual > 0 ? "TBox & Abox" : "TBox"}
               </Typography>
 
             </Box>
@@ -245,10 +244,10 @@ const Main: React.FC<MainProps> = ({ open, onto_id, onto_data, algo, eval_metric
               onChange={handleGarbageChange}
             >
               {garbage_metric.map((garbage, index) => (
-              <MenuItem key={index} value={index}>
-                {garbage.Individual}
-              </MenuItem>
-            ))}
+                <MenuItem key={index} value={index}>
+                  {garbage.Individual}
+                </MenuItem>
+              ))}
             </Select>
           </FormControl>
 
@@ -257,10 +256,14 @@ const Main: React.FC<MainProps> = ({ open, onto_id, onto_data, algo, eval_metric
               p: 2,
               display: 'flex',
               flexDirection: 'column',
-              height: 500,
+              // height: 500,
             }}
           >
-            <StatCard name={"Display Garbage Graph"} data={0} type={"int"} />
+            <img
+              src={`data:image/png;base64,${garbage_image.length > 0? garbage_image[garbageIndex].image : "none"}`}
+              alt="displayed"
+              style={{ maxHeight: '100%', maxWidth: '100%' }}
+            />
           </Paper>
           <br />
           <Grid container spacing={3}>
@@ -276,9 +279,9 @@ const Main: React.FC<MainProps> = ({ open, onto_id, onto_data, algo, eval_metric
               >
                 <Typography variant="h6">
                   Ground Truth Score: {
-                    (garbage_metric.length > 0) ? 
-                    (Math.round(garbage_metric[garbageIndex].Score_true * 100) / 100).toFixed(2) : 
-                    (Math.round(0)).toFixed(2)
+                    (garbage_metric.length > 0) ?
+                      (Math.round(garbage_metric[garbageIndex].Score_true * 100) / 100).toFixed(2) :
+                      (Math.round(0)).toFixed(2)
                   }
                 </Typography>
               </Paper>
@@ -294,9 +297,9 @@ const Main: React.FC<MainProps> = ({ open, onto_id, onto_data, algo, eval_metric
               >
                 <Typography variant="h6">
                   Ground Truth Rank: {
-                    (garbage_metric.length > 0) ? 
-                    garbage_metric[garbageIndex].True_rank : 
-                    0
+                    (garbage_metric.length > 0) ?
+                      garbage_metric[garbageIndex].True_rank :
+                      0
                   }
                 </Typography>
               </Paper>
@@ -312,9 +315,9 @@ const Main: React.FC<MainProps> = ({ open, onto_id, onto_data, algo, eval_metric
               >
                 <Typography variant="h6">
                   Garbage Score: {
-                    (garbage_metric.length > 0) ? 
-                    (Math.round(garbage_metric[garbageIndex].Score_predict * 100) / 100).toFixed(2) : 
-                    (Math.round(0)).toFixed(2)
+                    (garbage_metric.length > 0) ?
+                      (Math.round(garbage_metric[garbageIndex].Score_predict * 100) / 100).toFixed(2) :
+                      (Math.round(0)).toFixed(2)
                   }
                 </Typography>
               </Paper>
@@ -330,9 +333,9 @@ const Main: React.FC<MainProps> = ({ open, onto_id, onto_data, algo, eval_metric
               >
                 <Typography variant="h6">
                   Garbage Rank: {
-                    (garbage_metric.length > 0) ? 
-                    garbage_metric[garbageIndex].Predicted_rank : 
-                    0
+                    (garbage_metric.length > 0) ?
+                      garbage_metric[garbageIndex].Predicted_rank :
+                      0
                   }
                 </Typography>
               </Paper>

@@ -12,21 +12,17 @@ import nltk
 
 nltk.download("punkt")
 
-from models.extract_model import (
-    load_annotations,
-    load_axioms,
-    load_classes,
-    load_individuals,
-)
+from models.extract_model import load_annotations, load_axioms, load_classes, load_individuals
 from utils.file_handler import replace_or_create_folder
 from models.embed_model import isModelExist, save_model
 from models.ontology_model import getPath_ontology, getPath_ontology_directory
 from owl2vec_star.RDF2Vec_Embed import get_rdf2vec_walks, get_rdf2vec_embed
 from owl2vec_star.Label import pre_process_words, URI_parse
-from owl2vec_star.Onto_Projection import Reasoner, OntologyProjection
 
 
-def opa2vec_or_onto2vec(ontology_name, config_file, algorithm):
+def opa2vec_or_onto2vec(
+    ontology_name, config_file, algorithm
+):
     # get config
     config = configparser.ConfigParser()
     config.read(config_file)
@@ -38,14 +34,14 @@ def opa2vec_or_onto2vec(ontology_name, config_file, algorithm):
     annotations = load_annotations(ontology_name)
 
     if algorithm == "opa2vec":
-        lines = axioms + annotations
+        lines = ( axioms + annotations )
     else:  # embedding_type.lower() == 'onto2vec'
         lines = axioms
 
     sentences = [
         [item.strip().lower() for item in line.strip().split()] for line in lines
     ]
-
+    
     # model word2vec
     sg_v = 1 if config["MODEL_OPA2VEC_ONTO2VEC"]["model"] == "sg" else 0
     w2v = gensim.models.Word2Vec(
@@ -56,11 +52,11 @@ def opa2vec_or_onto2vec(ontology_name, config_file, algorithm):
         window=int(config["MODEL_OPA2VEC_ONTO2VEC"]["windsize"]),
         workers=multiprocessing.cpu_count(),
     )
-
+    
     # path = os.path.join(getPath_ontology_directory(ontology_name), algorithm, "model")
     # w2v.save(path)
     # gensim.models.word2vec.Word2Vec.load(path)
-
+    
     save_model(ontology_name, algorithm, w2v)
     return f"{algorithm} embedded success!!"
 
@@ -68,7 +64,7 @@ def opa2vec_or_onto2vec(ontology_name, config_file, algorithm):
 def owl2vec_star(ontology_name, config_file, algorithm):
     config = configparser.ConfigParser()
     config.read(config_file)
-
+    
     # retrieve file
     axioms = load_axioms(ontology_name)
     classes = load_classes(ontology_name)
@@ -84,7 +80,7 @@ def owl2vec_star(ontology_name, config_file, algorithm):
             uri_label[tmp[0]] = pre_process_words(tmp[2:])
         else:
             annotations.append([tmp[0]] + tmp[2:])
-
+            
     # structural doc
     walk_sentences, axiom_sentences, URI_Doc = list(), list(), list()
     if (
@@ -172,7 +168,7 @@ def owl2vec_star(ontology_name, config_file, algorithm):
     all_doc = URI_Doc + Lit_Doc + Mix_Doc
 
     random.shuffle(all_doc)
-
+    
     # word2vec model
     print("\nTrain the embedding model ...")
     model_ = gensim.models.Word2Vec(
@@ -194,7 +190,7 @@ def owl2vec_star(ontology_name, config_file, algorithm):
 def rdf2vec(ontology_name, config_file, algorithm):
     config = configparser.ConfigParser()
     config.read(config_file)
-
+    
     # retrieve file
     axioms = load_axioms(ontology_name)
     classes = load_classes(ontology_name)
@@ -210,7 +206,7 @@ def rdf2vec(ontology_name, config_file, algorithm):
         embed_size=int(config["BASIC"]["embed_size"]),
         classes=entities,
     )
-
+    
     save_model(ontology_name, algorithm, model_rdf2vec)
     return f"{algorithm} embedded success!!"
 
@@ -219,8 +215,8 @@ def embed_func(ontology_name, algorithm):
     # check if system have ontology file and algorithm so that it can directly return the result
     if isModelExist(ontology_name, algorithm):
         result = f"{algorithm} model already exists for {ontology_name} ontology"
-        return jsonify({"message": result})
-
+        return result
+    
     config_file = "controllers/default.cfg"
 
     algorithms = {
@@ -229,7 +225,7 @@ def embed_func(ontology_name, algorithm):
         "opa2vec": opa2vec_or_onto2vec,
         "onto2vec": opa2vec_or_onto2vec,
     }
-
+    
     if algorithm in algorithms:
         result = algorithms[algorithm](
             ontology_name=ontology_name,
