@@ -27,7 +27,7 @@ def upload():
     path = upload_ontology(file, id)
     if path:
         return (
-            jsonify({"message": "File uploaded successfully", "onto_id": id[:-4]}),
+            jsonify({"message": "File uploaded successfully", "onto_id": id}),
             200,
         )
     else:
@@ -36,9 +36,6 @@ def upload():
 
 @ontology_blueprint.route("/extract/<ontology>", methods=["GET"])
 def extract(ontology):
-    if ontology.endswith(".owl"):
-        ontology = ontology[:-4]
-
     data = extract_data(ontology)
     if data:
         return jsonify({"message": "Extraction successfully", "data": data}), 200

@@ -1,8 +1,9 @@
+import sys
 import unittest
 from unittest.mock import MagicMock, patch
 from models import embed_model as om
 
-
+sys.path.append('../backend')
 class TestModelFunctions(unittest.TestCase):
 
     @patch("models.embed_model.getPath_ontology_directory")

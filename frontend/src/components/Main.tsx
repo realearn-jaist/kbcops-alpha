@@ -58,7 +58,7 @@ interface MainProps {
   onto_data: {
     abox: boolean;
     no_class: number;
-    no_indiviual: number;
+    no_individual: number;
     no_axiom: number;
     no_annotation: number;
   };
@@ -76,7 +76,7 @@ interface MainProps {
 const Main: React.FC<MainProps> = ({ open, onto_id, onto_data, algo, eval_metric, garbage_metric }) => {
   const StatCards = [
     { name: 'Classes', data: onto_data.no_class },
-    { name: 'Individuals', data: onto_data.no_indiviual },
+    { name: 'Individuals', data: onto_data.no_individual },
     { name: 'Axioms', data: onto_data.no_axiom },
     { name: 'Annotations', data: onto_data.no_annotation }
   ];

@@ -20,10 +20,10 @@ export default function Dashboard() {
   const [display_onto_data, set_display_onto_data] = React.useState<{
     abox: boolean;
     no_class: number;
-    no_indiviual: number;
+    no_individual: number;
     no_axiom: number;
     no_annotation: number;
-  }>({ abox: false, no_class: 0, no_indiviual: 0, no_axiom: 0, no_annotation: 0 })
+  }>({ abox: false, no_class: 0, no_individual: 0, no_axiom: 0, no_annotation: 0 })
   const [display_algo, set_display_algo] = React.useState<string>("<Embedding Algorithm>");
   const [display_eval_metric, set_display_eval_metric] = React.useState<{
     mrr: number, 

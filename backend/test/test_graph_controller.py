@@ -1,8 +1,10 @@
 import os
+import sys
 import unittest
 from unittest.mock import MagicMock, patch
 
 # Assuming the module is named 'controllers.graph_controller'
+sys.path.append('../backend')
 import controllers.graph_controller as gm
 import pandas as pd
 

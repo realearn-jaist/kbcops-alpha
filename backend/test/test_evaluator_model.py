@@ -1,6 +1,8 @@
+import sys
 import unittest
 from unittest.mock import MagicMock, call, mock_open, patch
 
+sys.path.append('../backend')
 from models.evaluator_model import (
     read_garbage_metrics,
     read_json_file,

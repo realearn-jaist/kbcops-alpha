@@ -1,7 +1,9 @@
 import os
+import sys
 import unittest
 from unittest.mock import MagicMock, patch
 
+sys.path.append('../backend')
 from app import create_app
 from models.ontology_model import (
     getPath_ontology,

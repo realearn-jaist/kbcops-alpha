@@ -1,6 +1,8 @@
+import sys
 import unittest
 from unittest.mock import MagicMock, call, mock_open, patch
 
+sys.path.append('../backend')
 from models.extract_model import (
     load_annotations,
     load_axioms,

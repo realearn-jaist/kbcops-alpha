@@ -1,6 +1,8 @@
+import sys
 import unittest
 from unittest.mock import MagicMock, patch
 
+sys.path.append('../backend')
 import controllers.ontology_controller as gm
 
 
