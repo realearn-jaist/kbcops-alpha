@@ -1,5 +1,7 @@
 import os
 import time
+from models.graph_model import load_graph
+from models.evaluator_model import read_evaluate, read_garbage_metrics
 from controllers.graph_controller import create_graph
 from controllers.evaluator import predict_func
 from controllers.embed_controller import embed_func
@@ -74,12 +76,20 @@ def embed_route(ontology):
 
 @ontology_blueprint.route("/evaluate/<ontology>/<algorithm>", methods=["GET"])
 def predict_route(ontology, algorithm):
-
     result = predict_func(ontology=ontology, algorithm=algorithm)
     return jsonify(result)
 
-@ontology_blueprint.route("/graph/<ontology>", methods=["GET"])
-def make_graph_route(ontology):
-
-    result = create_graph(ontology_file=ontology)
-    return jsonify({"message": result})
+@ontology_blueprint.route("/evaluate/<ontology>/<algorithm>/stat", methods=["GET"])
+def get_evaluate_stat(ontology, algorithm):
+    result = dict()
+    result["message"] = "load evaluate successful!"
+    try:
+        result["performance"] = read_evaluate(ontology, algorithm)
+        result["garbage"] = read_garbage_metrics(ontology, algorithm)
+        result["images"] = create_graph(ontology, algorithm)
+        print("here")
+    except:
+        result["performance"] = {"mrr": 0, "hit_at_1": 0, "hit_at_5": 0, "hit_at_10": 0, "garbage": 0 }
+        result["garbage"] = []
+        result["images"] = []
+    return jsonify(result)
