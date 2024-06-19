@@ -43,7 +43,11 @@ export default function Dashboard() {
     Dif: number;
   };
   const [displayGarbageMetric, setDisplayGarbageMetric] = React.useState<GarbageMetric[]>([]);
-  const [displayGarbageImage, setDisplayGarbageImage] = React.useState<[]>([]);
+
+  type GarbageImage = {
+    image: string;
+  };
+  const [displayGarbageImage, setDisplayGarbageImage] = React.useState<GarbageImage[]>([]);
 
   React.useEffect(() => {
     getOntologyList();

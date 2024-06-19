@@ -51,12 +51,16 @@ type GarbageMetric = {
   Dif: number;
 };
 
+type GarbageImage = {
+  image: string;
+};
+
 interface MainProps {
   open: boolean;
   onto_id: string;
   onto_data: {
     no_class: number;
-    no_indiviual: number;
+    no_individual: number;
     no_axiom: number;
     no_annotation: number;
   };
@@ -69,13 +73,13 @@ interface MainProps {
     garbage: number,
   };
   garbage_metric: GarbageMetric[],
-  garbage_image: [],
+  garbage_image: GarbageImage[],
 }
 
 const Main: React.FC<MainProps> = ({ open, onto_id, onto_data, algo, eval_metric, garbage_metric, garbage_image }) => {
   const StatCards = [
     { name: 'Classes', data: onto_data.no_class },
-    { name: 'Individuals', data: onto_data.no_indiviual },
+    { name: 'Individuals', data: onto_data.no_individual },
     { name: 'Axioms', data: onto_data.no_axiom },
     { name: 'Annotations', data: onto_data.no_annotation }
   ];
@@ -114,7 +118,7 @@ const Main: React.FC<MainProps> = ({ open, onto_id, onto_data, algo, eval_metric
             </Typography>
             <Box component="section" sx={{ p: 2, border: '1px dashed grey', height: "72px", margin: "0px 0px 21px 20px", borderRadius: "10px", background: "gray" }}>
               <Typography variant="h4" gutterBottom>
-                {onto_data.no_indiviual > 0 ? "TBox & Abox" : "TBox"}
+                {onto_data.no_individual > 0 ? "TBox & Abox" : "TBox"}
               </Typography>
 
             </Box>
