@@ -70,16 +70,7 @@ def owl2vec_star(ontology_name, config_file, algorithm):
     classes = load_classes(ontology_name)
     individuals = load_individuals(ontology_name)
     entities = classes.union(individuals)
-    annotations_load = load_annotations(ontology_name)
-
-    # preprocess annotations file
-    uri_label, annotations = dict(), list()
-    for line in annotations_load:
-        tmp = line.strip().split()
-        if tmp[1] == "http://www.w3.org/2000/01/rdf-schema#label":
-            uri_label[tmp[0]] = pre_process_words(tmp[2:])
-        else:
-            annotations.append([tmp[0]] + tmp[2:])
+    uri_label, annotations = load_annotations(ontology_name)
             
     # structural doc
     walk_sentences, axiom_sentences, URI_Doc = list(), list(), list()
