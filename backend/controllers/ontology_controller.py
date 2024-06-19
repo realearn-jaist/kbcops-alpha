@@ -101,7 +101,7 @@ def extract_data(id):
 
     return {
         "no_class": len(classes),
-        "no_indiviual": len(individuals),
+        "no_individual": len(individuals),
         "no_axiom": len(axioms),
         "no_annotation": len(annotations),
     }

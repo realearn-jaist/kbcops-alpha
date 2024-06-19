@@ -3,21 +3,37 @@ import unittest
 from unittest.mock import MagicMock, patch
 
 sys.path.append('../backend')
-import controllers.ontology_controller as gm
+from owl2vec_star.Onto_Access import Reasoner
+from controllers.ontology_controller import extract_data, get_onto_stat, getAll_ontology, upload_ontology
 
 
 class TestOntologyModule(unittest.TestCase):
 
     @patch("controllers.ontology_controller.save_ontology")
-    def test_upload_ontology(self, mock_save_ontology):
+    def test_upload_ontology_success(self, mock_save_ontology):
         """Test upload_ontology function in ontology_controller.py"""
         file = MagicMock()
         id = "test_id.owl"
 
-        mock_save_ontology.return_value = "success"
+        mock_save_ontology.return_value = "path/to/test_id.owl"
 
-        result = gm.upload_ontology(file, id)
-        self.assertEqual(result, "success")
+        result = upload_ontology(file, id)
+        self.assertEqual(result, "test_id")
+
+        id = "test_id"
+        filename = "test_id.owl"
+        mock_save_ontology.assert_called_with(file, id, filename)
+        
+    @patch("controllers.ontology_controller.save_ontology")
+    def test_upload_ontology_fail(self, mock_save_ontology):
+        """Test upload_ontology function in ontology_controller.py"""
+        file = MagicMock()
+        id = "test_id.owl"
+
+        mock_save_ontology.return_value = None
+
+        result = upload_ontology(file, id)
+        self.assertEqual(result, None)
 
         id = "test_id"
         filename = "test_id.owl"
@@ -27,7 +43,7 @@ class TestOntologyModule(unittest.TestCase):
     def test_getAll_ontology(self, mock_list_ontology):
         """Test getAll_ontology function in ontology_controller.py"""
         mock_list_ontology.return_value = ["onto1", "onto2"]
-        result = gm.getAll_ontology()
+        result = getAll_ontology()
         self.assertEqual(result, ["onto1", "onto2"])
 
     @patch("controllers.ontology_controller.load_axioms")
@@ -43,15 +59,15 @@ class TestOntologyModule(unittest.TestCase):
     ):
         """Test get_onto_stat function in ontology_controller.py"""
         mock_load_axioms.return_value = ["axiom1", "axiom2"]
-        mock_load_classes.return_value = ["class1", "class2"]
-        mock_load_individuals.return_value = ["ind1", "ind2"]
+        mock_load_classes.return_value = set(["class1", "class2"])
+        mock_load_individuals.return_value = set(["ind1", "ind2"])
         mock_load_annotations.return_value = ["ann1", "ann2"]
 
         id = "test_id"
-        result = gm.get_onto_stat(id)
+        result = get_onto_stat(id)
         self.assertEqual(
             result,
-            {"no_class": 2, "no_indiviual": 2, "no_axiom": 2, "no_annotation": 2},
+            {"no_class": 2, "no_individual": 2, "no_axiom": 2, "no_annotation": 2},
         )
 
     @patch("controllers.ontology_controller.getPath_ontology")
@@ -98,16 +114,16 @@ class TestOntologyModule(unittest.TestCase):
         ]
 
         id = "test_id"
-        result = gm.extract_data(id)
+        result = extract_data(id)
 
         self.assertEqual(
             result,
-            {"no_class": 2, "no_indiviual": 2, "no_axiom": 2, "no_annotation": 3},
+            {"no_class": 2, "no_individual": 2, "no_axiom": 2, "no_annotation": 3},
         )
         mock_getPath_ontology.assert_called_once_with(id)
         mock_OntologyProjection.assert_called_once_with(
             "path_to_ontology",
-            reasoner=gm.Reasoner.STRUCTURAL,
+            reasoner=Reasoner.STRUCTURAL,
             only_taxonomy=False,
             bidirectional_taxonomy=True,
             include_literals=True,
