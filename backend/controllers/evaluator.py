@@ -141,27 +141,52 @@ def embed(model, instances):
 
     return feature_vectors
 
+def embed_obj(onto_type, algorithm, model, classes, individuals):
+
+    classes_e, individuals_e = list(), list()
+
+    if algorithm == "rdf2vec":
+        if onto_type == 'TBox':
+            classes_e = model
+        else:
+            classes_e, individuals_e = model[:len(classes)], all_e[len(classes):]
+
+    elif algorithm in ['opa2vec', 'onto2vec']:
+        classes_e = [model.wv.get_vector(c.lower()) if c.lower() in model.wv.index_to_key else np.zeros(model.vector_size) for c in classes]
+        classes_e = np.array(classes_e)
+        
+        if onto_type == 'ABox':
+            print('hi')
+            individuals_e = [model.wv.get_vector(i.lower()) if i.lower() in model.wv.index_to_key else np.zeros(model.vector_size) for i in individuals]
+            individuals_e = np.array(individuals_e)
+
+    else:
+        classes_e = embed(model=model, instances=classes)
+
+        if onto_type == 'ABox':
+            individuals_e = embed(model=model, instances=individuals)
+
+    return classes_e, individuals_e
+
 def predict_func(ontology, algorithm):
     # load individuals
     # individuals = list(em.load_individuals(ontology)) # there is a error
     individuals = [line.strip() for line in open(f'storage\{ontology}\individuals.txt').readlines()]
     individuals_count = len(individuals)
 
-    # check onto type
-    onto_type = 'ABox' if individuals_count > 0 else 'TBox'
-    print(onto_type)
-    
     # load classes file
     print(f"load {ontology} classes")
     # classes = [line.strip() for line in load_classes(ontology)] # there is a error
     classes = [line.strip() for line in open(f'storage\{ontology}\classes.txt').readlines()]
+
+    # check onto type
+    # consider as a ABox iff individuals_count is excess 10 percent of classes amount
+    onto_type = 'ABox' if individuals_count > int(0.1*len(classes)) else 'TBox'
     
     # embed class with model
     print(f"embedding {ontology} classes")
-    # model_ = load_model(ontology, algorithm)
-    model_ = gensim.models.Word2Vec.load(f'storage\{ontology}\{algorithm}\output') # temp
-    classes_e = embed(model=model_, instances=classes)
-    individuals_e = embed(model=model_, instances=individuals) if onto_type == 'ABox' else None
+    model = load_model(ontology, algorithm)
+    classes_e, individuals_e = embed_obj(onto_type, algorithm, model, classes, individuals)
     
     # load train test val file
     print(f"load {ontology} train/test/validate")
@@ -173,8 +198,8 @@ def predict_func(ontology, algorithm):
     test_path = os.path.join(file_path, "test.csv")
 
     train_samples = [line.strip().split(',') for line in open(train_path).readlines()]
-    valid_samples = [line.strip().split(',') for line in open(test_path).readlines()]
-    test_samples = [line.strip().split(',') for line in open(valid_path).readlines()]
+    valid_samples = [line.strip().split(',') for line in open(valid_path).readlines()]
+    test_samples = [line.strip().split(',') for line in open(test_path).readlines()]
     random.shuffle(train_samples)
     
     # split value in file

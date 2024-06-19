@@ -20,8 +20,7 @@ def extract_garbage_value(onto_data):
 
 def find_parents_with_relations(cls, relation_list):
     # find its relations
-    # temp = 'obo.'
-    temp = 'helis_v1.00.origin.'
+    temp = 'obo.'
     try:
         parents = cls.is_a
         for parent in parents:
@@ -41,15 +40,13 @@ def get_prefix(value):
 
 def graph_maker(onto_type, onto_file, entity_prefix, individual_list, truth_list, predict_list, fig_directory):
     for i, v in enumerate(individual_list):
-        print(i, v)
-
         entity_uri = entity_prefix + v
         entity = onto_file.search(iri = entity_uri)[0]
         subs = entity.INDIRECT_is_a
 
         relations = list()
 
-        if onto_type == "TBox":
+        if onto_type == 'TBox':
             find_parents_with_relations(entity, relations)
         else:
             subs = sorted(list(subs), key=lambda sub: len(list(sub.INDIRECT_is_a)))
@@ -69,10 +66,6 @@ def graph_maker(onto_type, onto_file, entity_prefix, individual_list, truth_list
             G.add_edge(source, target, label=relation)
             G.add_nodes_from([source, target])
 
-        for node in G.nodes():
-            print(node)
-            print(type(truth_list[1]))
-
         node_colors = ['gray' if node != truth_list[i] and node != individual_list[i] and node != predict_list[i] 
                         else '#94F19C' if node == truth_list[i] else '#FC865A' if node == predict_list[i] else '#9DF1F0' for node in G.nodes()]
 
@@ -80,7 +73,6 @@ def graph_maker(onto_type, onto_file, entity_prefix, individual_list, truth_list
         plt.figure(figsize=(20, len(relations)*2))
         pos = nx.nx_pydot.graphviz_layout(G, prog='dot')
         nx.draw(G, pos, with_labels=True, node_size=1500, node_color=node_colors, font_size=12, font_weight="bold")
-        # nx.draw(G, with_labels=True, node_size=1500, node_color=node_colors, font_size=12, font_weight="bold")
 
         for edge, label in nx.get_edge_attributes(G, "label").items():
             x = (pos[edge[0]][0] + pos[edge[1]][0]) / 2
@@ -94,14 +86,16 @@ def graph_maker(onto_type, onto_file, entity_prefix, individual_list, truth_list
 def create_graph(onto, algo):
     # load omdividuals for checking whether it Tbox or not. And find its prefix
     fig_directory = os.path.join(getPath_ontology_directory(onto), algo, 'graph_fig') # where graph fig save
-    
     replace_or_create_folder(fig_directory)
 
     individuals = load_individuals(onto)
+    individuals_count = len(individuals)
 
-    individuals_count = len(individuals)
-    individuals_count = len(individuals)
-    onto_type = 'TBox' if individuals_count > 0 else 'ABox'
+    classes = [line.strip() for line in open(f'storage\{ontology}\classes.txt').readlines()]
+
+    # check onto type
+    # consider as a ABox iff individuals_count is excess 10 percent of classes amount
+    onto_type = 'ABox' if individuals_count > int(0.1*len(classes)) else 'TBox'
     
     entity_prefix = get_prefix(individuals.pop())
     
