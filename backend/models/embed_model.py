@@ -31,6 +31,8 @@ def load_model(ontology_name, algorithm):
     if algorithm == "rdf2vec":
         return joblib.load(path)
     else:
-        return gensim.models.word2vec.Word2Vec.load(path)
+        return gensim.models.Word2Vec.load(path)
+    # else:
+    #     return gensim.models.word2vec.Word2Vec.load(path)
     
     
