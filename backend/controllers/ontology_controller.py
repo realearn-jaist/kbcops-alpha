@@ -54,92 +54,6 @@ def get_onto_stat(id):
     }
 
 
-def extract_data(id):
-    onto_file = getPath_ontology(id)
-
-    # extract axiom, entity, annotation
-    projection = OntologyProjection(
-        onto_file,
-        reasoner=Reasoner.STRUCTURAL,
-        only_taxonomy=False,
-        bidirectional_taxonomy=True,
-        include_literals=True,
-        avoid_properties=set(),
-        additional_preferred_labels_annotations=set(),
-        additional_synonyms_annotations=set(),
-        memory_reasoner="13351",
-    )
-
-    # axioms
-    projection.createManchesterSyntaxAxioms()
-    axioms = projection.axioms_manchester
-
-    # entities (classes and individuals)
-    projection.extractEntityURIs()
-    classes = projection.getClassURIs()
-    individuals = projection.getIndividualURIs()
-    entities = classes.union(individuals)
-
-    # annotations
-    projection.indexAnnotations()
-    uri_label, annotations = dict(), list()
-    for e in tqdm(entities, desc="Processing Preferred Labels"):
-        if (
-            e in projection.entityToPreferredLabels
-            and len(projection.entityToPreferredLabels[e]) > 0
-        ):
-            label = list(projection.entityToPreferredLabels[e])[0]
-            uri_label[e] = pre_process_words(words=label.split())
-    for e in tqdm(entities, desc="Processing Lexical Labels"):
-        if e in projection.entityToAllLexicalLabels:
-            for v in projection.entityToAllLexicalLabels[e]:
-                if (v is not None) and (
-                    not (
-                        e in projection.entityToPreferredLabels
-                        and v in projection.entityToPreferredLabels[e]
-                    )
-                ):
-                    annotation = [e] + v.split()
-                    annotations.append(annotation)
-
-    axioms = save_axioms(id, axioms)
-    classes = save_classes(id, classes)
-    individuals = save_individuals(id, individuals)
-    annotations = save_annotations(id, annotations, projection)
-
-    # extract axiom, entity, annotation
-    onto = get_ontology(getPath_ontology(id)).load()
-
-    print("sync reasoner")
-    sync_reasoner()
-
-    tbox_results = tbox_infer(onto)
-    abox_results = abox_infer(onto)
-
-    save_infer(id, tbox_results + abox_results)
-    # individuals = list(em.load_individuals(ontology)) # there is a error
-    individuals = load_individuals(id)
-    individuals_count = len(individuals)
-
-    # classes = [line.strip() for line in load_classes(ontology)] # there is a error
-    classes = load_classes(id)
-
-    # check onto type
-    # consider as a ABox iff individuals_count is excess 10 percent of classes amount
-    onto_type = "ABox" if individuals_count > int(0.1 * len(classes)) else "TBox"
-    if onto_type == "ABox":
-        train_test_val_abox(onto, id)
-
-    else:
-        train_test_val_tbox(onto, id)
-    return {
-        "no_class": len(classes),
-        "no_indiviual": len(individuals),
-        "no_axiom": len(axioms),
-        "no_annotation": len(annotations),
-    }
-
-
 def get_all_superclasses(cls, cache):
     if cls in cache:
         return cache[cls]
@@ -389,12 +303,97 @@ def train_test_val_tbox(onto, id):
 
     # generate negative samples for considering infered classes to 1 and save to csv
     negative_samples = generate_negative_samples_tbox(
-        onto, len(train_classes), "infer_classes_foodon-merged.csv", 1
+        onto, len(train_classes), load_infer(id), 1
     )
     writeNegativeSamplesToCSV(train_csv_path_0, negative_samples)
 
     # generate negative samples for considering infered classes to 0 and save to csv
     negative_samples = generate_negative_samples_tbox(
-        onto, len(train_classes), "infer_classes_foodon-merged.csv", 0
+        onto, len(train_classes), load_infer(id), 0
     )
     writeNegativeSamplesToCSV(train_csv_path_1, negative_samples)
+
+
+def extract_data(id):
+    onto_file = getPath_ontology(id)
+
+    # projection
+    projection = OntologyProjection(
+        onto_file,
+        reasoner=Reasoner.STRUCTURAL,
+        only_taxonomy=False,
+        bidirectional_taxonomy=True,
+        include_literals=True,
+        avoid_properties=set(),
+        additional_preferred_labels_annotations=set(),
+        additional_synonyms_annotations=set(),
+        memory_reasoner="13351",
+    )
+
+    # axioms
+    projection.createManchesterSyntaxAxioms()
+    axioms = projection.axioms_manchester
+
+    # entities (classes and individuals)
+    projection.extractEntityURIs()
+    classes = projection.getClassURIs()
+    individuals = projection.getIndividualURIs()
+    entities = classes.union(individuals)
+
+    # annotations
+    projection.indexAnnotations()
+    uri_label, annotations = dict(), list()
+    for e in tqdm(entities, desc="Processing Preferred Labels"):
+        if (
+            e in projection.entityToPreferredLabels
+            and len(projection.entityToPreferredLabels[e]) > 0
+        ):
+            label = list(projection.entityToPreferredLabels[e])[0]
+            uri_label[e] = pre_process_words(words=label.split())
+    for e in tqdm(entities, desc="Processing Lexical Labels"):
+        if e in projection.entityToAllLexicalLabels:
+            for v in projection.entityToAllLexicalLabels[e]:
+                if (v is not None) and (
+                    not (
+                        e in projection.entityToPreferredLabels
+                        and v in projection.entityToPreferredLabels[e]
+                    )
+                ):
+                    annotation = [e] + v.split()
+                    annotations.append(annotation)
+
+    axioms = save_axioms(id, axioms)
+    classes = save_classes(id, classes)
+    individuals = save_individuals(id, individuals)
+    annotations = save_annotations(id, annotations, projection)
+
+    # extract axiom, entity, annotation
+    onto = get_ontology(getPath_ontology(id)).load()
+
+    sync_reasoner()
+
+    tbox_results = tbox_infer(onto)
+    abox_results = abox_infer(onto)
+
+    save_infer(id, tbox_results + abox_results)
+    # individuals = list(em.load_individuals(ontology)) # there is a error
+    individuals = load_individuals(id)
+    individuals_count = len(individuals)
+
+    # classes = [line.strip() for line in load_classes(ontology)] # there is a error
+    classes = load_classes(id)
+
+    # check onto type
+    # consider as a ABox iff individuals_count is excess 10 percent of classes amount
+    onto_type = "ABox" if individuals_count > int(0.1 * len(classes)) else "TBox"
+    if onto_type == "ABox":
+        train_test_val_abox(onto, id)
+
+    else:
+        train_test_val_tbox(onto, id)
+    return {
+        "no_class": len(classes),
+        "no_indiviual": len(individuals),
+        "no_axiom": len(axioms),
+        "no_annotation": len(annotations),
+    }
