@@ -32,9 +32,10 @@ def upload_ontology(file, id):
         id = id[:-4]
 
     filename = id + ".owl"
+    
+    path = save_ontology(file, id, filename)
 
-    return save_ontology(file, id, filename)
-
+    return id if path else None
 
 def getAll_ontology():
     return list_ontology()
@@ -404,6 +405,7 @@ def train_test_val_tbox(onto, id):
     # generate negative samples for considering infered classes to 0 and save to csv
     start_time = time.time()
     negative_samples = generate_negative_samples_tbox(
+        onto, len(train_classes), load_infer(id), 0
         onto, len(train_classes), load_infer(id), 0
     )
     writeNegativeSamplesToCSV(train_csv_path_1, negative_samples)
