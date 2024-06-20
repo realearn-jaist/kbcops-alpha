@@ -51,6 +51,10 @@ type GarbageMetric = {
   Dif: number;
 };
 
+type GarbageImage = {
+  image: string;
+};
+
 interface MainProps {
   open: boolean;
   onto_id: string;
@@ -69,7 +73,7 @@ interface MainProps {
     garbage: number,
   };
   garbage_metric: GarbageMetric[],
-  garbage_image: [],
+  garbage_image: GarbageImage[],
 }
 
 const Main: React.FC<MainProps> = ({ open, onto_id, onto_data, algo, eval_metric, garbage_metric, garbage_image }) => {
