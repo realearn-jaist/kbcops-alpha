@@ -42,7 +42,7 @@ def list_ontology():
     return ontologies
 
 
-def getPath_ontology(id):
+def get_path_ontology(id):
     """Get the path of the ontology file
 
     Args:
@@ -60,7 +60,7 @@ def getPath_ontology(id):
         return None
 
 
-def getPath_ontology_directory(id):
+def get_path_ontology_directory(id):
     """Get the path of the ontology directory
 
     Args:

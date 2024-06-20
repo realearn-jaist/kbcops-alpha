@@ -20,7 +20,7 @@ from models.extract_model import (
     load_individuals,
 )
 from models.embed_model import isModelExist, save_embedding, save_model
-from models.ontology_model import getPath_ontology
+from models.ontology_model import get_path_ontology
 from owl2vec_star.RDF2Vec_Embed import get_rdf2vec_walks, get_rdf2vec_embed
 from owl2vec_star.Label import pre_process_words, URI_parse
 
@@ -111,7 +111,7 @@ def owl2vec_star(ontology_name, config_file, algorithm):
     ):
         print("\nGenerate URI document ...")
         walks_ = get_rdf2vec_walks(
-            onto_file=getPath_ontology(ontology_name),
+            onto_file=get_path_ontology(ontology_name),
             walker_type=config["DOCUMENT_OWL2VECSTAR"]["walker"],
             walk_depth=int(config["DOCUMENT_OWL2VECSTAR"]["walk_depth"]),
             classes=entities,
@@ -234,7 +234,7 @@ def rdf2vec(ontology_name, config_file, algorithm):
     candidate_num = len(classes)
 
     embeddings, model_rdf2vec = get_rdf2vec_embed(
-        onto_file=getPath_ontology(ontology_name),
+        onto_file=get_path_ontology(ontology_name),
         walker_type=config["MODEL_RDF2VEC"]["walker"],
         walk_depth=int(config["MODEL_RDF2VEC"]["walk_depth"]),
         embed_size=int(config["BASIC"]["embed_size"]),

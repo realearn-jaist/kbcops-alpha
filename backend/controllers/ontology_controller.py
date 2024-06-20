@@ -17,10 +17,10 @@ from models.extract_model import (
     save_infer,
 )
 from models.ontology_model import (
-    getPath_ontology_directory,
+    get_path_ontology_directory,
     list_ontology,
     save_ontology,
-    getPath_ontology,
+    get_path_ontology,
 )
 
 from owl2vec_star.Onto_Projection import Reasoner, OntologyProjection  # type: ignore
@@ -67,7 +67,6 @@ def get_onto_stat(id):
     classes = load_classes(id)
     individuals = load_individuals(id)
     uri_label, annotations = load_annotations(id)
-    print("gekkookasod", uri_label, annotations)
 
     return {
         "no_class": len(classes),
@@ -85,7 +84,7 @@ def extract_data(id):
     Returns:
         dict: The statistics of the ontology
     """
-    onto_file = getPath_ontology(id)
+    onto_file = get_path_ontology(id)
 
     # extract axiom, entity, annotation
     projection = OntologyProjection(
@@ -138,7 +137,7 @@ def extract_data(id):
     annotations = save_annotations(id, annotations, projection)
 
     # extract axiom, entity, annotation
-    onto = get_ontology(getPath_ontology(id)).load()
+    onto = get_ontology(get_path_ontology(id)).load()
 
     print("start run sync reasoner")
     start_time = time.time()
@@ -289,7 +288,7 @@ def writePositiveSamplesToCSV(csv_path, classes_or_individuals, id):
     Returns:
         None
     """
-    root = getPath_ontology_directory(id)
+    root = get_path_ontology_directory(id)
     with open(csv_path, "w") as f:
         for ind in classes_or_individuals:
             ind_ground_truth = get_ground_truth(ind)
@@ -450,7 +449,7 @@ def train_test_val_abox(onto, id):
         all_individuals
     )
 
-    root = getPath_ontology_directory(id)
+    root = get_path_ontology_directory(id)
     train_csv_path_0 = os.path.join(root, "train-infer-1.csv")
     train_csv_path_1 = os.path.join(root, "train-infer-0.csv")
 
@@ -493,7 +492,7 @@ def train_test_val_tbox(onto, id):
     all_classes = list(onto.classes())
     train_classes, test_classes, val_classes = train_test_val(all_classes)
 
-    root = getPath_ontology_directory(id)
+    root = get_path_ontology_directory(id)
     train_csv_path_0 = os.path.join(root, "train-infer-1.csv")
     train_csv_path_1 = os.path.join(root, "train-infer-0.csv")
 

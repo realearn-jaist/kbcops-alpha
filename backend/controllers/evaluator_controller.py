@@ -11,7 +11,7 @@ from models.extract_model import (
 )
 from controllers.graph_controller import create_graph
 from models.evaluator_model import write_garbage_metrics, write_evaluate
-from models.ontology_model import getPath_ontology_directory
+from models.ontology_model import get_path_ontology_directory
 from models.embed_model import load_embedding
 from models.extract_model import load_classes
 from owl2vec_star.Evaluator import Evaluator
@@ -81,7 +81,6 @@ class InclusionEvaluator(Evaluator):
             sub, gt = sample[0], sample[1]
             sub_v = None
             if self.onto_type == "TBox":
-                print("test")
                 sub_index = self.classes.index(sub)
                 sub_v = self.classes_e[sub_index]
             else:
@@ -227,7 +226,7 @@ def predict_func(ontology, algorithm):
     # load train test val file
     print(f"load {ontology} train/test/validate")
 
-    file_path = getPath_ontology_directory(ontology)
+    file_path = get_path_ontology_directory(ontology)
 
     train_path = os.path.join(file_path, "train-infer-0.csv")
     valid_path = os.path.join(file_path, "valid.csv")
@@ -259,7 +258,7 @@ def predict_func(ontology, algorithm):
     print(f"load {ontology} inferences")
     inferred_ancestors = dict()
     infer_path = os.path.join(
-        getPath_ontology_directory(ontology), "inferred_ancestors.txt"
+        get_path_ontology_directory(ontology), "inferred_ancestors.txt"
     )
     with open(infer_path, "r", encoding="utf-8") as f:
         for line in f.readlines():

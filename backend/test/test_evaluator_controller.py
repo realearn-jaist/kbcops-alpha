@@ -5,7 +5,7 @@ from unittest.mock import patch
 sys.path.append("../backend")
 import numpy as np
 from app import create_app
-from controllers.evaluator import InclusionEvaluator
+from controllers.evaluator_controller import InclusionEvaluator
 
 
 class TestInclusionEvaluator(unittest.TestCase):

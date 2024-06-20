@@ -5,7 +5,7 @@ import numpy
 
 from models.extract_model import load_classes
 from utils.file_handler import replace_or_create_folder
-from models.ontology_model import getPath_ontology, getPath_ontology_directory
+from models.ontology_model import get_path_ontology, get_path_ontology_directory
 
 
 def isModelExist(ontology_name, algorithm):
@@ -17,7 +17,7 @@ def isModelExist(ontology_name, algorithm):
     Returns:
         bool: True if the model exists, False otherwise
     """
-    path = os.path.join(getPath_ontology_directory(ontology_name), algorithm, "model")
+    path = os.path.join(get_path_ontology_directory(ontology_name), algorithm, "model")
 
     return os.path.exists(path)
 
@@ -33,7 +33,7 @@ def save_model(ontology_name, algorithm, model):
     Returns:
         None
     """
-    path = os.path.join(getPath_ontology_directory(ontology_name), algorithm)
+    path = os.path.join(get_path_ontology_directory(ontology_name), algorithm)
 
     replace_or_create_folder(path)
 
@@ -56,7 +56,7 @@ def load_model(ontology_name, algorithm):
     if not isModelExist(ontology_name, algorithm):
         return None
 
-    path = os.path.join(getPath_ontology_directory(ontology_name), algorithm, "model")
+    path = os.path.join(get_path_ontology_directory(ontology_name), algorithm, "model")
 
     if algorithm == "rdf2vec":
         return joblib.load(path)
@@ -78,7 +78,7 @@ def save_embedding(ontology_name, algorithm, embed):
         return None
 
     path = os.path.join(
-        getPath_ontology_directory(ontology_name), algorithm, "embeddings.npy"
+        get_path_ontology_directory(ontology_name), algorithm, "embeddings.npy"
     )
 
     numpy.save(path, embed)
@@ -101,7 +101,7 @@ def load_embedding(ontology_name, algorithm):
         return None
 
     path = os.path.join(
-        getPath_ontology_directory(ontology_name), algorithm, "embeddings.npy"
+        get_path_ontology_directory(ontology_name), algorithm, "embeddings.npy"
     )
 
     with open(path, "rb") as f:
