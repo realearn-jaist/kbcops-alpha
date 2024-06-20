@@ -19,10 +19,10 @@ export default function Dashboard() {
   const [display_onto_id, set_display_onto_id] = React.useState<string>("<Ontology>");
   const [display_onto_data, set_display_onto_data] = React.useState<{
     no_class: number;
-    no_indiviual: number;
+    no_individual: number;
     no_axiom: number;
     no_annotation: number;
-  }>({ no_class: 0, no_indiviual: 0, no_axiom: 0, no_annotation: 0 })
+  }>({ no_class: 0, no_individual: 0, no_axiom: 0, no_annotation: 0 })
   const [display_algo, set_display_algo] = React.useState<string>("<Embedding Algorithm>");
   const [display_eval_metric, set_display_eval_metric] = React.useState<{
     mrr: number, 

@@ -48,7 +48,7 @@ def get_onto_stat(id):
 
     return {
         "no_class": len(classes),
-        "no_indiviual": len(individuals),
+        "no_individual": len(individuals),
         "no_axiom": len(axioms),
         "no_annotation": len(annotations),
     }
@@ -110,8 +110,10 @@ def extract_data(id):
     # extract axiom, entity, annotation
     onto = get_ontology(getPath_ontology(id)).load()
 
-    print("sync reasoner")
+    print("start run sync reasoner")
+    start_time = time.time()
     sync_reasoner()
+    print(f"sync reasoner time usage for {onto}:", time.time() - start_time)
 
     tbox_results = tbox_infer(onto)
     abox_results = abox_infer(onto)
@@ -134,7 +136,7 @@ def extract_data(id):
         train_test_val_tbox(onto, id)
     return {
         "no_class": len(classes),
-        "no_indiviual": len(individuals),
+        "no_individual": len(individuals),
         "no_axiom": len(axioms),
         "no_annotation": len(annotations),
     }
@@ -344,7 +346,7 @@ def train_test_val_abox(onto, id):
     train_csv_path_1 = os.path.join(root, "train-infer-0.csv")
 
     test_csv_path = os.path.join(root, "test.csv")
-    val_csv_path = os.path.join(root, "val.csv")
+    val_csv_path = os.path.join(root, "valid.csv")
 
     writePositiveSamplesToCSV(train_csv_path_0, train_individuals, id)
     writePositiveSamplesToCSV(train_csv_path_1, train_individuals, id)
@@ -353,15 +355,19 @@ def train_test_val_abox(onto, id):
     writePositiveSamplesToCSV(val_csv_path, val_individuals, id)
     # i want to set seed to 0 so that the negative samples are the same for both infered classes to 0 and 1
 
+    start_time = time.time()
     negative_samples = generate_negative_samples_abox(
         onto, len(train_individuals), load_infer(id), 1
     )
     writeNegativeSamplesToCSV(train_csv_path_0, negative_samples)
+    print("abox negative sample (-1) time usage:", time.time()-start_time)
 
+    start_time = time.time()
     negative_samples = generate_negative_samples_abox(
         onto, len(train_individuals), load_infer(id), 0
     )
     writeNegativeSamplesToCSV(train_csv_path_1, negative_samples)
+    print("abox negative sample (-0) time usage:", time.time()-start_time)
 
 
 def train_test_val_tbox(onto, id):
@@ -376,7 +382,7 @@ def train_test_val_tbox(onto, id):
     train_csv_path_1 = os.path.join(root, "train-infer-0.csv")
 
     test_csv_path = os.path.join(root, "test.csv")
-    val_csv_path = os.path.join(root, "val.csv")
+    val_csv_path = os.path.join(root, "valid.csv")
 
     # write positive samples to csv
     # train have 2 csv files, one for considering infered classes to 0 and one for 1
@@ -388,13 +394,17 @@ def train_test_val_tbox(onto, id):
     writePositiveSamplesToCSV(val_csv_path, val_classes, id)
 
     # generate negative samples for considering infered classes to 1 and save to csv
+    start_time = time.time()
     negative_samples = generate_negative_samples_tbox(
-        onto, len(train_classes), "infer_classes_foodon-merged.csv", 1
+        onto, len(train_classes), load_infer(id), 1
     )
     writeNegativeSamplesToCSV(train_csv_path_0, negative_samples)
+    print("tbox negative sample (-1) time usage:", time.time()-start_time)
 
     # generate negative samples for considering infered classes to 0 and save to csv
+    start_time = time.time()
     negative_samples = generate_negative_samples_tbox(
-        onto, len(train_classes), "infer_classes_foodon-merged.csv", 0
+        onto, len(train_classes), load_infer(id), 0
     )
     writeNegativeSamplesToCSV(train_csv_path_1, negative_samples)
+    print("tbox negative sample (-0) time usage:", time.time()-start_time)

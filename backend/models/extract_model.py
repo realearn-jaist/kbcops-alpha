@@ -66,14 +66,14 @@ def load_classes(id):
     path = os.path.join(getPath_ontology_directory(id), "classes.txt")
 
     with open(path, "r", encoding="utf-8") as f:
-        return set(f.readlines())
+        return f.readlines()
 
 
 def load_individuals(id):
     path = os.path.join(getPath_ontology_directory(id), "individuals.txt")
 
     with open(path, "r", encoding="utf-8") as f:
-        return set(f.readlines())
+        return f.readlines()
 
 
 def load_annotations(id):
