@@ -15,7 +15,7 @@ from tqdm import tqdm
 from controllers.graph_controller import create_graph
 from models.evaluator_model import write_garbage_metrics, write_evaluate
 from models.ontology_model import getPath_ontology, getPath_ontology_directory
-from models.embed_model import load_model
+from models.embed_model import load_embedding, load_model
 from models.extract_model import load_classes
 from owl2vec_star.Evaluator import Evaluator
 from owl2vec_star.RDF2Vec_Embed import get_rdf2vec_walks
@@ -190,61 +190,6 @@ class InclusionEvaluator(Evaluator):
         )
 
 
-def embed(model, instances):
-    feature_vectors = []
-    for instance in instances:
-        v_uri = (
-            model.wv.get_vector(instance)
-            if instance in model.wv.index_to_key
-            else np.zeros(model.vector_size)
-        )
-        feature_vectors.append(v_uri)
-
-    return feature_vectors
-
-
-def embed_obj(onto_type, algorithm, model, classes, individuals):
-
-    classes_e, individuals_e = list(), list()
-
-    if algorithm == "rdf2vec":
-        if onto_type == "TBox":
-            classes_e = model
-        else:
-            classes_e, individuals_e = model[: len(classes)], model[len(classes) :]
-
-    elif algorithm in ["opa2vec", "onto2vec"]:
-        classes_e = [
-            (
-                model.wv.get_vector(c.lower())
-                if c.lower() in model.wv.index_to_key
-                else np.zeros(model.vector_size)
-            )
-            for c in classes
-        ]
-        classes_e = np.array(classes_e)
-
-        if onto_type == "ABox":
-            print("hi")
-            individuals_e = [
-                (
-                    model.wv.get_vector(i.lower())
-                    if i.lower() in model.wv.index_to_key
-                    else np.zeros(model.vector_size)
-                )
-                for i in individuals
-            ]
-            individuals_e = np.array(individuals_e)
-
-    else:
-        classes_e = embed(model=model, instances=classes)
-
-        if onto_type == "ABox":
-            individuals_e = embed(model=model, instances=individuals)
-
-    return classes_e, individuals_e
-
-
 def predict_func(ontology, algorithm):
     # load individuals
     # individuals = list(em.load_individuals(ontology)) # there is a error
@@ -264,18 +209,16 @@ def predict_func(ontology, algorithm):
 
     # embed class with model
     print(f"embedding {ontology} classes")
-    model = load_model(ontology, algorithm)
-    classes_e, individuals_e = embed_obj(
-        onto_type, algorithm, model, classes, individuals
-    )
-
+    classes_e, individuals_e = load_embedding(ontology, algorithm)
+    # classes_e, individuals_e = embed_obj(onto_type, algorithm, model, classes, individuals)
+    
     # load train test val file
     print(f"load {ontology} train/test/validate")
 
     file_path = getPath_ontology_directory(ontology)
 
     train_path = os.path.join(file_path, "train-infer-0.csv")
-    valid_path = os.path.join(file_path, "val.csv")
+    valid_path = os.path.join(file_path, "valid.csv")
     test_path = os.path.join(file_path, "test.csv")
 
     train_samples = [line.strip().split(",") for line in open(train_path).readlines()]

@@ -13,9 +13,8 @@ import nltk
 nltk.download("punkt")
 
 from models.extract_model import load_annotations, load_axioms, load_classes, load_individuals
-from utils.file_handler import replace_or_create_folder
-from models.embed_model import isModelExist, save_model
-from models.ontology_model import getPath_ontology, getPath_ontology_directory
+from models.embed_model import isModelExist, save_embedding, save_model
+from models.ontology_model import getPath_ontology
 from owl2vec_star.RDF2Vec_Embed import get_rdf2vec_walks, get_rdf2vec_embed
 from owl2vec_star.Label import pre_process_words, URI_parse
 
@@ -53,11 +52,10 @@ def opa2vec_or_onto2vec(
         workers=multiprocessing.cpu_count(),
     )
     
-    # path = os.path.join(getPath_ontology_directory(ontology_name), algorithm, "model")
-    # w2v.save(path)
-    # gensim.models.word2vec.Word2Vec.load(path)
+    embeddings = embed_opa_onto(w2v, classes + individuals)
     
     save_model(ontology_name, algorithm, w2v)
+    save_embedding(ontology_name, algorithm, embeddings)
     return f"{algorithm} embedded success!!"
 
 
@@ -69,17 +67,8 @@ def owl2vec_star(ontology_name, config_file, algorithm):
     axioms = load_axioms(ontology_name)
     classes = load_classes(ontology_name)
     individuals = load_individuals(ontology_name)
-    entities = classes.union(individuals)
-    annotations_load = load_annotations(ontology_name)
-
-    # preprocess annotations file
-    uri_label, annotations = dict(), list()
-    for line in annotations_load:
-        tmp = line.strip().split()
-        if tmp[1] == "http://www.w3.org/2000/01/rdf-schema#label":
-            uri_label[tmp[0]] = pre_process_words(tmp[2:])
-        else:
-            annotations.append([tmp[0]] + tmp[2:])
+    entities = classes + individuals
+    uri_label, annotations = load_annotations(ontology_name)
             
     # structural doc
     walk_sentences, axiom_sentences, URI_Doc = list(), list(), list()
@@ -182,8 +171,11 @@ def owl2vec_star(ontology_name, config_file, algorithm):
         min_count=int(config["MODEL_OWL2VECSTAR"]["min_count"]),
         seed=int(config["MODEL_OWL2VECSTAR"]["seed"]),
     )
+    
+    embeddings = embed_owl2vec(model_, classes + individuals)
 
     save_model(ontology_name, algorithm, model_)
+    save_embedding(ontology_name, algorithm, embeddings)
     return f"{algorithm} embedded success!!"
 
 
@@ -195,11 +187,11 @@ def rdf2vec(ontology_name, config_file, algorithm):
     axioms = load_axioms(ontology_name)
     classes = load_classes(ontology_name)
     individuals = load_individuals(ontology_name)
-    entities = classes.union(individuals)
+    entities = classes + individuals
     annotations_load = load_annotations(ontology_name)
     candidate_num = len(classes)
 
-    _temp, model_rdf2vec = get_rdf2vec_embed(
+    embeddings, model_rdf2vec = get_rdf2vec_embed(
         onto_file=getPath_ontology(ontology_name),
         walker_type=config["MODEL_RDF2VEC"]["walker"],
         walk_depth=int(config["MODEL_RDF2VEC"]["walk_depth"]),
@@ -208,6 +200,7 @@ def rdf2vec(ontology_name, config_file, algorithm):
     )
     
     save_model(ontology_name, algorithm, model_rdf2vec)
+    save_embedding(ontology_name, algorithm, embeddings)
     return f"{algorithm} embedded success!!"
 
 
@@ -235,3 +228,17 @@ def embed_func(ontology_name, algorithm):
         return result
     else:
         raise ValueError(f"Unsupported algorithm: {algorithm}")
+    
+def embed_owl2vec(model: gensim.models.Word2Vec, instances):
+    feature_vectors = []
+    for instance in instances:
+        v_uri = model.wv.get_vector(instance) if instance in model.wv.index_to_key else np.zeros(model.vector_size)
+        feature_vectors.append(v_uri)
+
+    return feature_vectors
+
+def embed_opa_onto(model: gensim.models.Word2Vec, instances):
+    all_e = [model.wv.get_vector(c.lower()) if c.lower() in model.wv.index_to_key else np.zeros(model.vector_size) for c in instances]
+    all_e = np.array(all_e)
+    
+    return all_e
