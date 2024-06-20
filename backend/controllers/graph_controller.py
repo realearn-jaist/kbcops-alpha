@@ -13,10 +13,12 @@ from owlready2 import *
 
 def extract_garbage_value(onto_data):
     """Extracts the individual, true, and predicted values from the garbage metrics file
+
     Args:
         onto_data (pd.DataFrame): The garbage metrics file
     Returns:
-        individual_list (list): The list of individuals"""
+        individual_list (list): The list of individuals
+    """
     # Extract columns into lists
     individual_list = onto_data["Individual"].tolist()
     truth_list = onto_data["True"].tolist()
@@ -27,12 +29,13 @@ def extract_garbage_value(onto_data):
 
 def find_parents_with_relations(cls, relation_list):
     """Find the parents of a class and its relations
+
     Args:
         cls (owlready2.entity.ThingClass): The class to find the parents of
         relation_list (list): The list of relations to append to
-
     Returns:
-        None"""
+        None
+    """
     # find its relations
     temp = "obo."
     try:
@@ -61,10 +64,12 @@ def find_parents_with_relations(cls, relation_list):
 
 def get_prefix(value):
     """Get the prefix of the value
+
     Args:
         value (str): The value to get the prefix of
     Returns:
-        prefix (str): The prefix of the value"""
+        prefix (str): The prefix of the value
+    """
     delimiter = "#" if "#" in value else "/"
     prefix = value.rsplit(delimiter, 1)[0] + delimiter
     return prefix
@@ -80,6 +85,7 @@ def graph_maker(
     fig_directory,
 ):
     """Create a graph for each individual in the individual list
+
     Args:
         onto_type (str): The type of ontology
         onto_file (owlready2.namespace.Ontology): The ontology file
@@ -89,7 +95,8 @@ def graph_maker(
         predict_list (list): The list of predicted values
         fig_directory (str): The directory to save the graph figures
     Returns:
-        None"""
+        None
+    """
     for i, v in enumerate(individual_list):
         print(i, v)
         entity_uri = entity_prefix + v
@@ -162,6 +169,14 @@ def graph_maker(
 
 
 def create_graph(onto, algo):
+    """Create a graph for each individual in the individual list
+
+    Args:
+        onto (str): The name of the ontology
+        algo (str): The name of the algorithm
+    Returns:
+        list: The list of graph fig
+    """
     # load omdividuals for checking whether it Tbox or not. And find its prefix
     fig_directory = os.path.join(
         getPath_ontology_directory(onto), algo, "graph_fig"
