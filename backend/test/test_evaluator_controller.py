@@ -1,9 +1,9 @@
 import sys
 import unittest
 from unittest.mock import patch
+import numpy as np
 
 sys.path.append("../backend")
-import numpy as np
 from app import create_app
 from controllers.evaluator_controller import InclusionEvaluator
 
@@ -64,8 +64,8 @@ class TestInclusionEvaluator(unittest.TestCase):
             ]
         )
         self.inferred_ancestors = {
-            "individual1": ["class1", "class2"],
-            "individual2": ["class2", "class3"],
+            "individual1": ["class2"],
+            "individual2": ["class3"],
             "individual3": ["class3", "class4"],
             "individual4": ["class4"],
         }
@@ -84,9 +84,6 @@ class TestInclusionEvaluator(unittest.TestCase):
         Returns:
             None
         """
-        print("Classes:", self.classes)
-        print("Test Samples:", self.test_samples)
-
         evaluator = InclusionEvaluator(
             self.valid_samples,
             self.test_samples,
@@ -107,6 +104,7 @@ class TestInclusionEvaluator(unittest.TestCase):
                 self.classes = classes
 
             def predict_proba(self, X):
+                # Ensure we return probabilities for each class
                 return np.random.rand(len(X), len(self.classes))
 
         mock_model = SimpleMockModel(self.classes)
