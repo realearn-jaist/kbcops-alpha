@@ -117,7 +117,7 @@ class TestOntologyModelOperations(unittest.TestCase):
         mock_open.assert_called_once_with(
             "\\fake\\path\\axioms.txt", "r", encoding="utf-8"
         )
-        self.assertEqual(result, ["axiom1\n", "axiom2\n"])
+        self.assertEqual(result, ["axiom1", "axiom2"])
 
     @patch("models.extract_model.getPath_ontology_directory")
     @patch("builtins.open", new_callable=mock_open, read_data="class1\nclass2\n")
@@ -130,7 +130,7 @@ class TestOntologyModelOperations(unittest.TestCase):
         mock_open.assert_called_once_with(
             "\\fake\\path\\classes.txt", "r", encoding="utf-8"
         )
-        self.assertEqual(result, ["class1\n", "class2\n"])
+        self.assertEqual(result, ["class1", "class2"])
 
     @patch("models.extract_model.getPath_ontology_directory")
     @patch("builtins.open", new_callable=mock_open, read_data="ind1\nind2\n")
@@ -143,7 +143,7 @@ class TestOntologyModelOperations(unittest.TestCase):
         mock_open.assert_called_once_with(
             "\\fake\\path\\individuals.txt", "r", encoding="utf-8"
         )
-        self.assertEqual(result, ["ind1\n", "ind2\n"])
+        self.assertEqual(result, ["ind1", "ind2"])
 
     @patch("models.extract_model.getPath_ontology_directory")
     def test_load_annotations(self, mock_getPath):
@@ -175,8 +175,8 @@ class TestOntologyModelOperations(unittest.TestCase):
         result = (result_uri[0], result_anno[1])
 
         # Expected results
-        expected_uri_label = ["e1 label1\n", "e2 label2\n"]
-        expected_annotation = ["ann1 ann2\n", "ann3 ann4 ann5\n"]
+        expected_uri_label = ["e1 label1", "e2 label2"]
+        expected_annotation = ["ann1 ann2", "ann3 ann4 ann5"]
         self.assertEqual(result, (expected_uri_label, expected_annotation))
 
 

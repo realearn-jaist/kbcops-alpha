@@ -100,7 +100,7 @@ def load_axioms(id):
     """
     path = os.path.join(getPath_ontology_directory(id), "axioms.txt")
 
-    return [line.strip() for line in open(path).readlines()]
+    return [line.strip() for line in open(path, 'r', encoding='utf-8').readlines()]
 
 
 def load_classes(id):
@@ -113,7 +113,7 @@ def load_classes(id):
     """
     path = os.path.join(getPath_ontology_directory(id), "classes.txt")
 
-    return [line.strip() for line in open(path).readlines()]
+    return [line.strip() for line in open(path, 'r', encoding='utf-8').readlines()]
 
 
 def load_individuals(id):
@@ -126,7 +126,7 @@ def load_individuals(id):
     """
     path = os.path.join(getPath_ontology_directory(id), "individuals.txt")
 
-    return [line.strip() for line in open(path).readlines()]
+    return [line.strip() for line in open(path, 'r', encoding='utf-8').readlines()]
 
 
 def load_annotations(id):
@@ -142,12 +142,12 @@ def load_annotations(id):
     path = os.path.join(getPath_ontology_directory(id), "uri_labels.txt")
     
     with open( path, "r", encoding="utf-8" ) as f:
-        uri_label = f.readlines()
+        uri_label = [line.strip() for line in f.readlines()]
     
     path = os.path.join(getPath_ontology_directory(id), "annotations.txt")
     
     with open( path, "r", encoding="utf-8" ) as f:
-        annotations = f.readlines()
+        annotations = [line.strip() for line in f.readlines()]
             
     return uri_label, annotations
 

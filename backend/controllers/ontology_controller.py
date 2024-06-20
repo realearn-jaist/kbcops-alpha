@@ -67,6 +67,7 @@ def get_onto_stat(id):
     classes = load_classes(id)
     individuals = load_individuals(id)
     uri_label, annotations = load_annotations(id)
+    print("gekkookasod", uri_label, annotations)
 
     return {
         "no_class": len(classes),

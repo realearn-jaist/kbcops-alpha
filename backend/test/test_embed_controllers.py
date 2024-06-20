@@ -31,7 +31,7 @@ class TestEmbedFunctions(unittest.TestCase):
     )
     @patch(
         "controllers.embed_controller.load_annotations",
-        return_value=["annotation1", "annotation2"],
+        return_value=(["uri1 label1", "uri2 label2 label3"], ["uri1 annotation1", "uri2 annotation2"]),
     )
     @patch("controllers.embed_controller.save_model", return_value=None)
     @patch("controllers.embed_controller.gensim.models.Word2Vec")

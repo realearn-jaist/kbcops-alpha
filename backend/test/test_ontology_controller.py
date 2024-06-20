@@ -61,13 +61,13 @@ class TestOntologyModule(unittest.TestCase):
         mock_load_axioms.return_value = ["axiom1", "axiom2"]
         mock_load_classes.return_value = ["class1", "class2"]
         mock_load_individuals.return_value = ["ind1", "ind2"]
-        mock_load_annotations.return_value = ["ann1", "ann2"]
+        mock_load_annotations.return_value = (["uri1 label1", "uri2 label2 label3"], ["uri1 annotation1", "uri2 annotation2"])
 
         id = "test_id"
         result = get_onto_stat(id)
         self.assertEqual(
             result,
-            {"no_class": 2, "no_individual": 2, "no_axiom": 2, "no_annotation": 2},
+            {"no_class": 2, "no_individual": 2, "no_axiom": 2, "no_annotation": 4},
         )
 
     @patch("controllers.ontology_controller.getPath_ontology")
