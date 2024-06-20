@@ -129,7 +129,7 @@ class TestOntologyUpload(unittest.TestCase):
                 "no_axiom": 3,
                 "no_annotation": 4,
             },
-            response.get_json()["data"],
+            response.get_json()["onto_data"],
         )
 
     # Extract data mock is no longer active outside the `with` block
@@ -188,7 +188,7 @@ class TestOntologyUpload(unittest.TestCase):
                 "no_axiom": 2,
                 "no_annotation": 3,
             },
-            response.get_json()["data"],
+            response.get_json()["onto_data"],
         )
 
     @patch("routes.routes.embed_func")

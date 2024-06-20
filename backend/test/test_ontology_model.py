@@ -88,8 +88,8 @@ class TestOntologyModel(unittest.TestCase):
         self.assertEqual(result, ["ontology1", "ontology2"])
 
     @patch("models.ontology_model.current_app")
-    def test_getPath_ontology(self, mock_current_app):
-        """Test getPath_ontology function in ontology_model.py
+    def test_get_path_ontology(self, mock_current_app):
+        """Test get_path_ontology function in ontology_model.py
 
         Args:
             mock_current_app: MagicMock object
@@ -109,8 +109,8 @@ class TestOntologyModel(unittest.TestCase):
         self.assertEqual(result, expected_path)
 
     @patch("models.ontology_model.current_app")
-    def test_getPath_ontology_directory(self, mock_current_app):
-        """Test getPath_ontology_directory function in ontology_model.py
+    def test_get_path_ontology_directory(self, mock_current_app):
+        """Test get_path_ontology_directory function in ontology_model.py
 
         Args:
             mock_current_app: MagicMock object

@@ -106,7 +106,7 @@ class TestOntologyModule(unittest.TestCase):
             {"no_class": 2, "no_individual": 2, "no_axiom": 2, "no_annotation": 4},
         )
 
-    @patch("controllers.ontology_controller.getPath_ontology")
+    @patch("controllers.ontology_controller.get_path_ontology")
     @patch("controllers.ontology_controller.OntologyProjection")
     @patch("controllers.ontology_controller.save_axioms")
     @patch("controllers.ontology_controller.save_classes")
@@ -135,7 +135,7 @@ class TestOntologyModule(unittest.TestCase):
         mock_save_classes,
         mock_save_axioms,
         mock_OntologyProjection,
-        mock_getPath_ontology,
+        mock_get_path_ontology,
     ):
         """Test extract_data function in ontology_controller.py
 
@@ -153,11 +153,11 @@ class TestOntologyModule(unittest.TestCase):
             mock_save_classes: MagicMock object
             mock_save_axioms: MagicMock object
             mock_OntologyProjection: MagicMock object
-            mock_getPath_ontology: MagicMock object
+            mock_get_path_ontology: MagicMock object
         Returns:
             None
         """
-        mock_getPath_ontology.return_value = "path_to_ontology"
+        mock_get_path_ontology.return_value = "path_to_ontology"
         mock_get_ontology.return_value = MagicMock()
         mock_projection_instance = MagicMock()
         mock_OntologyProjection.return_value = mock_projection_instance
@@ -199,7 +199,7 @@ class TestOntologyModule(unittest.TestCase):
             result,
             {"no_class": 2, "no_individual": 2, "no_axiom": 2, "no_annotation": 3},
         )
-        mock_getPath_ontology.assert_any_call(id)
+        mock_get_path_ontology.assert_any_call(id)
         mock_OntologyProjection.assert_called_once_with(
             "path_to_ontology",
             reasoner=Reasoner.STRUCTURAL,

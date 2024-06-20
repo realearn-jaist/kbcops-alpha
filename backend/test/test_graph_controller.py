@@ -113,14 +113,14 @@ class TestGraphModule(unittest.TestCase):
     @patch("controllers.graph_controller.read_garbage_metrics_pd")
     @patch("controllers.graph_controller.extract_garbage_value")
     @patch("controllers.graph_controller.load_graph")
-    @patch("controllers.graph_controller.getPath_ontology")
-    @patch("controllers.graph_controller.getPath_ontology_directory")
+    @patch("controllers.graph_controller.get_path_ontology")
+    @patch("controllers.graph_controller.get_path_ontology_directory")
     @patch("controllers.graph_controller.replace_or_create_folder")
     def test_create_graph(
         self,
         mock_replace_or_create_folder,
-        mock_getPath_ontology_directory,
-        mock_getPath_ontology,
+        mock_get_path_ontology_directory,
+        mock_get_path_ontology,
         mock_load_graph,
         mock_extract_garbage_value,
         mock_read_garbage_metrics_pd,
@@ -135,8 +135,8 @@ class TestGraphModule(unittest.TestCase):
         Args:
             self: TestGraphModule object
             mock_replace_or_create_folder: MagicMock object
-            mock_getPath_ontology_directory: MagicMock object
-            mock_getPath_ontology: MagicMock object
+            mock_get_path_ontology_directory: MagicMock object
+            mock_get_path_ontology: MagicMock object
             mock_load_graph: MagicMock object
             mock_extract_garbage_value: MagicMock object
             mock_read_garbage_metrics_pd: MagicMock object
@@ -156,8 +156,8 @@ class TestGraphModule(unittest.TestCase):
         mock_load_individuals.return_value = ["Ind1", "Ind2"]
         mock_load_classes.return_value = ["Class1", "Class2"]
         mock_get_prefix.return_value = "http://example.com#"
-        mock_getPath_ontology_directory.return_value = "\\fake\\path"
-        mock_getPath_ontology.return_value = "\\fake\\path\\ontology.owl"
+        mock_get_path_ontology_directory.return_value = "\\fake\\path"
+        mock_get_path_ontology.return_value = "\\fake\\path\\ontology.owl"
 
         # Mock ontology and graph data
         mock_ontology = mock.Mock()
@@ -176,13 +176,13 @@ class TestGraphModule(unittest.TestCase):
         result = gm.create_graph(id, algo)
 
         # Assert the expected calls and results
-        mock_getPath_ontology_directory.assert_called_once_with(id)
+        mock_get_path_ontology_directory.assert_called_once_with(id)
         mock_replace_or_create_folder.assert_called_once_with(
             "\\fake\\path\\test_algo\\graph_fig"
         )
         mock_load_individuals.assert_called_once_with(id)
         mock_load_classes.assert_called_once_with(id)
-        mock_getPath_ontology.assert_called_once_with(id)
+        mock_get_path_ontology.assert_called_once_with(id)
         mock_get_ontology.assert_called_once_with("\\fake\\path\\ontology.owl")
         mock_read_garbage_metrics_pd.assert_called_once_with(id, algo)
         mock_extract_garbage_value.assert_called_once_with("mock_garbage_metrics_data")
