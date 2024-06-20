@@ -66,7 +66,7 @@ def opa2vec_or_onto2vec(ontology_name, config_file, algorithm):
     )
 
     embeddings = embed_opa_onto(w2v, classes + individuals)
-    classes_e, individuals_e = embed_opa_onto_temp(w2v, classes, individuals)
+    # classes_e, individuals_e = embed_opa_onto_temp(w2v, classes, individuals)
 
     save_model(ontology_name, algorithm, w2v)
     save_embedding(ontology_name, algorithm, embeddings)
