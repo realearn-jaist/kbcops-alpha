@@ -3,7 +3,7 @@ import sys
 import unittest
 from unittest.mock import MagicMock, patch
 
-sys.path.append('../backend')
+sys.path.append("../backend")
 from app import create_app
 from models.ontology_model import (
     getPath_ontology,
@@ -16,7 +16,13 @@ from models.ontology_model import (
 class TestOntologyModel(unittest.TestCase):
     @classmethod
     def setUp(self):
-        """Create the Flask app and a test client for the app. Establish an application context before each test."""
+        """Create the Flask app and a test client for the app. Establish an application context before each test.
+
+        Args:
+            self: TestOntologyModel object
+        Returns:
+            None
+        """
         self.app = create_app()
         self.app.testing = True
 
@@ -31,7 +37,15 @@ class TestOntologyModel(unittest.TestCase):
     def test_save_ontology(
         self, mock_save_file, mock_replace_or_create_folder, mock_current_app
     ):
-        """Test save_ontology function in ontology_model.py"""
+        """Test save_ontology function in ontology_model.py
+
+        Args:
+            mock_save_file: MagicMock object
+            mock_replace_or_create_folder: MagicMock object
+            mock_current_app: MagicMock object
+        Returns:
+            None
+        """
         app = create_app()
         app.config["STORAGE_FOLDER"] = "\\fake\\storage"
         mock_current_app.config = app.config
@@ -52,7 +66,15 @@ class TestOntologyModel(unittest.TestCase):
     @patch("os.listdir")
     @patch("os.path.isdir")
     def test_list_ontology(self, mock_isdir, mock_listdir, mock_current_app):
-        """Test list_ontology function in ontology_model.py"""
+        """Test list_ontology function in ontology_model.py
+
+        Args:
+            mock_isdir: MagicMock object
+            mock_listdir: MagicMock object
+            mock_current_app: MagicMock object
+        Returns:
+            None
+        """
         app = create_app()
         app.config["STORAGE_FOLDER"] = "\\fake\\storage"
         mock_current_app.config = app.config
@@ -67,7 +89,13 @@ class TestOntologyModel(unittest.TestCase):
 
     @patch("models.ontology_model.current_app")
     def test_getPath_ontology(self, mock_current_app):
-        """Test getPath_ontology function in ontology_model.py"""
+        """Test getPath_ontology function in ontology_model.py
+
+        Args:
+            mock_current_app: MagicMock object
+        Returns:
+            None
+        """
         app = create_app()
         app.config["STORAGE_FOLDER"] = "\\fake\\storage"
         mock_current_app.config = app.config
@@ -82,7 +110,13 @@ class TestOntologyModel(unittest.TestCase):
 
     @patch("models.ontology_model.current_app")
     def test_getPath_ontology_directory(self, mock_current_app):
-        """Test getPath_ontology_directory function in ontology_model.py"""
+        """Test getPath_ontology_directory function in ontology_model.py
+
+        Args:
+            mock_current_app: MagicMock object
+        Returns:
+            None
+        """
         app = create_app()
         app.config["STORAGE_FOLDER"] = "\\fake\\storage"
         mock_current_app.config = app.config

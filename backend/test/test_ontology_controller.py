@@ -2,16 +2,28 @@ import sys
 import unittest
 from unittest.mock import MagicMock, mock_open, patch
 
-sys.path.append('../backend')
+sys.path.append("../backend")
 from owl2vec_star.Onto_Access import Reasoner
-from controllers.ontology_controller import extract_data, get_onto_stat, getAll_ontology, upload_ontology
+from controllers.ontology_controller import (
+    extract_data,
+    get_onto_stat,
+    getAll_ontology,
+    upload_ontology,
+)
 
 
 class TestOntologyModule(unittest.TestCase):
+    """Test cases for ontology_controller.py"""
 
     @patch("controllers.ontology_controller.save_ontology")
     def test_upload_ontology_success(self, mock_save_ontology):
-        """Test upload_ontology function in ontology_controller.py"""
+        """Test upload_ontology function in ontology_controller.py
+
+        Args:
+            mock_save_ontology: MagicMock object
+        Returns:
+            None
+        """
         file = MagicMock()
         id = "test_id.owl"
 
@@ -23,10 +35,16 @@ class TestOntologyModule(unittest.TestCase):
         id = "test_id"
         filename = "test_id.owl"
         mock_save_ontology.assert_called_with(file, id, filename)
-        
+
     @patch("controllers.ontology_controller.save_ontology")
     def test_upload_ontology_fail(self, mock_save_ontology):
-        """Test upload_ontology function in ontology_controller.py"""
+        """Test upload_ontology function in ontology_controller.py
+
+        Args:
+            mock_save_ontology: MagicMock object
+        Returns:
+            None
+        """
         file = MagicMock()
         id = "test_id.owl"
 
@@ -41,7 +59,13 @@ class TestOntologyModule(unittest.TestCase):
 
     @patch("controllers.ontology_controller.list_ontology")
     def test_getAll_ontology(self, mock_list_ontology):
-        """Test getAll_ontology function in ontology_controller.py"""
+        """Test getAll_ontology function in ontology_controller.py
+
+        Args:
+            mock_list_ontology: MagicMock object
+        Returns:
+            None
+        """
         mock_list_ontology.return_value = ["onto1", "onto2"]
         result = getAll_ontology()
         self.assertEqual(result, ["onto1", "onto2"])
@@ -57,11 +81,23 @@ class TestOntologyModule(unittest.TestCase):
         mock_load_classes,
         mock_load_axioms,
     ):
-        """Test get_onto_stat function in ontology_controller.py"""
+        """Test get_onto_stat function in ontology_controller.py
+
+        Args:
+            mock_load_annotations: MagicMock object
+            mock_load_individuals: MagicMock object
+            mock_load_classes: MagicMock object
+            mock_load_axioms: MagicMock object
+        Returns:
+            None
+        """
         mock_load_axioms.return_value = ["axiom1", "axiom2"]
         mock_load_classes.return_value = ["class1", "class2"]
         mock_load_individuals.return_value = ["ind1", "ind2"]
-        mock_load_annotations.return_value = (["uri1 label1", "uri2 label2 label3"], ["uri1 annotation1", "uri2 annotation2"])
+        mock_load_annotations.return_value = (
+            ["uri1 label1", "uri2 label2 label3"],
+            ["uri1 annotation1", "uri2 annotation2"],
+        )
 
         id = "test_id"
         result = get_onto_stat(id)
@@ -101,7 +137,26 @@ class TestOntologyModule(unittest.TestCase):
         mock_OntologyProjection,
         mock_getPath_ontology,
     ):
-        """Test extract_data function in ontology_controller.py"""
+        """Test extract_data function in ontology_controller.py
+
+        Args:
+            mock_train_test_val_tbox: MagicMock object
+            mock_train_test_val_abox: MagicMock object
+            mocl_load_individuals: MagicMock object
+            mock_load_classes: MagicMock object
+            mock_save_infer: MagicMock object
+            mock_abox_infer: MagicMock object
+            mock_tbox_infer: MagicMock object
+            mock_get_ontology: MagicMock object
+            mock_save_annotations: MagicMock object
+            mock_save_individuals: MagicMock object
+            mock_save_classes: MagicMock object
+            mock_save_axioms: MagicMock object
+            mock_OntologyProjection: MagicMock object
+            mock_getPath_ontology: MagicMock object
+        Returns:
+            None
+        """
         mock_getPath_ontology.return_value = "path_to_ontology"
         mock_get_ontology.return_value = MagicMock()
         mock_projection_instance = MagicMock()

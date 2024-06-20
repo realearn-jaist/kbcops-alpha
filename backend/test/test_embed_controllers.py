@@ -3,15 +3,23 @@ import unittest
 from configparser import ConfigParser
 from unittest.mock import MagicMock, patch
 
-sys.path.append('../backend')
+sys.path.append("../backend")
 from app import create_app
 from controllers.embed_controller import opa2vec_or_onto2vec, owl2vec_star, rdf2vec
 
 
 class TestEmbedFunctions(unittest.TestCase):
+    """Test cases for embed_controller.py"""
+
     @classmethod
     def setUp(self):
-        """Create the Flask app and a test client for the app. Establish an application context before each test."""
+        """Create the Flask app and a test client for the app. Establish an application context before each test.
+
+        Args:
+            self: TestEmbedFunctions object
+        Returns:
+            None
+        """
         self.app = create_app()
         self.app.testing = True
         self.client = self.app.test_client()
@@ -31,7 +39,10 @@ class TestEmbedFunctions(unittest.TestCase):
     )
     @patch(
         "controllers.embed_controller.load_annotations",
-        return_value=(["uri1 label1", "uri2 label2 label3"], ["uri1 annotation1", "uri2 annotation2"]),
+        return_value=(
+            ["uri1 label1", "uri2 label2 label3"],
+            ["uri1 annotation1", "uri2 annotation2"],
+        ),
     )
     @patch("controllers.embed_controller.save_model", return_value=None)
     @patch("controllers.embed_controller.gensim.models.Word2Vec")
@@ -44,7 +55,19 @@ class TestEmbedFunctions(unittest.TestCase):
         mock_load_classes,
         mock_load_axioms,
     ):
-        """Test opa2vec_or_onto2vec function in embed_controller.py"""
+        """Test opa2vec_or_onto2vec function in embed_controller.py
+
+        Args:
+            self: TestEmbedFunctions object
+            mock_Word2Vec: MagicMock object
+            mock_save_model: MagicMock object
+            mock_load_annotations: MagicMock object
+            mock_load_individuals: MagicMock object
+            mock_load_classes: MagicMock object
+            mock_load_axioms: MagicMock object
+        Returns:
+            None
+        """
 
         mock_config_parser = MagicMock(ConfigParser)
         mock_config_parser.return_value.read_file = MagicMock(return_value=None)
@@ -87,7 +110,19 @@ class TestEmbedFunctions(unittest.TestCase):
         mock_load_classes,
         mock_load_axioms,
     ):
-        """Test owl2vec_star function in embed_controller.py"""
+        """Test owl2vec_star function in embed_controller.py
+
+        Args:
+            self: TestEmbedFunctions object
+            mock_Word2Vec: MagicMock object
+            mock_save_model: MagicMock object
+            mock_load_annotations: MagicMock object
+            mock_load_individuals: MagicMock object
+            mock_load_classes: MagicMock object
+            mock_load_axioms: MagicMock object
+        Returns:
+            None
+        """
 
         mock_config_parser = MagicMock(ConfigParser)
         mock_config_parser.return_value.read_file = MagicMock(return_value=None)
@@ -133,7 +168,19 @@ class TestEmbedFunctions(unittest.TestCase):
         mock_load_classes,
         mock_load_axioms,
     ):
-        """Test rdf2vec function in embed_controller.py"""
+        """Test rdf2vec function in embed_controller.py
+
+        Args:
+            self: TestEmbedFunctions object
+            mock_get_rdf2vec_embed: MagicMock object
+            mock_save_model: MagicMock object
+            mock_load_annotations: MagicMock object
+            mock_load_individuals: MagicMock object
+            mock_load_classes: MagicMock object
+            mock_load_axioms: MagicMock object
+        Returns:
+            None
+        """
         mock_config_parser = MagicMock(ConfigParser)
         mock_config_parser.return_value.read_file = MagicMock(return_value=None)
         with patch(
