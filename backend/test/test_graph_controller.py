@@ -42,10 +42,12 @@ class TestGraphModule(unittest.TestCase):
 
     @patch("controllers.graph_controller.nx.nx_pydot.graphviz_layout")
     @patch("controllers.graph_controller.nx.draw")
+    @patch("controllers.graph_controller.replace_or_create_folder")
     @patch("controllers.graph_controller.plt.savefig")
-    def test_graph_maker(self, mock_savefig, mock_draw, mock_layout):
+    def test_graph_maker(self, mock_savefig, mock_replace_or_create_folder, mock_draw, mock_layout):
         """Test graph_maker function in graph_controller.py"""
         mock_layout.return_value = {"Entity1": (0, 0), "Entity2": (1, 1)}
+        mock_replace_or_create_folder.return_value = None
 
         entity_prefix = "http://example.com#"
         individual_list = ["Entity1", "Entity2"]

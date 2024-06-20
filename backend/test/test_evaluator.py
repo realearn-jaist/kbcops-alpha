@@ -39,16 +39,28 @@ class TestInclusionEvaluator(unittest.TestCase):
         self.classes_e = np.array(
             [[0.1, 0.2, 0.3], [0.4, 0.5, 0.6], [0.7, 0.8, 0.9], [1.0, 1.1, 1.2]]
         )
+        self.individuals = [
+            "individual1",
+            "individual2",
+            "gt_individual1",
+            "gt_individual2",
+        ]
+        self.individuals_e = np.array(
+            [[0.1, 0.2, 0.3], [0.4, 0.5, 0.6], [0.7, 0.8, 0.9], [1.0, 1.1, 1.2]]
+        )
         self.inferred_ancestors = {
             "class1": ["class2", "gt_class2"],
             "class2": ["class1", "gt_class1"],
+            "individual1": ["individual2", "gt_individual2"],
+            "individual2": ["individual1", "gt_individual1"],
         }
         self.ontology = "example_ontology"
         self.algorithm = "example_algorithm"
+        self.onto_type = "Tbox"
 
+    @patch("controllers.evaluator.write_evaluate", return_value=None)
     @patch("controllers.evaluator.write_garbage_metrics", return_value=[])
-    @patch("controllers.evaluator.write_json_file", return_value=None)
-    def test_evaluate_method(self, mock_write_garbage_metrics, mock_write_json_file):
+    def test_evaluate_method(self, mock_write_garbage_metrics, mock_write_evaluate):
         """Test evaluate method in InclusionEvaluator class in evaluator.py"""
         print("Classes:", self.classes)
         print("Test Samples:", self.test_samples)
@@ -60,9 +72,12 @@ class TestInclusionEvaluator(unittest.TestCase):
             self.train_y,
             self.classes,
             self.classes_e,
+            self.individuals,
+            self.individuals_e,
             self.inferred_ancestors,
             self.ontology,
             self.algorithm,
+            self.onto_type
         )
 
         class SimpleMockModel:

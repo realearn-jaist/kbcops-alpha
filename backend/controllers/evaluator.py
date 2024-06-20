@@ -1,31 +1,20 @@
-import json
-import time
-from sklearn.ensemble import RandomForestClassifier
 import numpy as np
 import random
-import gensim
-import configparser
 import os
-import csv
 import math
-import models.extract_model as em
-import numpy
 
 from tqdm import tqdm
 
 from models.extract_model import (
-    load_annotations,
-    load_axioms,
     load_classes,
     load_individuals,
 )
 from controllers.graph_controller import create_graph
 from models.evaluator_model import write_garbage_metrics, write_evaluate
-from models.ontology_model import getPath_ontology, getPath_ontology_directory
-from models.embed_model import load_embedding, load_model
+from models.ontology_model import getPath_ontology_directory
+from models.embed_model import load_embedding
 from models.extract_model import load_classes
 from owl2vec_star.Evaluator import Evaluator
-from owl2vec_star.RDF2Vec_Embed import get_rdf2vec_walks
 
 
 def get_subfix(value):
@@ -92,6 +81,7 @@ class InclusionEvaluator(Evaluator):
             sub, gt = sample[0], sample[1]
             sub_v = None
             if self.onto_type == "TBox":
+                print("test")
                 sub_index = self.classes.index(sub)
                 sub_v = self.classes_e[sub_index]
             else:

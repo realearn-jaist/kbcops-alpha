@@ -162,8 +162,7 @@ def graph_maker(
                 x, y, label, horizontalalignment="center", verticalalignment="center"
             )
 
-        if not os.path.exists(fig_directory):
-            os.makedirs(fig_directory)
+        replace_or_create_folder(fig_directory)
         plt.savefig(f"{fig_directory}\graph_{i}.png", format="PNG")
 
 
