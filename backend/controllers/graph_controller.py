@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from models.graph_model import load_graph
 from utils.file_handler import replace_or_create_folder
 from models.evaluator_model import read_garbage_metrics_pd
-from models.ontology_model import getPath_ontology, getPath_ontology_directory
+from models.ontology_model import get_path_ontology, get_path_ontology_directory
 from models.extract_model import load_classes, load_individuals
 from owlready2 import *
 
@@ -36,7 +36,7 @@ def find_parents_with_relations(cls, relation_list):
         None
     """
     # find its relations
-    temp = "obo."
+    temp = "obo." # this hard code for foodon dataset
     try:
         parents = cls.is_a
         for parent in parents:
@@ -96,8 +96,8 @@ def graph_maker(
     Returns:
         None
     """
+    replace_or_create_folder(fig_directory)
     for i, v in enumerate(individual_list):
-        print(i, v)
         entity_uri = entity_prefix + v
         entity = onto_file.search(iri=entity_uri)[0]
         subs = entity.INDIRECT_is_a
@@ -114,12 +114,9 @@ def graph_maker(
             ]
             for j in range(len(subs) - 1):
                 relations.append([subs[j + 1], "subclassOf", subs[j]])
-            for j in range(len(subs) - 1):
-                relations.append([subs[j + 1], "subclassOf", subs[j]])
             relations.append([str(entity).split(".")[-1], "isA", subs[-1]])
 
         relations = [relation for relation in relations if relation[0] != relation[2]]
-        print(relations)
 
         G = nx.DiGraph()
         for rel in relations:
@@ -162,11 +159,12 @@ def graph_maker(
                 x, y, label, horizontalalignment="center", verticalalignment="center"
             )
 
-        replace_or_create_folder(fig_directory)
+        
         plt.savefig(f"{fig_directory}\graph_{i}.png", format="PNG")
 
 
-def create_graph(onto, algo):
+def create_graph(ontology_name, algorithm):
+    # ontology_name, algorithm
     """Create a graph for each individual in the individual list
 
     Args:
@@ -175,16 +173,16 @@ def create_graph(onto, algo):
     Returns:
         list: The list of graph fig
     """
-    # load omdividuals for checking whether it Tbox or not. And find its prefix
+    # load individuals for checking whether it Tbox or not, and finding its prefix.
     fig_directory = os.path.join(
-        getPath_ontology_directory(onto), algo, "graph_fig"
-    )  # where graph fig save
+        get_path_ontology_directory(ontology_name), algorithm, "graph_fig"
+    )  # where graph fig is save
     replace_or_create_folder(fig_directory)
 
-    individuals = load_individuals(onto)
+    individuals = load_individuals(ontology_name)
     individuals_count = len(individuals)
 
-    classes = [line.strip() for line in load_classes(onto)]
+    classes = [line.strip() for line in load_classes(ontology_name)]
 
     # check onto type
     # consider as a ABox iff individuals_count is excess 10 percent of classes amount
@@ -192,14 +190,14 @@ def create_graph(onto, algo):
 
     entity_prefix = get_prefix(individuals[0])
 
-    onto_file_path = getPath_ontology(onto)
-    onto_file = get_ontology(onto_file_path).load()
-    garbage_file = read_garbage_metrics_pd(onto, algo)
+    onto_file_path = get_path_ontology(ontology_name)
+    onto = get_ontology(onto_file_path).load()
+    garbage_file = read_garbage_metrics_pd(ontology_name, algorithm)
 
     individual_list, truth_list, predict_list = extract_garbage_value(garbage_file)
     graph_maker(
         onto_type,
-        onto_file,
+        onto,
         entity_prefix,
         individual_list,
         truth_list,
@@ -207,4 +205,4 @@ def create_graph(onto, algo):
         fig_directory,
     )
 
-    return load_graph(onto, algo)
+    return load_graph(ontology_name, algorithm)
