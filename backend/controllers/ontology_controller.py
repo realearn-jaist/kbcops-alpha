@@ -45,13 +45,13 @@ def get_onto_stat(id):
     axioms = load_axioms(id)
     classes = load_classes(id)
     individuals = load_individuals(id)
-    annotations = load_annotations(id)
+    uri_label, annotations = load_annotations(id)
 
     return {
         "no_class": len(classes),
         "no_individual": len(individuals),
         "no_axiom": len(axioms),
-        "no_annotation": len(annotations),
+        "no_annotation": len(uri_label + annotations),
     }
 
 
