@@ -20,10 +20,10 @@ test
 .. toctree::
    :maxdepth: 4
 
-   test_embed_controllers
+   test_embed_controller
    test_embed_model
    test_evaluator_model
-   test_evaluator
+   test_evaluator_controller
    test_extract_model
    test_graph_controller
    test_ontology_controller

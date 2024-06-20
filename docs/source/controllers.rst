@@ -12,10 +12,10 @@ controllers.embed\_controller module
    :undoc-members:
    :show-inheritance:
 
-controllers.evaluator module
-----------------------------
+controllers.evaluator\_controller module
+------------------------------------------
 
-.. automodule:: controllers.evaluator
+.. automodule:: controllers.evaluator_controller
    :members:
    :undoc-members:
    :show-inheritance:

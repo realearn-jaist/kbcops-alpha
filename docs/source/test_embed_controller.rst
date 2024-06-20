@@ -1,7 +1,7 @@
-test\_embed\_controllers module
+test\_embed\_controller module
 ===============================
 
-.. automodule:: test.test_embed_controllers
+.. automodule:: test.test_embed_controller
    :members:
    :undoc-members:
    :show-inheritance:
