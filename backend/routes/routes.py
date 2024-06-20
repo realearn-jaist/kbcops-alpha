@@ -26,10 +26,10 @@ def upload():
     if not id:
         return jsonify({"message": "No id provided"}), 400
 
-    path = upload_ontology(file, id)
-    if path:
+    onto_id = upload_ontology(file, id)
+    if onto_id:
         return (
-            jsonify({"message": "File uploaded successfully", "onto_id": id}),
+            jsonify({"message": "File uploaded successfully", "onto_id": onto_id}),
             200,
         )
     else:

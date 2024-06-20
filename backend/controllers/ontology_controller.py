@@ -406,7 +406,6 @@ def train_test_val_tbox(onto, id):
     start_time = time.time()
     negative_samples = generate_negative_samples_tbox(
         onto, len(train_classes), load_infer(id), 0
-        onto, len(train_classes), load_infer(id), 0
     )
     writeNegativeSamplesToCSV(train_csv_path_1, negative_samples)
     print("tbox negative sample (-0) time usage:", time.time()-start_time)
