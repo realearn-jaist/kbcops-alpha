@@ -7,7 +7,6 @@ from utils.file_handler import replace_or_create_folder
 from models.evaluator_model import read_garbage_metrics_pd
 from models.ontology_model import getPath_ontology, getPath_ontology_directory
 from models.extract_model import load_classes, load_individuals
-from models.extract_model import load_classes, load_individuals
 from owlready2 import *
 
 
@@ -149,7 +148,7 @@ def create_graph(onto, algo):
     # consider as a ABox iff individuals_count is excess 10 percent of classes amount
     onto_type = "ABox" if individuals_count > int(0.1 * len(classes)) else "TBox"
 
-    entity_prefix = get_prefix(individuals.pop())
+    entity_prefix = get_prefix(individuals[0])
 
     onto_file_path = getPath_ontology(onto)
     onto_file = get_ontology(onto_file_path).load()

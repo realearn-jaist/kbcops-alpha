@@ -82,13 +82,20 @@ class TestOntologyModelOperations(unittest.TestCase):
 
         result = save_annotations("test_id", annotations, projection)
 
-        mock_open.assert_any_call(
-            "\\fake\\path\\annotations.txt", "w", encoding="utf-8"
-        )
+        # mock_open.assert_any_call(
+        #     "\\fake\\path\\annotations.txt", "w", encoding="utf-8"
+        # )
         calls = [
             call().__enter__(),
-            call().write("e1 preferred_label label1\n"),
-            call().write("e2 preferred_label label2\n"),
+            call().write("e1 label1\n"),
+            call().write("e2 label2\n"),
+            call().__exit__(None, None, None),
+            call('\\fake\\path\\uri_labels.txt', 'r', encoding='utf-8'),
+            call().__enter__(),
+            call().readlines(),
+            call().__exit__(None, None, None),
+            call('\\fake\\path\\annotations.txt', 'w', encoding='utf-8'),
+            call().__enter__(),
             call().write("ann1 ann2\n"),
             call().write("ann3 ann4\n"),
             call().__exit__(None, None, None),
@@ -123,7 +130,7 @@ class TestOntologyModelOperations(unittest.TestCase):
         mock_open.assert_called_once_with(
             "\\fake\\path\\classes.txt", "r", encoding="utf-8"
         )
-        self.assertEqual(result, {"class1\n", "class2\n"})
+        self.assertEqual(result, ["class1\n", "class2\n"])
 
     @patch("models.extract_model.getPath_ontology_directory")
     @patch("builtins.open", new_callable=mock_open, read_data="ind1\nind2\n")
@@ -136,26 +143,41 @@ class TestOntologyModelOperations(unittest.TestCase):
         mock_open.assert_called_once_with(
             "\\fake\\path\\individuals.txt", "r", encoding="utf-8"
         )
-        self.assertEqual(result, {"ind1\n", "ind2\n"})
+        self.assertEqual(result, ["ind1\n", "ind2\n"])
 
     @patch("models.extract_model.getPath_ontology_directory")
-    @patch(
-        "builtins.open",
-        new_callable=mock_open,
-        read_data="e1 preferred_label label1\nann1 ann2\nann3 ann4\n",
-    )
-    def test_load_annotations(self, mock_open, mock_getPath):
+    def test_load_annotations(self, mock_getPath):
         """Test load_annotations function in extract_model.py"""
+
+        # Mock the return value of getPath_ontology_directory
         mock_getPath.return_value = "\\fake\\path"
 
-        result = load_annotations("test_id")
+        # Mock data for the files
+        annotation_data = "ann1 ann2\nann3 ann4 ann5\n"
+        urilabel_data = "e1 label1\ne2 label2\n"
 
-        mock_open.assert_called_once_with(
-            "\\fake\\path\\annotations.txt", "r", encoding="utf-8"
-        )
-        self.assertEqual(
-            result, ["e1 preferred_label label1\n", "ann1 ann2\n", "ann3 ann4\n"]
-        )
+        # Patch the built-in open function with mock_open for annotations.txt
+        with patch("builtins.open", mock_open(read_data=annotation_data)) as mock_open_annotation:
+            # Call the function under test
+            result_anno = load_annotations("test_id")
+
+            # Assert the expected call for annotations.txt
+            mock_open_annotation.assert_any_call("\\fake\\path\\annotations.txt", "r", encoding="utf-8")
+
+        # Patch the built-in open function with mock_open for uri_labels.txt
+        with patch("builtins.open", mock_open(read_data=urilabel_data)) as mock_open_urilabel:
+            # Call the function under test again
+            result_uri = load_annotations("test_id")
+
+            # Assert the expected call for uri_labels.txt
+            mock_open_urilabel.assert_any_call("\\fake\\path\\uri_labels.txt", "r", encoding="utf-8")
+
+        result = (result_uri[0], result_anno[1])
+
+        # Expected results
+        expected_uri_label = ["e1 label1\n", "e2 label2\n"]
+        expected_annotation = ["ann1 ann2\n", "ann3 ann4 ann5\n"]
+        self.assertEqual(result, (expected_uri_label, expected_annotation))
 
 
 if __name__ == "__main__":

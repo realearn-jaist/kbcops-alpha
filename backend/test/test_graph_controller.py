@@ -1,6 +1,7 @@
 import os
 import sys
 import unittest
+from unittest import mock
 from unittest.mock import MagicMock, patch
 
 # Assuming the module is named 'controllers.graph_controller'
@@ -11,36 +12,9 @@ import pandas as pd
 
 class TestGraphModule(unittest.TestCase):
 
-    @patch("controllers.graph_controller.get_ontology")
-    @patch("controllers.graph_controller.pd.read_csv")
-    def test_load_file(self, mock_read_csv, mock_get_ontology):
-        """Test load_file function in graph_controller.py"""
-        mock_csv = pd.DataFrame(
-            {
-                "Individual": ["Ind1", "Ind2"],
-                "True": ["True1", "True2"],
-                "Predicted": ["Pred1", "Pred2"],
-            }
-        )
-        mock_read_csv.return_value = mock_csv
-
-        mock_ontology = MagicMock()
-        mock_get_ontology.return_value.load.return_value = mock_ontology
-
-        id = "test_id"
-        onto_file, garbage_file = gm.load_file(id)
-
-        mock_read_csv.assert_called_once_with(
-            os.path.abspath(f"backend\\storage\\{id}\\{id}_garbage.csv")
-        )
-        mock_get_ontology.assert_called_once_with(
-            os.path.abspath(f"backend\\storage\\{id}\\{id}.owl")
-        )
-        self.assertEqual(garbage_file.shape, mock_csv.shape)
-        self.assertEqual(onto_file, mock_ontology)
-
     def test_extract_garbage_value(self):
-        """Test extract_grabage_value function in graph_controller.py"""
+        """Test extract_garbage_value function in graph_controller.py"""
+        # Create a mock DataFrame
         mock_data = pd.DataFrame(
             {
                 "Individual": ["Ind1", "Ind2"],
@@ -49,12 +23,14 @@ class TestGraphModule(unittest.TestCase):
             }
         )
 
-        individuals, truths, predictions = gm.extract_grabage_value(mock_data)
+        # Call the function under test
+        individuals, truths, predictions = gm.extract_garbage_value(mock_data)
 
+        # Assert the expected results
         self.assertEqual(individuals, ["Ind1", "Ind2"])
         self.assertEqual(truths, ["True1", "True2"])
         self.assertEqual(predictions, ["Pred1", "Pred2"])
-
+        
     def test_get_prefix(self):
         """Test get_prefix function in graph_controller.py"""
         value_with_hash = "http://example.com#Entity"
@@ -62,6 +38,7 @@ class TestGraphModule(unittest.TestCase):
 
         self.assertEqual(gm.get_prefix(value_with_hash), "http://example.com#")
         self.assertEqual(gm.get_prefix(value_with_slash), "http://example.com/")
+
 
     @patch("controllers.graph_controller.nx.nx_pydot.graphviz_layout")
     @patch("controllers.graph_controller.nx.draw")
@@ -74,45 +51,100 @@ class TestGraphModule(unittest.TestCase):
         individual_list = ["Entity1", "Entity2"]
         truth_list = ["True1", "True2"]
         predict_list = ["Pred1", "Pred2"]
+        fig_directory = "fake_directory"
 
         mock_ontology = MagicMock()
-        gm.ONTO = mock_ontology
+        mock_ontology.search.return_value = [MagicMock()]
 
-        gm.graph_maker("TBox", entity_prefix, individual_list, truth_list, predict_list)
+        # Mock the search results for the ontology
+        def mock_search(iri):
+            entity = MagicMock()
+            entity.INDIRECT_is_a = ["owl.Thing"]
+            return [entity]
+
+        mock_ontology.search.side_effect = mock_search
+
+        with patch("controllers.graph_controller.get_ontology", return_value=mock_ontology):
+            gm.graph_maker("TBox", mock_ontology, entity_prefix, individual_list, truth_list, predict_list, fig_directory)
 
         self.assertTrue(mock_savefig.called)
         self.assertTrue(mock_draw.called)
         self.assertTrue(mock_layout.called)
 
-    @patch("controllers.graph_controller.em.load_individuals")
+    @patch("controllers.graph_controller.get_ontology")
+    @patch("controllers.graph_controller.load_individuals")
+    @patch("controllers.graph_controller.load_classes")
     @patch("controllers.graph_controller.get_prefix")
     @patch("controllers.graph_controller.graph_maker")
+    @patch("controllers.graph_controller.read_garbage_metrics_pd")
+    @patch("controllers.graph_controller.extract_garbage_value")
+    @patch("controllers.graph_controller.load_graph")
+    @patch("controllers.graph_controller.getPath_ontology")
+    @patch("controllers.graph_controller.getPath_ontology_directory")
+    @patch("controllers.graph_controller.replace_or_create_folder")
     def test_create_graph(
-        self, mock_graph_maker, mock_get_prefix, mock_load_individuals
+        self,
+        mock_replace_or_create_folder,
+        mock_getPath_ontology_directory,
+        mock_getPath_ontology,
+        mock_load_graph,
+        mock_extract_garbage_value,
+        mock_read_garbage_metrics_pd,
+        mock_graph_maker,
+        mock_get_prefix,
+        mock_load_classes,
+        mock_load_individuals,
+        mock_get_ontology,
     ):
         """Test create_graph function in graph_controller.py"""
+
         id = "test_id"
-        mock_load_individuals.return_value = ["Entity1"]
+        algo = "test_algo"
+
+        # Mock return values for the dependencies
+        mock_load_individuals.return_value = ["Ind1", "Ind2"]
+        mock_load_classes.return_value = ["Class1", "Class2"]
         mock_get_prefix.return_value = "http://example.com#"
+        mock_getPath_ontology_directory.return_value = "\\fake\\path"
+        mock_getPath_ontology.return_value = "\\fake\\path\\ontology.owl"
 
-        with patch("controllers.graph_controller.load_file") as mock_load_file:
-            mock_load_file.return_value = (
-                MagicMock(),
-                pd.DataFrame(
-                    {
-                        "Individual": ["Ind1", "Ind2"],
-                        "True": ["True1", "True2"],
-                        "Predicted": ["Pred1", "Pred2"],
-                    }
-                ),
-            )
-            result = gm.create_graph(id)
+        # Mock ontology and graph data
+        mock_ontology = mock.Mock()
+        mock_ontology.load.return_value = "mock_ontology_data"
+        mock_get_ontology.return_value = mock_ontology
 
-        self.assertTrue(mock_load_individuals.called)
-        self.assertTrue(mock_get_prefix.called)
-        self.assertTrue(mock_graph_maker.called)
-        self.assertEqual(result, "create graphs success!!")
+        mock_read_garbage_metrics_pd.return_value = "mock_garbage_metrics_data"
+        mock_extract_garbage_value.return_value = (
+            ["Ind1", "Ind2"],   # Mocking the extracted values
+            ["True1", "True2"],
+            ["Pred1", "Pred2"]
+        )
+        mock_load_graph.return_value = "mock_graph_data"
 
+        # Call the function under test
+        result = gm.create_graph(id, algo)
+
+        # Assert the expected calls and results
+        mock_getPath_ontology_directory.assert_called_once_with(id)
+        mock_replace_or_create_folder.assert_called_once_with("\\fake\\path\\test_algo\\graph_fig")
+        mock_load_individuals.assert_called_once_with(id)
+        mock_load_classes.assert_called_once_with(id)
+        mock_getPath_ontology.assert_called_once_with(id)
+        mock_get_ontology.assert_called_once_with("\\fake\\path\\ontology.owl")
+        mock_read_garbage_metrics_pd.assert_called_once_with(id, algo)
+        mock_extract_garbage_value.assert_called_once_with("mock_garbage_metrics_data")
+        mock_graph_maker.assert_called_once_with(
+            "ABox",
+            "mock_ontology_data",  # Ensure the ontology data matches
+            "http://example.com#",
+            ["Ind1", "Ind2"],
+            ["True1", "True2"],
+            ["Pred1", "Pred2"],
+            "\\fake\\path\\test_algo\\graph_fig"
+        )
+        mock_load_graph.assert_called_once_with(id, algo)
+
+        self.assertEqual(result, "mock_graph_data")
 
 if __name__ == "__main__":
     unittest.main()

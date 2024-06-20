@@ -23,11 +23,11 @@ class TestEmbedFunctions(unittest.TestCase):
     )
     @patch(
         "controllers.embed_controller.load_classes",
-        return_value=set(["class1", "class2"]),
+        return_value=["class1", "class2"],
     )
     @patch(
         "controllers.embed_controller.load_individuals",
-        return_value=set(["individual1", "individual2"]),
+        return_value=["individual1", "individual2"],
     )
     @patch(
         "controllers.embed_controller.load_annotations",
@@ -66,11 +66,11 @@ class TestEmbedFunctions(unittest.TestCase):
     )
     @patch(
         "controllers.embed_controller.load_classes",
-        return_value=set(["class1", "class2"]),
+        return_value=["class1", "class2"],
     )
     @patch(
         "controllers.embed_controller.load_individuals",
-        return_value=set(["individual1", "individual2"]),
+        return_value=["individual1", "individual2"],
     )
     @patch(
         "controllers.embed_controller.load_annotations",
@@ -109,11 +109,11 @@ class TestEmbedFunctions(unittest.TestCase):
     )
     @patch(
         "controllers.embed_controller.load_classes",
-        return_value=set(["class1", "class2"]),
+        return_value=["class1", "class2"],
     )
     @patch(
         "controllers.embed_controller.load_individuals",
-        return_value=set(["individual1", "individual2"]),
+        return_value=["individual1", "individual2"],
     )
     @patch(
         "controllers.embed_controller.load_annotations",

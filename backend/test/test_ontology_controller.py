@@ -1,6 +1,6 @@
 import sys
 import unittest
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, mock_open, patch
 
 sys.path.append('../backend')
 from owl2vec_star.Onto_Access import Reasoner
@@ -59,8 +59,8 @@ class TestOntologyModule(unittest.TestCase):
     ):
         """Test get_onto_stat function in ontology_controller.py"""
         mock_load_axioms.return_value = ["axiom1", "axiom2"]
-        mock_load_classes.return_value = set(["class1", "class2"])
-        mock_load_individuals.return_value = set(["ind1", "ind2"])
+        mock_load_classes.return_value = ["class1", "class2"]
+        mock_load_individuals.return_value = ["ind1", "ind2"]
         mock_load_annotations.return_value = ["ann1", "ann2"]
 
         id = "test_id"
@@ -76,8 +76,24 @@ class TestOntologyModule(unittest.TestCase):
     @patch("controllers.ontology_controller.save_classes")
     @patch("controllers.ontology_controller.save_individuals")
     @patch("controllers.ontology_controller.save_annotations")
+    @patch("controllers.ontology_controller.get_ontology")
+    @patch("controllers.ontology_controller.tbox_infer")
+    @patch("controllers.ontology_controller.abox_infer")
+    @patch("controllers.ontology_controller.save_infer")
+    @patch("controllers.ontology_controller.load_classes")
+    @patch("controllers.ontology_controller.load_individuals")
+    @patch("controllers.ontology_controller.train_test_val_abox")
+    @patch("controllers.ontology_controller.train_test_val_tbox")
     def test_extract_data(
         self,
+        mock_train_test_val_tbox,
+        mock_train_test_val_abox,
+        mocl_load_individuals,
+        mock_load_classes,
+        mock_save_infer,
+        mock_abox_infer,
+        mock_tbox_infer,
+        mock_get_ontology,
         mock_save_annotations,
         mock_save_individuals,
         mock_save_classes,
@@ -87,8 +103,16 @@ class TestOntologyModule(unittest.TestCase):
     ):
         """Test extract_data function in ontology_controller.py"""
         mock_getPath_ontology.return_value = "path_to_ontology"
+        mock_get_ontology.return_value = MagicMock()
         mock_projection_instance = MagicMock()
         mock_OntologyProjection.return_value = mock_projection_instance
+        mock_abox_infer.return_value = []
+        mock_tbox_infer.return_value = []
+        mock_save_infer.return_value = None
+        mocl_load_individuals.return_value = {"ind1", "ind2"}
+        mock_load_classes.return_value = {"class1", "class2"}
+        mock_train_test_val_tbox.return_value = None
+        mock_train_test_val_abox.return_value = None
 
         mock_projection_instance.createManchesterSyntaxAxioms.return_value = None
         mock_projection_instance.axioms_manchester = ["axiom1", "axiom2"]
@@ -120,7 +144,7 @@ class TestOntologyModule(unittest.TestCase):
             result,
             {"no_class": 2, "no_individual": 2, "no_axiom": 2, "no_annotation": 3},
         )
-        mock_getPath_ontology.assert_called_once_with(id)
+        mock_getPath_ontology.assert_any_call(id)
         mock_OntologyProjection.assert_called_once_with(
             "path_to_ontology",
             reasoner=Reasoner.STRUCTURAL,

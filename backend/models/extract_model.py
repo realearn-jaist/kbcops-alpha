@@ -82,16 +82,12 @@ def load_annotations(id):
     path = os.path.join(getPath_ontology_directory(id), "uri_labels.txt")
     
     with open( path, "r", encoding="utf-8" ) as f:
-        for line in f.readlines():
-            tmp = line.strip().split()
-            uri_label[tmp[0]] = pre_process_words(tmp[1:])
+        uri_label = f.readlines()
     
     path = os.path.join(getPath_ontology_directory(id), "annotations.txt")
     
     with open( path, "r", encoding="utf-8" ) as f:
-        for line in f.readlines():
-            tmp = line.strip().split()
-            annotations.append(tmp)
+        annotations = f.readlines()
             
     return uri_label, annotations
     

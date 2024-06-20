@@ -114,7 +114,7 @@ def extract_data(id):
     print("start run sync reasoner")
     start_time = time.time()
     sync_reasoner()
-    print(f"sync reasoner time usage for {onto}:", time.time() - start_time)
+    print(f"sync reasoner time usage for {id}:", time.time() - start_time)
 
     tbox_results = tbox_infer(onto)
     abox_results = abox_infer(onto)
