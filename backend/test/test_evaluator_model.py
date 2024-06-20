@@ -2,12 +2,12 @@ import sys
 import unittest
 from unittest.mock import MagicMock, call, mock_open, patch
 
-sys.path.append('../backend')
+sys.path.append("../backend")
 from models.evaluator_model import (
     read_garbage_metrics,
-    read_json_file,
+    read_evaluate,
     write_garbage_metrics,
-    write_json_file,
+    write_evaluate,
 )
 
 
@@ -20,7 +20,7 @@ class TestFileOperations(unittest.TestCase):
         mock_getPath.return_value = "\\fake\\path"
         data = {"key": "value"}
 
-        write_json_file("ontology", "algorithm", data)
+        write_evaluate("ontology", "algorithm", data)
 
         mock_open.assert_called_once_with(
             "\\fake\\path\\algorithm\\performance.json", "w"
@@ -42,7 +42,7 @@ class TestFileOperations(unittest.TestCase):
         """Test read_json_file function in evaluator_model.py"""
         mock_getPath.return_value = "\\fake\\path"
 
-        result = read_json_file("ontology", "algorithm")
+        result = read_evaluate("ontology", "algorithm")
 
         mock_open.assert_called_once_with(
             "\\fake\\path\\algorithm\\performance.json", "r"
