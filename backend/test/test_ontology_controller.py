@@ -7,7 +7,7 @@ from owl2vec_star.Onto_Access import Reasoner
 from controllers.ontology_controller import (
     extract_data,
     get_onto_stat,
-    getAll_ontology,
+    get_all_ontology,
     upload_ontology,
 )
 
@@ -67,7 +67,7 @@ class TestOntologyModule(unittest.TestCase):
             None
         """
         mock_list_ontology.return_value = ["onto1", "onto2"]
-        result = getAll_ontology()
+        result = get_all_ontology()
         self.assertEqual(result, ["onto1", "onto2"])
 
     @patch("controllers.ontology_controller.load_axioms")

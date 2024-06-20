@@ -6,8 +6,8 @@ from unittest.mock import MagicMock, patch
 sys.path.append("../backend")
 from app import create_app
 from models.ontology_model import (
-    getPath_ontology,
-    getPath_ontology_directory,
+    get_path_ontology,
+    get_path_ontology_directory,
     list_ontology,
     save_ontology,
 )
@@ -104,7 +104,7 @@ class TestOntologyModel(unittest.TestCase):
         filename = id + ".owl"
         expected_path = os.path.join("\\fake\\storage", id, filename)
 
-        result = getPath_ontology(id)
+        result = get_path_ontology(id)
 
         self.assertEqual(result, expected_path)
 
@@ -124,7 +124,7 @@ class TestOntologyModel(unittest.TestCase):
         id = "test_id"
         expected_path = os.path.join("\\fake\\storage", id)
 
-        result = getPath_ontology_directory(id)
+        result = get_path_ontology_directory(id)
 
         self.assertEqual(result, expected_path)
 

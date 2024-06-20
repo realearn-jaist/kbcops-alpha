@@ -11,8 +11,8 @@ from models.extract_model import (
 )
 from controllers.graph_controller import create_graph
 from models.evaluator_model import write_garbage_metrics, write_evaluate
-from models.ontology_model import getPath_ontology_directory
-from models.embed_model import load_embedding
+from models.ontology_model import get_path_ontology_directory
+from models.embed_model import load_embedding_value
 from models.extract_model import load_classes
 from owl2vec_star.Evaluator import Evaluator
 
@@ -201,7 +201,7 @@ class InclusionEvaluator(Evaluator):
         )
 
 
-def predict_func(ontology, algorithm):
+def predict_func(ontology_name, algorithm):
     """Predict the ontology with the algorithm
 
     Args:
@@ -211,31 +211,34 @@ def predict_func(ontology, algorithm):
         dict: The result of the prediction
     """
     # load individuals
-    individuals = load_individuals(ontology)
+    individuals = load_individuals(ontology_name)
     individuals_count = len(individuals)
 
     # load classes file
-    print(f"load {ontology} classes")
-    classes = load_classes(ontology)
+    print(f"load {ontology_name} classes")
+    classes = load_classes(ontology_name)
 
     onto_type = "ABox" if individuals_count > int(0.1 * len(classes)) else "TBox"
 
     # embed class with model
-    print(f"embedding {ontology} classes")
-    classes_e, individuals_e = load_embedding(ontology, algorithm)
+    print(f"embedding {ontology_name} classes")
+    classes_e, individuals_e = load_embedding_value(ontology_name, algorithm)
 
     # load train test val file
-    print(f"load {ontology} train/test/validate")
+    print(f"load {ontology_name} train/test/validate")
 
-    file_path = getPath_ontology_directory(ontology)
+    file_path = get_path_ontology_directory(ontology_name)
 
     train_path = os.path.join(file_path, "train-infer-0.csv")
     valid_path = os.path.join(file_path, "valid.csv")
     test_path = os.path.join(file_path, "test.csv")
-
+    
     train_samples = [line.strip().split(",") for line in open(train_path).readlines()]
     valid_samples = [line.strip().split(",") for line in open(valid_path).readlines()]
     test_samples = [line.strip().split(",") for line in open(test_path).readlines()]
+    
+    # train_samples, valid_samples, test_samples = load_train_test_val_files(mode)
+    # also random.shuffle(train_samples) in this func 
     random.shuffle(train_samples)
 
     # split value in file
@@ -256,10 +259,10 @@ def predict_func(ontology, algorithm):
     print("train_X: %s, train_y: %s" % (str(train_X.shape), str(train_y.shape)))
 
     # load infer file
-    print(f"load {ontology} inferences")
+    print(f"load {ontology_name} inferences")
     inferred_ancestors = dict()
     infer_path = os.path.join(
-        getPath_ontology_directory(ontology), "inferred_ancestors.txt"
+        get_path_ontology_directory(ontology_name), "inferred_ancestors.txt"
     )
     with open(infer_path, "r", encoding="utf-8") as f:
         for line in f.readlines():
@@ -270,7 +273,7 @@ def predict_func(ontology, algorithm):
             )
 
     # evaluate
-    print(f"evaluate {ontology} with {algorithm} embedding algorithm on random forest")
+    print(f"evaluate {ontology_name} with {algorithm} embedding algorithm on random forest")
     evaluate = InclusionEvaluator(
         valid_samples,
         test_samples,
@@ -281,13 +284,13 @@ def predict_func(ontology, algorithm):
         individuals,
         individuals_e,
         inferred_ancestors,
-        ontology,
+        ontology_name,
         algorithm,
         onto_type,
     )
     evaluate.run_random_forest()
 
     # load image
-    evaluate.result["images"] = create_graph(ontology, algorithm)
+    evaluate.result["images"] = create_graph(ontology_name, algorithm)
 
     return evaluate.result

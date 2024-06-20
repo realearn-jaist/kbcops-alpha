@@ -17,10 +17,10 @@ from models.extract_model import (
     save_infer,
 )
 from models.ontology_model import (
-    getPath_ontology_directory,
+    get_path_ontology_directory,
     list_ontology,
     save_ontology,
-    getPath_ontology,
+    get_path_ontology,
 )
 
 from owl2vec_star.Onto_Projection import Reasoner, OntologyProjection  # type: ignore
@@ -46,7 +46,7 @@ def upload_ontology(file, id):
     return id if path else None
 
 
-def getAll_ontology():
+def get_all_ontology():
     """Get all ontology in the database
 
     Returns:
@@ -67,7 +67,6 @@ def get_onto_stat(id):
     classes = load_classes(id)
     individuals = load_individuals(id)
     uri_label, annotations = load_annotations(id)
-    print("gekkookasod", uri_label, annotations)
 
     return {
         "no_class": len(classes),
@@ -77,15 +76,15 @@ def get_onto_stat(id):
     }
 
 
-def extract_data(id):
+def extract_data(ontology_name):
     """Extract data from the ontology file
 
     Args:
-        id (str): The id of the ontology
+        ontology_name (str): The name of the ontology
     Returns:
         dict: The statistics of the ontology
     """
-    onto_file = getPath_ontology(id)
+    onto_file = get_path_ontology(ontology_name)
 
     # extract axiom, entity, annotation
     projection = OntologyProjection(
@@ -132,38 +131,36 @@ def extract_data(id):
                     annotation = [e] + v.split()
                     annotations.append(annotation)
 
-    axioms = save_axioms(id, axioms)
-    classes = save_classes(id, classes)
-    individuals = save_individuals(id, individuals)
-    annotations = save_annotations(id, annotations, projection)
+    axioms = save_axioms(ontology_name, axioms)
+    classes = save_classes(ontology_name, classes)
+    individuals = save_individuals(ontology_name, individuals)
+    annotations = save_annotations(ontology_name, annotations, projection)
 
     # extract axiom, entity, annotation
-    onto = get_ontology(getPath_ontology(id)).load()
+    onto = get_ontology(get_path_ontology(ontology_name)).load()
 
     print("start run sync reasoner")
     start_time = time.time()
     sync_reasoner()
-    print(f"sync reasoner time usage for {id}:", time.time() - start_time)
+    print(f"sync reasoner time usage for {ontology_name}:", time.time() - start_time)
 
     tbox_results = tbox_infer(onto)
     abox_results = abox_infer(onto)
 
-    save_infer(id, tbox_results + abox_results)
-    # individuals = list(em.load_individuals(ontology)) # there is a error
-    individuals = load_individuals(id)
+    save_infer(ontology_name, tbox_results + abox_results)
+    individuals = load_individuals(ontology_name)
     individuals_count = len(individuals)
 
-    # classes = [line.strip() for line in load_classes(ontology)] # there is a error
-    classes = load_classes(id)
+    classes = load_classes(ontology_name)
 
     # check onto type
     # consider as a ABox iff individuals_count is excess 10 percent of classes amount
     onto_type = "ABox" if individuals_count > int(0.1 * len(classes)) else "TBox"
     if onto_type == "ABox":
-        train_test_val_abox(onto, id)
+        train_test_val_gen_abox(onto, ontology_name)
 
     else:
-        train_test_val_tbox(onto, id)
+        train_test_val_gen_tbox(onto, ontology_name)
     return {
         "no_class": len(classes),
         "no_individual": len(individuals),
@@ -279,7 +276,7 @@ def train_test_val(class_or_individuals):
     return train, test, val
 
 
-def writePositiveSamplesToCSV(csv_path, classes_or_individuals, id):
+def write_positive_samples_to_csv(csv_path, classes_or_individuals, id):
     """Writes the positive samples to a CSV file.
 
     Args:
@@ -289,7 +286,7 @@ def writePositiveSamplesToCSV(csv_path, classes_or_individuals, id):
     Returns:
         None
     """
-    root = getPath_ontology_directory(id)
+    root = get_path_ontology_directory(id)
     with open(csv_path, "w") as f:
         for ind in classes_or_individuals:
             ind_ground_truth = get_ground_truth(ind)
@@ -308,7 +305,7 @@ def writePositiveSamplesToCSV(csv_path, classes_or_individuals, id):
         print(f"CSV created successfully at: {csv_path}")
 
 
-def writeNegativeSamplesToCSV(csv_path, negative_samples):
+def write_negative_samples_to_csv(csv_path, negative_samples):
     """Writes the negative samples to a CSV file.
 
     Args:
@@ -436,7 +433,7 @@ def generate_negative_samples_tbox(ontology, num_samples, infer_classes_path, la
     return negative_samples
 
 
-def train_test_val_abox(onto, id):
+def train_test_val_gen_abox(onto, id):
     """Main function for generating training, test, and validation sets for the ABox.
 
     Args:
@@ -450,36 +447,36 @@ def train_test_val_abox(onto, id):
         all_individuals
     )
 
-    root = getPath_ontology_directory(id)
+    root = get_path_ontology_directory(id)
     train_csv_path_0 = os.path.join(root, "train-infer-1.csv")
     train_csv_path_1 = os.path.join(root, "train-infer-0.csv")
 
     test_csv_path = os.path.join(root, "test.csv")
     val_csv_path = os.path.join(root, "valid.csv")
 
-    writePositiveSamplesToCSV(train_csv_path_0, train_individuals, id)
-    writePositiveSamplesToCSV(train_csv_path_1, train_individuals, id)
+    write_positive_samples_to_csv(train_csv_path_0, train_individuals, id)
+    write_positive_samples_to_csv(train_csv_path_1, train_individuals, id)
 
-    writePositiveSamplesToCSV(test_csv_path, test_individuals, id)
-    writePositiveSamplesToCSV(val_csv_path, val_individuals, id)
+    write_positive_samples_to_csv(test_csv_path, test_individuals, id)
+    write_positive_samples_to_csv(val_csv_path, val_individuals, id)
     # i want to set seed to 0 so that the negative samples are the same for both infered classes to 0 and 1
 
     start_time = time.time()
     negative_samples = generate_negative_samples_abox(
         onto, len(train_individuals), load_infer(id), 1
     )
-    writeNegativeSamplesToCSV(train_csv_path_0, negative_samples)
+    write_negative_samples_to_csv(train_csv_path_0, negative_samples)
     print("abox negative sample (-1) time usage:", time.time() - start_time)
 
     start_time = time.time()
     negative_samples = generate_negative_samples_abox(
         onto, len(train_individuals), load_infer(id), 0
     )
-    writeNegativeSamplesToCSV(train_csv_path_1, negative_samples)
+    write_negative_samples_to_csv(train_csv_path_1, negative_samples)
     print("abox negative sample (-0) time usage:", time.time() - start_time)
 
 
-def train_test_val_tbox(onto, id):
+def train_test_val_gen_tbox(onto, id):
     """Main function for generating training, test, and validation sets for the TBox.
 
     Args:
@@ -493,7 +490,7 @@ def train_test_val_tbox(onto, id):
     all_classes = list(onto.classes())
     train_classes, test_classes, val_classes = train_test_val(all_classes)
 
-    root = getPath_ontology_directory(id)
+    root = get_path_ontology_directory(id)
     train_csv_path_0 = os.path.join(root, "train-infer-1.csv")
     train_csv_path_1 = os.path.join(root, "train-infer-0.csv")
 
@@ -502,19 +499,19 @@ def train_test_val_tbox(onto, id):
 
     # write positive samples to csv
     # train have 2 csv files, one for considering infered classes to 0 and one for 1
-    writePositiveSamplesToCSV(train_csv_path_0, train_classes, id)
-    writePositiveSamplesToCSV(train_csv_path_1, train_classes, id)
+    write_positive_samples_to_csv(train_csv_path_0, train_classes, id)
+    write_positive_samples_to_csv(train_csv_path_1, train_classes, id)
 
     # test and val have only 1 csv file
-    writePositiveSamplesToCSV(test_csv_path, test_classes, id)
-    writePositiveSamplesToCSV(val_csv_path, val_classes, id)
+    write_positive_samples_to_csv(test_csv_path, test_classes, id)
+    write_positive_samples_to_csv(val_csv_path, val_classes, id)
 
     # generate negative samples for considering infered classes to 1 and save to csv
     start_time = time.time()
     negative_samples = generate_negative_samples_tbox(
         onto, len(train_classes), load_infer(id), 1
     )
-    writeNegativeSamplesToCSV(train_csv_path_0, negative_samples)
+    write_negative_samples_to_csv(train_csv_path_0, negative_samples)
     print("tbox negative sample (-1) time usage:", time.time() - start_time)
 
     # generate negative samples for considering infered classes to 0 and save to csv
@@ -522,5 +519,5 @@ def train_test_val_tbox(onto, id):
     negative_samples = generate_negative_samples_tbox(
         onto, len(train_classes), load_infer(id), 0
     )
-    writeNegativeSamplesToCSV(train_csv_path_1, negative_samples)
+    write_negative_samples_to_csv(train_csv_path_1, negative_samples)
     print("tbox negative sample (-0) time usage:", time.time() - start_time)

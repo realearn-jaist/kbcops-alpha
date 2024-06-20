@@ -3,7 +3,7 @@ import os
 
 from flask import jsonify
 
-from models.ontology_model import getPath_ontology_directory
+from models.ontology_model import get_path_ontology_directory
 
 
 def load_graph(onto, algo):
@@ -16,7 +16,7 @@ def load_graph(onto, algo):
         list: The list of graph fig
     """
     directory = os.path.join(
-        getPath_ontology_directory(onto), algo, "graph_fig"
+        get_path_ontology_directory(onto), algo, "graph_fig"
     )  # where graph fig save
 
     images = []

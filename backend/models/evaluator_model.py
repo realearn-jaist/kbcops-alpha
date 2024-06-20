@@ -4,7 +4,7 @@ import os
 
 import pandas as pd
 
-from models.ontology_model import getPath_ontology_directory
+from models.ontology_model import get_path_ontology_directory
 
 
 def write_evaluate(ontology, algorithm, data):
@@ -18,7 +18,7 @@ def write_evaluate(ontology, algorithm, data):
         None
     """
     file_path = os.path.join(
-        getPath_ontology_directory(ontology), algorithm, "performance.json"
+        get_path_ontology_directory(ontology), algorithm, "performance.json"
     )
 
     with open(file_path, "w") as json_file:
@@ -35,7 +35,7 @@ def read_evaluate(ontology, algorithm):
         dict: The evaluation data
     """
     file_path = os.path.join(
-        getPath_ontology_directory(ontology), algorithm, "performance.json"
+        get_path_ontology_directory(ontology), algorithm, "performance.json"
     )
 
     with open(file_path, "r") as json_file:
@@ -56,7 +56,7 @@ def write_garbage_metrics(ontology, algorithm, data):
     json_output = []
 
     file_path = os.path.join(
-        getPath_ontology_directory(ontology), algorithm, "garbage.csv"
+        get_path_ontology_directory(ontology), algorithm, "garbage.csv"
     )
 
     with open(file_path, "w", newline="") as csv_file:
@@ -91,7 +91,7 @@ def read_garbage_metrics(ontology, algorithm):
     ]
 
     file_path = os.path.join(
-        getPath_ontology_directory(ontology), algorithm, "garbage.csv"
+        get_path_ontology_directory(ontology), algorithm, "garbage.csv"
     )
 
     with open(file_path, mode="r", newline="") as file:
@@ -115,7 +115,7 @@ def read_garbage_metrics_pd(ontology, algorithm):
         pd.DataFrame: The garbage metrics data
     """
     file_path = os.path.join(
-        getPath_ontology_directory(ontology), algorithm, "garbage.csv"
+        get_path_ontology_directory(ontology), algorithm, "garbage.csv"
     )
 
     garbage_file = pd.read_csv(file_path)

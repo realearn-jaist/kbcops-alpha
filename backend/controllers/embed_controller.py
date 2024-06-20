@@ -1,15 +1,9 @@
-from flask import jsonify, render_template, request
-import joblib
 import numpy as np
-import os
-import time
-import argparse
 import random
 import multiprocessing
 import gensim
 import configparser
 import nltk
-import numpy
 
 nltk.download("punkt")
 
@@ -18,9 +12,10 @@ from models.extract_model import (
     load_axioms,
     load_classes,
     load_individuals,
+    load_multi_input_files,
 )
 from models.embed_model import isModelExist, save_embedding, save_model
-from models.ontology_model import getPath_ontology
+from models.ontology_model import get_path_ontology
 from owl2vec_star.RDF2Vec_Embed import get_rdf2vec_walks, get_rdf2vec_embed
 from owl2vec_star.Label import pre_process_words, URI_parse
 
@@ -40,15 +35,15 @@ def opa2vec_or_onto2vec(ontology_name, config_file, algorithm):
     config.read(config_file)
 
     # retrieve file
-    axioms = load_axioms(ontology_name)
-    classes = load_classes(ontology_name)
-    individuals = load_individuals(ontology_name)
-    uri_label, annotations = load_annotations(ontology_name)
+    files_list = ["axioms", "classes", "individuals", "uri_labels", "annotations"]
+    
+    files = load_multi_input_files(ontology_name, files_list)
 
+    # check opa2vec or onto2vec
     if algorithm == "opa2vec":
-        lines = axioms + annotations + uri_label
-    else:  # embedding_type.lower() == 'onto2vec'
-        lines = axioms
+        lines = files['axioms'] + files['annotations'] + files['uri_label']
+    else:
+        lines = files['axioms']
 
     sentences = [
         [item.strip().lower() for item in line.strip().split()] for line in lines
@@ -56,7 +51,7 @@ def opa2vec_or_onto2vec(ontology_name, config_file, algorithm):
 
     # model word2vec
     sg_v = 1 if config["MODEL_OPA2VEC_ONTO2VEC"]["model"] == "sg" else 0
-    w2v = gensim.models.Word2Vec(
+    w2v_model = gensim.models.Word2Vec(
         sentences,
         sg=sg_v,
         min_count=int(config["MODEL_OPA2VEC_ONTO2VEC"]["mincount"]),
@@ -65,11 +60,10 @@ def opa2vec_or_onto2vec(ontology_name, config_file, algorithm):
         workers=multiprocessing.cpu_count(),
     )
 
-    embeddings = embed_opa_onto(w2v, classes + individuals)
-    # classes_e, individuals_e = embed_opa_onto_temp(w2v, classes, individuals)
+    embeddings_value = retrieval_embed_opa2vec_onto2vec(w2v_model, files['classes'] + files['individuals'])
 
-    save_model(ontology_name, algorithm, w2v)
-    save_embedding(ontology_name, algorithm, embeddings)
+    save_model(ontology_name, algorithm, w2v_model)
+    save_embedding(ontology_name, algorithm, embeddings_value)
 
     return f"{algorithm} embedded success!!"
 
@@ -111,7 +105,7 @@ def owl2vec_star(ontology_name, config_file, algorithm):
     ):
         print("\nGenerate URI document ...")
         walks_ = get_rdf2vec_walks(
-            onto_file=getPath_ontology(ontology_name),
+            onto_file=get_path_ontology(ontology_name),
             walker_type=config["DOCUMENT_OWL2VECSTAR"]["walker"],
             walk_depth=int(config["DOCUMENT_OWL2VECSTAR"]["walk_depth"]),
             classes=entities,
@@ -205,7 +199,7 @@ def owl2vec_star(ontology_name, config_file, algorithm):
         seed=int(config["MODEL_OWL2VECSTAR"]["seed"]),
     )
 
-    embeddings = embed_owl2vec(model_, classes + individuals)
+    embeddings = retrieval_embed_owl2vec(model_, classes + individuals)
 
     save_model(ontology_name, algorithm, model_)
     save_embedding(ontology_name, algorithm, embeddings)
@@ -226,19 +220,16 @@ def rdf2vec(ontology_name, config_file, algorithm):
     config.read(config_file)
 
     # retrieve file
-    axioms = load_axioms(ontology_name)
     classes = load_classes(ontology_name)
     individuals = load_individuals(ontology_name)
     entities = classes + individuals
-    uri_label, annotations = load_annotations(ontology_name)
-    candidate_num = len(classes)
 
     embeddings, model_rdf2vec = get_rdf2vec_embed(
-        onto_file=getPath_ontology(ontology_name),
+        onto_file=get_path_ontology(ontology_name),
         walker_type=config["MODEL_RDF2VEC"]["walker"],
         walk_depth=int(config["MODEL_RDF2VEC"]["walk_depth"]),
         embed_size=int(config["BASIC"]["embed_size"]),
-        classes=entities,
+        classes=entities
     )
 
     save_model(ontology_name, algorithm, model_rdf2vec)
@@ -280,7 +271,7 @@ def embed_func(ontology_name, algorithm):
         raise ValueError(f"Unsupported algorithm: {algorithm}")
 
 
-def embed_owl2vec(model: gensim.models.Word2Vec, instances):
+def retrieval_embed_owl2vec(model: gensim.models.Word2Vec, instances):
     """Embed instances using the given model
 
     Args:
@@ -301,7 +292,7 @@ def embed_owl2vec(model: gensim.models.Word2Vec, instances):
     return feature_vectors
 
 
-def embed_opa_onto(model: gensim.models.Word2Vec, instances):
+def retrieval_embed_opa2vec_onto2vec(model: gensim.models.Word2Vec, instances):
     """Embed instances using the given model
 
     Args:
@@ -310,7 +301,7 @@ def embed_opa_onto(model: gensim.models.Word2Vec, instances):
     Returns:
         list: The list of embedded instances
     """
-    all_e = [
+    feature_vectors = [
         (
             model.wv.get_vector(c.lower())
             if c.lower() in model.wv.index_to_key
@@ -318,32 +309,6 @@ def embed_opa_onto(model: gensim.models.Word2Vec, instances):
         )
         for c in instances
     ]
-    all_e = np.array(all_e)
+    feature_vectors = np.array(feature_vectors)
 
-    return all_e
-
-
-# def embed_opa_onto_temp(w2v, classes, individuals):
-#     classes_e = [
-#         (
-#             w2v.wv.get_vector(c.lower())
-#             if c.lower() in w2v.wv.index_to_key
-#             else np.zeros(w2v.vector_size)
-#         )
-#         for c in classes
-#     ]
-#     classes_e = np.array(classes_e)
-
-#     individuals_e = [
-#         (
-#             w2v.wv.get_vector(i.lower())
-#             if i.lower() in w2v.wv.index_to_key
-#             else np.zeros(w2v.vector_size)
-#         )
-#         for i in individuals
-#     ]
-#     individuals_e = np.array(individuals_e)
-
-#     all_e = np.concatenate((classes_e, individuals_e))
-
-#     return classes_e, individuals_e
+    return feature_vectors

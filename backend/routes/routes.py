@@ -3,7 +3,7 @@ from controllers.graph_controller import create_graph
 from controllers.evaluator import predict_func
 from controllers.embed_controller import embed_func
 from flask import jsonify, request, Blueprint  # type: ignore
-from controllers.ontology_controller import get_onto_stat, getAll_ontology, upload_ontology, extract_data
+from controllers.ontology_controller import get_onto_stat, get_all_ontology, upload_ontology, extract_data
 
 
 ontology_blueprint = Blueprint("ontology", __name__)
@@ -44,7 +44,7 @@ def extract(ontology):
 
 @ontology_blueprint.route("/ontology", methods=["GET"])
 def list_ontologies():
-    ontologies = getAll_ontology()
+    ontologies = get_all_ontology()
     return (
         jsonify({"message": "Ontologies listed successfully", "onto_list": ontologies}),
         200,
@@ -73,7 +73,7 @@ def embed_route(ontology):
 
 @ontology_blueprint.route("/evaluate/<ontology>/<algorithm>", methods=["GET"])
 def predict_route(ontology, algorithm):
-    result = predict_func(ontology=ontology, algorithm=algorithm)
+    result = predict_func(ontology_name=ontology, algorithm=algorithm)
     return jsonify(result), 200
 
 @ontology_blueprint.route("/evaluate/<ontology>/<algorithm>/stat", methods=["GET"])
