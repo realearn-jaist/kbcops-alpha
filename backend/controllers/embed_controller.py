@@ -9,6 +9,7 @@ import multiprocessing
 import gensim
 import configparser
 import nltk
+import numpy
 
 nltk.download("punkt")
 
@@ -30,10 +31,10 @@ def opa2vec_or_onto2vec(
     axioms = load_axioms(ontology_name)
     classes = load_classes(ontology_name)
     individuals = load_individuals(ontology_name)
-    annotations = load_annotations(ontology_name)
+    uri_label, annotations = load_annotations(ontology_name)
 
     if algorithm == "opa2vec":
-        lines = ( axioms + annotations )
+        lines = ( axioms + annotations + uri_label )
     else:  # embedding_type.lower() == 'onto2vec'
         lines = axioms
 
@@ -53,9 +54,11 @@ def opa2vec_or_onto2vec(
     )
     
     embeddings = embed_opa_onto(w2v, classes + individuals)
+    classes_e, individuals_e = embed_opa_onto_temp(w2v, classes, individuals)
     
     save_model(ontology_name, algorithm, w2v)
     save_embedding(ontology_name, algorithm, embeddings)
+
     return f"{algorithm} embedded success!!"
 
 
@@ -68,7 +71,17 @@ def owl2vec_star(ontology_name, config_file, algorithm):
     classes = load_classes(ontology_name)
     individuals = load_individuals(ontology_name)
     entities = classes + individuals
-    uri_label, annotations = load_annotations(ontology_name)
+    uri_label_load, annotations_load = load_annotations(ontology_name)
+
+    uri_label, annotations = dict(), list()
+
+    for line in uri_label_load:
+        tmp = line.strip().split()
+        uri_label[tmp[0]] = pre_process_words(tmp[1:])    
+    for line in annotations_load:
+        tmp = line.strip().split()
+        annotations.append(tmp)
+
             
     # structural doc
     walk_sentences, axiom_sentences, URI_Doc = list(), list(), list()
@@ -188,7 +201,7 @@ def rdf2vec(ontology_name, config_file, algorithm):
     classes = load_classes(ontology_name)
     individuals = load_individuals(ontology_name)
     entities = classes + individuals
-    annotations_load = load_annotations(ontology_name)
+    uri_label, annotations = load_annotations(ontology_name)
     candidate_num = len(classes)
 
     embeddings, model_rdf2vec = get_rdf2vec_embed(
@@ -240,5 +253,18 @@ def embed_owl2vec(model: gensim.models.Word2Vec, instances):
 def embed_opa_onto(model: gensim.models.Word2Vec, instances):
     all_e = [model.wv.get_vector(c.lower()) if c.lower() in model.wv.index_to_key else np.zeros(model.vector_size) for c in instances]
     all_e = np.array(all_e)
-    
+
     return all_e
+
+def embed_opa_onto_temp(w2v, classes, individuals):
+    classes_e = [w2v.wv.get_vector(c.lower()) if c.lower() in w2v.wv.index_to_key else np.zeros(w2v.vector_size)
+                 for c in classes]
+    classes_e = np.array(classes_e)
+
+    individuals_e = [w2v.wv.get_vector(i.lower()) if i.lower() in w2v.wv.index_to_key else np.zeros(w2v.vector_size)
+                     for i in individuals]
+    individuals_e = np.array(individuals_e)
+
+    all_e = np.concatenate((classes_e, individuals_e))
+
+    return classes_e, individuals_e

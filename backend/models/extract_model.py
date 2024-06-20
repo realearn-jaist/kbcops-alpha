@@ -93,8 +93,7 @@ def load_axioms(id):
         list: The list of axioms loaded from the file"""
     path = os.path.join(getPath_ontology_directory(id), "axioms.txt")
 
-    with open(path, "r", encoding="utf-8") as f:
-        return f.readlines()
+    return [line.strip() for line in open(path).readlines()]
 
 
 def load_classes(id):
@@ -105,9 +104,7 @@ def load_classes(id):
         list: The list of classes loaded from the file"""
     path = os.path.join(getPath_ontology_directory(id), "classes.txt")
 
-    with open(path, "r", encoding="utf-8") as f:
-        return f.readlines()
-
+    return [line.strip() for line in open(path).readlines()]
 
 def load_individuals(id):
     """Load individuals from a file
@@ -117,9 +114,7 @@ def load_individuals(id):
         list: The list of individuals loaded from the file"""
     path = os.path.join(getPath_ontology_directory(id), "individuals.txt")
 
-    with open(path, "r", encoding="utf-8") as f:
-        return f.readlines()
-
+    return [line.strip() for line in open(path).readlines()]
 
 def load_annotations(id):
     """Load annotations from a file
@@ -128,22 +123,19 @@ def load_annotations(id):
     Returns:
         dict: The dictionary of uri labels and the list of annotations loaded from the file
     """
-    uri_label, annotations = dict(), list()
+    uri_label, annotations = list(), list()
 
     path = os.path.join(getPath_ontology_directory(id), "uri_labels.txt")
-
-    with open(path, "r", encoding="utf-8") as f:
-        for line in f.readlines():
-            tmp = line.strip().split()
-            uri_label[tmp[0]] = pre_process_words(tmp[1:])
-
+    
+    with open( path, "r", encoding="utf-8" ) as f:
+        uri_label = f.readlines()
+    
     path = os.path.join(getPath_ontology_directory(id), "annotations.txt")
+    
+    with open( path, "r", encoding="utf-8" ) as f:
+        annotations = f.readlines()
 
-    with open(path, "r", encoding="utf-8") as f:
-        for line in f.readlines():
-            tmp = line.strip().split()
-            annotations.append(tmp)
-
+            
     return uri_label, annotations
 
 

@@ -9,9 +9,11 @@ import os
 import csv
 import math
 import models.extract_model as em
+import numpy
 
 from tqdm import tqdm
 
+from models.extract_model import load_annotations, load_axioms, load_classes, load_individuals
 from controllers.graph_controller import create_graph
 from models.evaluator_model import write_garbage_metrics, write_evaluate
 from models.ontology_model import getPath_ontology, getPath_ontology_directory
@@ -86,7 +88,6 @@ class InclusionEvaluator(Evaluator):
             sorted_classes_non = list()
 
             for j in sorted_indexes:
-                # print(self.classes[j], j, sub)
                 sorted_classes_non.append(self.classes[j])
                 if self.classes[j] not in self.inferred_ancestors[sub]:
                     sorted_classes.append(self.classes[j])
@@ -189,28 +190,20 @@ class InclusionEvaluator(Evaluator):
             performance_data.get("hit_at_10"),
         )
 
-
 def predict_func(ontology, algorithm):
     # load individuals
-    # individuals = list(em.load_individuals(ontology)) # there is a error
-    individuals = [
-        line.strip() for line in open(f"storage\{ontology}\individuals.txt").readlines()
-    ]
+    individuals = load_individuals(ontology)
     individuals_count = len(individuals)
 
     # load classes file
     print(f"load {ontology} classes")
-    # classes = [line.strip() for line in load_classes(ontology)] # there is a error
-    classes = [
-        line.strip() for line in open(f"storage\{ontology}\classes.txt").readlines()
-    ]
+    classes = load_classes(ontology)
 
     onto_type = "ABox" if individuals_count > int(0.1 * len(classes)) else "TBox"
 
     # embed class with model
     print(f"embedding {ontology} classes")
     classes_e, individuals_e = load_embedding(ontology, algorithm)
-    # classes_e, individuals_e = embed_obj(onto_type, algorithm, model, classes, individuals)
     
     # load train test val file
     print(f"load {ontology} train/test/validate")
@@ -228,7 +221,6 @@ def predict_func(ontology, algorithm):
 
     # split value in file
     train_x_list, train_y_list = list(), list()
-
     for s in train_samples:
         # when it come to ABox sub will consider as a individual and sup consider as a class
         sub, sup, label = s[0], s[1], s[2]
