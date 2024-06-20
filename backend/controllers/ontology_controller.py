@@ -28,34 +28,62 @@ from owl2vec_star.Label import pre_process_words  # type: ignore
 
 
 def upload_ontology(file, id):
+    """Upload ontology file to the server and save it to the database
+
+    Args:
+        file (File): The ontology file to upload
+        id (str): The id of the ontology
+    Returns:
+        id (str): The id of the ontology
+    """
     if id.endswith(".owl"):
         id = id[:-4]
 
     filename = id + ".owl"
-    
+
     path = save_ontology(file, id, filename)
 
     return id if path else None
 
+
 def getAll_ontology():
+    """Get all ontology in the database
+
+    Returns:
+        list: The list of ontology in the database
+    """
     return list_ontology()
 
 
 def get_onto_stat(id):
+    """Get the statistics of the ontology
+
+    Args:
+        id (str): The id of the ontology
+    Returns:
+        dict: The statistics of the ontology
+    """
     axioms = load_axioms(id)
     classes = load_classes(id)
     individuals = load_individuals(id)
-    annotations = load_annotations(id)
+    uri_label, annotations = load_annotations(id)
 
     return {
         "no_class": len(classes),
         "no_individual": len(individuals),
         "no_axiom": len(axioms),
-        "no_annotation": len(annotations),
+        "no_annotation": len(uri_label + annotations),
     }
 
 
 def extract_data(id):
+    """Extract data from the ontology file
+
+    Args:
+        id (str): The id of the ontology
+    Returns:
+        dict: The statistics of the ontology
+    """
     onto_file = getPath_ontology(id)
 
     # extract axiom, entity, annotation
@@ -144,6 +172,14 @@ def extract_data(id):
 
 
 def get_all_superclasses(cls, cache):
+    """Returns all superclasses of a class
+
+    Args:
+        cls (Class): The class to get the superclasses of
+        cache (dict): A dictionary to store the superclasses
+    Returns:
+        list: The list of superclasses of the class
+    """
     if cls in cache:
         return cache[cls]
 
@@ -158,6 +194,13 @@ def get_all_superclasses(cls, cache):
 
 
 def abox_infer(onto):
+    """Infer the classes of the individuals in the ABox
+
+    Args:
+        onto (Ontology): The ontology to infer the classes from
+    Returns:
+        list: The list of inferred classes of the individuals in the ABox
+    """
     superclass_cache = defaultdict(list)
     results = []
     for ind in tqdm(onto.individuals(), desc="Processing individuals"):
@@ -176,6 +219,13 @@ def abox_infer(onto):
 
 
 def tbox_infer(onto):
+    """Infer the classes of the individuals in the TBox
+
+    Args:
+        onto (Ontology): The ontology to infer the classes from
+    Returns:
+        list: The list of inferred classes of the individuals in the TBox
+    """
     superclass_cache = defaultdict(list)
     results = []
     for cls in tqdm(onto.classes(), desc="Processing classes"):
@@ -191,7 +241,13 @@ def tbox_infer(onto):
 
 
 def get_ground_truth(class_or_individuals):
-    """Returns the ground truth of a class or individual"""
+    """Returns the ground truth of a class or individual
+
+    Args:
+        class_or_individuals (Class/Individual): The class or individual to get the ground truth of
+    Returns:
+        list: The list of ground truth of the class or individual
+    """
     immediate_superclasses = []
     for sc in class_or_individuals.is_a:
         if sc != owl.Thing:
@@ -200,7 +256,13 @@ def get_ground_truth(class_or_individuals):
 
 
 def train_test_val(class_or_individuals):
-    """Splits the classes or individuals into train, test, and val sets."""
+    """Splits the classes or individuals into train, test, and val sets.
+
+    Args:
+        class_or_individuals (list): The list of classes or individuals
+    Returns:
+        tuple: The train, test, and val sets of the classes or individuals
+    """
     train_proportion = 0.7
     test_proportion = 0.2
 
@@ -217,7 +279,15 @@ def train_test_val(class_or_individuals):
 
 
 def writePositiveSamplesToCSV(csv_path, classes_or_individuals, id):
-    """Writes the positive samples to a CSV file."""
+    """Writes the positive samples to a CSV file.
+
+    Args:
+        csv_path (str): The path to the CSV file
+        classes_or_individuals (list): The list of classes or individuals
+        id (str): The id of the ontology
+    Returns:
+        None
+    """
     root = getPath_ontology_directory(id)
     with open(csv_path, "w") as f:
         for ind in classes_or_individuals:
@@ -238,7 +308,14 @@ def writePositiveSamplesToCSV(csv_path, classes_or_individuals, id):
 
 
 def writeNegativeSamplesToCSV(csv_path, negative_samples):
-    """Writes the negative samples to a CSV file."""
+    """Writes the negative samples to a CSV file.
+
+    Args:
+        csv_path (str): The path to the CSV file
+        negative_samples (list): The list of negative samples
+    Returns:
+        None
+    """
     with open(csv_path, "a") as f:
         for ind, negative_class, label in negative_samples:
             ind_uri = ind.iri
@@ -248,6 +325,11 @@ def writeNegativeSamplesToCSV(csv_path, negative_samples):
 def read_infer_classes(file):
     """
     Reads the infer_classes file and returns a dictionary mapping individuals to their inferred classes.
+
+    Args:
+        file (File): The infer_classes file
+    Returns:
+        dict: The dictionary mapping individuals to their inferred classes
     """
     infer_dict = {}
     for line in file:
@@ -260,7 +342,16 @@ def read_infer_classes(file):
 
 
 def generate_negative_samples_abox(ontology, num_samples, infer_classes_path, label):
-    """Generates negative samples for the ABox and returns them as a list."""
+    """Generates negative samples for the ABox and returns them as a list.
+
+    Args:
+        ontology (Ontology): The ontology to generate the negative samples from
+        num_samples (int): The number of negative samples to generate
+        infer_classes_path (File): The path to the infer_classes file
+        label (int): The label for the negative samples
+    Returns:
+        list: The list of negative samples
+    """
     all_individuals = list(ontology.individuals())
     infer_classes = read_infer_classes(infer_classes_path)
     negative_samples = []
@@ -299,7 +390,16 @@ def generate_negative_samples_abox(ontology, num_samples, infer_classes_path, la
 
 
 def generate_negative_samples_tbox(ontology, num_samples, infer_classes_path, label):
-    """Generates negative samples for the TBox and returns them as a list."""
+    """Generates negative samples for the TBox and returns them as a list.
+
+    Args:
+        ontology (Ontology): The ontology to generate the negative samples from
+        num_samples (int): The number of negative samples to generate
+        infer_classes_path (File): The path to the infer_classes file
+        label (int): The label for the negative samples
+    Returns:
+        list: The list of negative samples
+    """
     all_classes = list(ontology.classes())
     infer_classes = read_infer_classes(infer_classes_path)
     negative_samples = []
@@ -336,7 +436,14 @@ def generate_negative_samples_tbox(ontology, num_samples, infer_classes_path, la
 
 
 def train_test_val_abox(onto, id):
-    """Main function for generating training, test, and validation sets for the ABox."""
+    """Main function for generating training, test, and validation sets for the ABox.
+
+    Args:
+        onto (Ontology): The ontology to generate the training, test, and validation sets from
+        id (str): The id of the ontology
+    Returns:
+        None
+    """
     all_individuals = list(onto.individuals())
     train_individuals, test_individuals, val_individuals = train_test_val(
         all_individuals
@@ -361,18 +468,25 @@ def train_test_val_abox(onto, id):
         onto, len(train_individuals), load_infer(id), 1
     )
     writeNegativeSamplesToCSV(train_csv_path_0, negative_samples)
-    print("abox negative sample (-1) time usage:", time.time()-start_time)
+    print("abox negative sample (-1) time usage:", time.time() - start_time)
 
     start_time = time.time()
     negative_samples = generate_negative_samples_abox(
         onto, len(train_individuals), load_infer(id), 0
     )
     writeNegativeSamplesToCSV(train_csv_path_1, negative_samples)
-    print("abox negative sample (-0) time usage:", time.time()-start_time)
+    print("abox negative sample (-0) time usage:", time.time() - start_time)
 
 
 def train_test_val_tbox(onto, id):
-    """Main function for generating training, test, and validation sets for the TBox."""
+    """Main function for generating training, test, and validation sets for the TBox.
+
+    Args:
+        onto (Ontology): The ontology to generate the training, test, and validation sets from
+        id (str): The id of the ontology
+    Returns:
+        None
+    """
 
     # split classes into train, test, and val
     all_classes = list(onto.classes())
@@ -400,7 +514,7 @@ def train_test_val_tbox(onto, id):
         onto, len(train_classes), load_infer(id), 1
     )
     writeNegativeSamplesToCSV(train_csv_path_0, negative_samples)
-    print("tbox negative sample (-1) time usage:", time.time()-start_time)
+    print("tbox negative sample (-1) time usage:", time.time() - start_time)
 
     # generate negative samples for considering infered classes to 0 and save to csv
     start_time = time.time()
@@ -408,4 +522,4 @@ def train_test_val_tbox(onto, id):
         onto, len(train_classes), load_infer(id), 0
     )
     writeNegativeSamplesToCSV(train_csv_path_1, negative_samples)
-    print("tbox negative sample (-0) time usage:", time.time()-start_time)
+    print("tbox negative sample (-0) time usage:", time.time() - start_time)

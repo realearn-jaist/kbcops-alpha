@@ -3,13 +3,15 @@ import unittest
 from unittest.mock import MagicMock, patch
 from models import embed_model as om
 
-sys.path.append('../backend')
+sys.path.append("../backend")
+
+
 class TestModelFunctions(unittest.TestCase):
 
     @patch("models.embed_model.getPath_ontology_directory")
     @patch("os.path.exists")
     def test_isModelExist(self, mock_exists, mock_getPath):
-        """Test isModelExist function in embed_model.py"""
+        """Test that isModelExist function in embed_model.py"""
         mock_getPath.return_value = "/fake/path"
         mock_exists.return_value = True
         self.assertTrue(om.isModelExist("ontology", "algorithm"))
