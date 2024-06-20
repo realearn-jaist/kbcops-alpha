@@ -123,7 +123,7 @@ def load_annotations(id):
     Returns:
         dict: The dictionary of uri labels and the list of annotations loaded from the file
     """
-    uri_label, annotations = dict(), list()
+    uri_label, annotations = list(), list()
 
     path = os.path.join(getPath_ontology_directory(id), "uri_labels.txt")
     
