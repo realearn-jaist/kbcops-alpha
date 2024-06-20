@@ -96,7 +96,7 @@ export default function Dashboard() {
       .then((response) => {
         console.log("Extract successful:", response.data);
         set_display_onto_id(onto_id)
-        set_display_onto_data(response.data.data)
+        set_display_onto_data(response.data.onto_data)
       })
       .catch((error) => {
         console.error("Extract failed:", error);
@@ -110,7 +110,7 @@ export default function Dashboard() {
       .then((response) => {
         console.log("Get stat successful:", response.data);
         set_display_onto_id(onto_id)
-        set_display_onto_data(response.data.data)
+        set_display_onto_data(response.data.onto_data)
       })
       .catch((error) => {
         console.error("Get stat failed:", error);

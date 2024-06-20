@@ -1,6 +1,3 @@
-import os
-import time
-from models.graph_model import load_graph
 from models.evaluator_model import read_evaluate, read_garbage_metrics
 from controllers.graph_controller import create_graph
 from controllers.evaluator import predict_func
@@ -40,7 +37,7 @@ def upload():
 def extract(ontology):
     data = extract_data(ontology)
     if data:
-        return jsonify({"message": "Extraction successfully", "data": data}), 200
+        return jsonify({"message": "Extraction successfully", "onto_data": data}), 200
     else:
         return jsonify({"message": "Extraction failed"}), 500
 
@@ -57,7 +54,7 @@ def list_ontologies():
 def get_ontology_stat(ontology):
     data = get_onto_stat(ontology)
     return (
-        jsonify({"message": "Ontologies listed successfully", "data": data}),
+        jsonify({"message": "Ontologies listed successfully", "onto_data": data}),
         200,
     )
     
@@ -71,25 +68,27 @@ def embed_route(ontology):
     result = embed_func(ontology_name=ontology, algorithm=algorithm)
     
     print(result, f"{algorithm}")
-    return jsonify({"message": result, "onto_id": ontology, "algo": algorithm})
+    return jsonify({"message": result, "onto_id": ontology, "algo": algorithm}), 200
 
 
 @ontology_blueprint.route("/evaluate/<ontology>/<algorithm>", methods=["GET"])
 def predict_route(ontology, algorithm):
     result = predict_func(ontology=ontology, algorithm=algorithm)
-    return jsonify(result)
+    return jsonify(result), 200
 
 @ontology_blueprint.route("/evaluate/<ontology>/<algorithm>/stat", methods=["GET"])
 def get_evaluate_stat(ontology, algorithm):
     result = dict()
-    result["message"] = "load evaluate successful!"
+    
     try:
+        result["message"] = "load evaluate successful!"
         result["performance"] = read_evaluate(ontology, algorithm)
         result["garbage"] = read_garbage_metrics(ontology, algorithm)
         result["images"] = create_graph(ontology, algorithm)
-        print("here")
+        return jsonify(result), 200
     except:
+        result["message"] = "load evaluate not successful!"
         result["performance"] = {"mrr": 0, "hit_at_1": 0, "hit_at_5": 0, "hit_at_10": 0, "garbage": 0 }
         result["garbage"] = []
         result["images"] = []
-    return jsonify(result)
+        return jsonify(result), 500

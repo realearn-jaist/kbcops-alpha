@@ -349,7 +349,7 @@ const Main: React.FC<MainProps> = ({ open, onto_id, onto_data, algo, eval_metric
 
         </Box>
         <Copyright />
-        <RequestComponent />
+        {/* <RequestComponent /> */}
       </Box>
     </MainWrapper>
   );
