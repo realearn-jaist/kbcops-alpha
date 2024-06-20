@@ -8,11 +8,13 @@ from models.ontology_model import getPath_ontology_directory
 
 def load_graph(onto, algo):
     """Load graph fig from directory
+
     Args:
         onto (str): The name of the ontology
         algo (str): The name of the algorithm
     Returns:
-        list: The list of graph fig"""
+        list: The list of graph fig
+    """
     directory = os.path.join(
         getPath_ontology_directory(onto), algo, "graph_fig"
     )  # where graph fig save

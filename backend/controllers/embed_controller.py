@@ -13,16 +13,28 @@ import numpy
 
 nltk.download("punkt")
 
-from models.extract_model import load_annotations, load_axioms, load_classes, load_individuals
+from models.extract_model import (
+    load_annotations,
+    load_axioms,
+    load_classes,
+    load_individuals,
+)
 from models.embed_model import isModelExist, save_embedding, save_model
 from models.ontology_model import getPath_ontology
 from owl2vec_star.RDF2Vec_Embed import get_rdf2vec_walks, get_rdf2vec_embed
 from owl2vec_star.Label import pre_process_words, URI_parse
 
 
-def opa2vec_or_onto2vec(
-    ontology_name, config_file, algorithm
-):
+def opa2vec_or_onto2vec(ontology_name, config_file, algorithm):
+    """Embedding function for OPA2Vec and Onto2Vec
+
+    Args:
+        ontology_name (str): The name of the ontology
+        config_file (str): The path to the configuration file
+        algorithm (str): The name of the algorithm
+    Returns:
+        str: The result of the embedding process
+    """
     # get config
     config = configparser.ConfigParser()
     config.read(config_file)
@@ -34,14 +46,14 @@ def opa2vec_or_onto2vec(
     uri_label, annotations = load_annotations(ontology_name)
 
     if algorithm == "opa2vec":
-        lines = ( axioms + annotations + uri_label )
+        lines = axioms + annotations + uri_label
     else:  # embedding_type.lower() == 'onto2vec'
         lines = axioms
 
     sentences = [
         [item.strip().lower() for item in line.strip().split()] for line in lines
     ]
-    
+
     # model word2vec
     sg_v = 1 if config["MODEL_OPA2VEC_ONTO2VEC"]["model"] == "sg" else 0
     w2v = gensim.models.Word2Vec(
@@ -52,10 +64,10 @@ def opa2vec_or_onto2vec(
         window=int(config["MODEL_OPA2VEC_ONTO2VEC"]["windsize"]),
         workers=multiprocessing.cpu_count(),
     )
-    
+
     embeddings = embed_opa_onto(w2v, classes + individuals)
     classes_e, individuals_e = embed_opa_onto_temp(w2v, classes, individuals)
-    
+
     save_model(ontology_name, algorithm, w2v)
     save_embedding(ontology_name, algorithm, embeddings)
 
@@ -63,9 +75,18 @@ def opa2vec_or_onto2vec(
 
 
 def owl2vec_star(ontology_name, config_file, algorithm):
+    """Embedding function for OWL2Vec-Star
+
+    Args:
+        ontology_name (str): The name of the ontology
+        config_file (str): The path to the configuration file
+        algorithm (str): The name of the algorithm
+    Returns:
+        str: The result of the embedding process
+    """
     config = configparser.ConfigParser()
     config.read(config_file)
-    
+
     # retrieve file
     axioms = load_axioms(ontology_name)
     classes = load_classes(ontology_name)
@@ -77,12 +98,11 @@ def owl2vec_star(ontology_name, config_file, algorithm):
 
     for line in uri_label_load:
         tmp = line.strip().split()
-        uri_label[tmp[0]] = pre_process_words(tmp[1:])    
+        uri_label[tmp[0]] = pre_process_words(tmp[1:])
     for line in annotations_load:
         tmp = line.strip().split()
         annotations.append(tmp)
 
-            
     # structural doc
     walk_sentences, axiom_sentences, URI_Doc = list(), list(), list()
     if (
@@ -170,7 +190,7 @@ def owl2vec_star(ontology_name, config_file, algorithm):
     all_doc = URI_Doc + Lit_Doc + Mix_Doc
 
     random.shuffle(all_doc)
-    
+
     # word2vec model
     print("\nTrain the embedding model ...")
     model_ = gensim.models.Word2Vec(
@@ -184,7 +204,7 @@ def owl2vec_star(ontology_name, config_file, algorithm):
         min_count=int(config["MODEL_OWL2VECSTAR"]["min_count"]),
         seed=int(config["MODEL_OWL2VECSTAR"]["seed"]),
     )
-    
+
     embeddings = embed_owl2vec(model_, classes + individuals)
 
     save_model(ontology_name, algorithm, model_)
@@ -193,9 +213,18 @@ def owl2vec_star(ontology_name, config_file, algorithm):
 
 
 def rdf2vec(ontology_name, config_file, algorithm):
+    """Embedding function for RDF2Vec
+
+    Args:
+        ontology_name (str): The name of the ontology
+        config_file (str): The path to the configuration file
+        algorithm (str): The name of the algorithm
+    Returns:
+        str: The result of the embedding process
+    """
     config = configparser.ConfigParser()
     config.read(config_file)
-    
+
     # retrieve file
     axioms = load_axioms(ontology_name)
     classes = load_classes(ontology_name)
@@ -211,18 +240,26 @@ def rdf2vec(ontology_name, config_file, algorithm):
         embed_size=int(config["BASIC"]["embed_size"]),
         classes=entities,
     )
-    
+
     save_model(ontology_name, algorithm, model_rdf2vec)
     save_embedding(ontology_name, algorithm, embeddings)
     return f"{algorithm} embedded success!!"
 
 
 def embed_func(ontology_name, algorithm):
+    """Embedding function for the given algorithm and ontology
+
+    Args:
+        ontology_name (str): The name of the ontology
+        algorithm (str): The name of the algorithm
+    Returns:
+        str: The result of the embedding process
+    """
     # check if system have ontology file and algorithm so that it can directly return the result
     if isModelExist(ontology_name, algorithm):
         result = f"{algorithm} model already exists for {ontology_name} ontology"
         return result
-    
+
     config_file = "controllers/default.cfg"
 
     algorithms = {
@@ -231,7 +268,7 @@ def embed_func(ontology_name, algorithm):
         "opa2vec": opa2vec_or_onto2vec,
         "onto2vec": opa2vec_or_onto2vec,
     }
-    
+
     if algorithm in algorithms:
         result = algorithms[algorithm](
             ontology_name=ontology_name,
@@ -241,30 +278,72 @@ def embed_func(ontology_name, algorithm):
         return result
     else:
         raise ValueError(f"Unsupported algorithm: {algorithm}")
-    
+
+
 def embed_owl2vec(model: gensim.models.Word2Vec, instances):
+    """Embed instances using the given model
+
+    Args:
+        model (gensim.models.Word2Vec): The Word2Vec model
+        instances (list): The list of instances to embed
+    Returns:
+        list: The list of embedded instances
+    """
     feature_vectors = []
     for instance in instances:
-        v_uri = model.wv.get_vector(instance) if instance in model.wv.index_to_key else np.zeros(model.vector_size)
+        v_uri = (
+            model.wv.get_vector(instance)
+            if instance in model.wv.index_to_key
+            else np.zeros(model.vector_size)
+        )
         feature_vectors.append(v_uri)
 
     return feature_vectors
 
+
 def embed_opa_onto(model: gensim.models.Word2Vec, instances):
-    all_e = [model.wv.get_vector(c.lower()) if c.lower() in model.wv.index_to_key else np.zeros(model.vector_size) for c in instances]
+    """Embed instances using the given model
+
+    Args:
+        model (gensim.models.Word2Vec): The Word2Vec model
+        instances (list): The list of instances to embed
+    Returns:
+        list: The list of embedded instances
+    """
+    all_e = [
+        (
+            model.wv.get_vector(c.lower())
+            if c.lower() in model.wv.index_to_key
+            else np.zeros(model.vector_size)
+        )
+        for c in instances
+    ]
     all_e = np.array(all_e)
 
     return all_e
 
-def embed_opa_onto_temp(w2v, classes, individuals):
-    classes_e = [w2v.wv.get_vector(c.lower()) if c.lower() in w2v.wv.index_to_key else np.zeros(w2v.vector_size)
-                 for c in classes]
-    classes_e = np.array(classes_e)
 
-    individuals_e = [w2v.wv.get_vector(i.lower()) if i.lower() in w2v.wv.index_to_key else np.zeros(w2v.vector_size)
-                     for i in individuals]
-    individuals_e = np.array(individuals_e)
+# def embed_opa_onto_temp(w2v, classes, individuals):
+#     classes_e = [
+#         (
+#             w2v.wv.get_vector(c.lower())
+#             if c.lower() in w2v.wv.index_to_key
+#             else np.zeros(w2v.vector_size)
+#         )
+#         for c in classes
+#     ]
+#     classes_e = np.array(classes_e)
 
-    all_e = np.concatenate((classes_e, individuals_e))
+#     individuals_e = [
+#         (
+#             w2v.wv.get_vector(i.lower())
+#             if i.lower() in w2v.wv.index_to_key
+#             else np.zeros(w2v.vector_size)
+#         )
+#         for i in individuals
+#     ]
+#     individuals_e = np.array(individuals_e)
 
-    return classes_e, individuals_e
+#     all_e = np.concatenate((classes_e, individuals_e))
+
+#     return classes_e, individuals_e

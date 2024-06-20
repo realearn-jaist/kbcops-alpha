@@ -9,12 +9,14 @@ from models.ontology_model import getPath_ontology_directory
 
 def write_evaluate(ontology, algorithm, data):
     """Writes the evaluation data to a json file
+
     Args:
         ontology (str): The name of the ontology
         algorithm (str): The name of the algorithm
         data (dict): The evaluation data
     Returns:
-        None"""
+        None
+    """
     file_path = os.path.join(
         getPath_ontology_directory(ontology), algorithm, "performance.json"
     )
@@ -25,6 +27,7 @@ def write_evaluate(ontology, algorithm, data):
 
 def read_evaluate(ontology, algorithm):
     """Reads the evaluation data from a json file
+
     Args:
         ontology (str): The name of the ontology
         algorithm (str): The name of the algorithm
@@ -42,12 +45,14 @@ def read_evaluate(ontology, algorithm):
 
 def write_garbage_metrics(ontology, algorithm, data):
     """Writes the garbage metrics data to a csv file
+
     Args:
         ontology (str): The name of the ontology
         algorithm (str): The name of the algorithm
         data (list): The garbage metrics data
     Returns:
-        None"""
+        None
+    """
     json_output = []
 
     file_path = os.path.join(
@@ -65,11 +70,13 @@ def write_garbage_metrics(ontology, algorithm, data):
 
 def read_garbage_metrics(ontology, algorithm):
     """Reads the garbage metrics data from a csv file
+
     Args:
         ontology (str): The name of the ontology
         algorithm (str): The name of the algorithm
     Returns:
-        list: The garbage metrics data"""
+        list: The garbage metrics data
+    """
     json_output = []
 
     headers = [
@@ -100,11 +107,13 @@ def read_garbage_metrics(ontology, algorithm):
 
 def read_garbage_metrics_pd(ontology, algorithm):
     """Reads the garbage metrics data from a csv file
+
     Args:
         ontology (str): The name of the ontology
         algorithm (str): The name of the algorithm
     Returns:
-        pd.DataFrame: The garbage metrics data"""
+        pd.DataFrame: The garbage metrics data
+    """
     file_path = os.path.join(
         getPath_ontology_directory(ontology), algorithm, "garbage.csv"
     )

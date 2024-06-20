@@ -13,7 +13,12 @@ import numpy
 
 from tqdm import tqdm
 
-from models.extract_model import load_annotations, load_axioms, load_classes, load_individuals
+from models.extract_model import (
+    load_annotations,
+    load_axioms,
+    load_classes,
+    load_individuals,
+)
 from controllers.graph_controller import create_graph
 from models.evaluator_model import write_garbage_metrics, write_evaluate
 from models.ontology_model import getPath_ontology, getPath_ontology_directory
@@ -24,6 +29,13 @@ from owl2vec_star.RDF2Vec_Embed import get_rdf2vec_walks
 
 
 def get_subfix(value):
+    """Get the subfix of a string
+
+    Args:
+        value (str): The string to get the subfix of
+    Returns:
+        str: The subfix of the string
+    """
     delimiter = "#" if "#" in value else "/"
     subfix = value.rsplit(delimiter, 1)[-1]
     return subfix
@@ -59,6 +71,14 @@ class InclusionEvaluator(Evaluator):
         self.result = dict()
 
     def evaluate(self, model, eva_samples):
+        """Evaluate the model
+
+        Args:
+            model (object): The model to evaluate
+            eva_samples (list): The list of samples to evaluate
+        Returns:
+            tuple: The evaluation metrics
+        """
         print("start evaluate")
         candidate_num = len(self.classes)
         data = []  # garbage
@@ -190,7 +210,16 @@ class InclusionEvaluator(Evaluator):
             performance_data.get("hit_at_10"),
         )
 
+
 def predict_func(ontology, algorithm):
+    """Predict the ontology with the algorithm
+
+    Args:
+        ontology (str): The name of the ontology
+        algorithm (str): The name of the algorithm
+    Returns:
+        dict: The result of the prediction
+    """
     # load individuals
     individuals = load_individuals(ontology)
     individuals_count = len(individuals)
@@ -204,7 +233,7 @@ def predict_func(ontology, algorithm):
     # embed class with model
     print(f"embedding {ontology} classes")
     classes_e, individuals_e = load_embedding(ontology, algorithm)
-    
+
     # load train test val file
     print(f"load {ontology} train/test/validate")
 

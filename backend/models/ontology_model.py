@@ -6,12 +6,14 @@ from utils.file_handler import load_file, replace_or_create_folder, save_file
 
 def save_ontology(file, id, filename):
     """Save the ontology file to the storage folder
+
     Args:
         file (FileStorage): The ontology file
         id (str): The id of the ontology
         filename (str): The name of the file
     Returns:
-        str: The path of the saved file"""
+        str: The path of the saved file
+    """
     STORAGE_FOLDER = current_app.config["STORAGE_FOLDER"]
     path = os.path.join(STORAGE_FOLDER, id)
 
@@ -24,8 +26,10 @@ def save_ontology(file, id, filename):
 
 def list_ontology():
     """List all the ontologies in the storage folder
+
     Returns:
-        list: The list of ontologies"""
+        list: The list of ontologies
+    """
     STORAGE_FOLDER = current_app.config["STORAGE_FOLDER"]
 
     ontologies = []
@@ -40,6 +44,7 @@ def list_ontology():
 
 def getPath_ontology(id):
     """Get the path of the ontology file
+
     Args:
         id (str): The id of the ontology
     Returns:
@@ -57,10 +62,12 @@ def getPath_ontology(id):
 
 def getPath_ontology_directory(id):
     """Get the path of the ontology directory
+
     Args:
         id (str): The id of the ontology
     Returns:
-        str: The path of the ontology directory"""
+        str: The path of the ontology directory
+    """
     try:
         STORAGE_FOLDER = current_app.config["STORAGE_FOLDER"]
         path = os.path.join(STORAGE_FOLDER, id)

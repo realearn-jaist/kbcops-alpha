@@ -10,11 +10,13 @@ from models.ontology_model import getPath_ontology, getPath_ontology_directory
 
 def isModelExist(ontology_name, algorithm):
     """Check if the model exists in the directory
+
     Args:
         ontology_name (str): The name of the ontology
         algorithm (str): The name of the algorithm
     Returns:
-        bool: True if the model exists, False otherwise"""
+        bool: True if the model exists, False otherwise
+    """
     path = os.path.join(getPath_ontology_directory(ontology_name), algorithm, "model")
 
     return os.path.exists(path)
@@ -22,6 +24,7 @@ def isModelExist(ontology_name, algorithm):
 
 def save_model(ontology_name, algorithm, model):
     """Save the model to the directory
+
     Args:
         ontology_name (str): The name of the ontology
         algorithm (str): The name of the algorithm
@@ -43,11 +46,13 @@ def save_model(ontology_name, algorithm, model):
 
 def load_model(ontology_name, algorithm):
     """Load the model from the directory
+
     Args:
         ontology_name (str): The name of the ontology
         algorithm (str): The name of the algorithm
     Returns:
-        object: The model"""
+        object: The model
+    """
     if not isModelExist(ontology_name, algorithm):
         return None
 
@@ -61,12 +66,14 @@ def load_model(ontology_name, algorithm):
 
 def save_embedding(ontology_name, algorithm, embed):
     """Save the embedding to the directory
+
     Args:
         ontology_name (str): The name of the ontology
         algorithm (str): The name of the algorithm
         embed (numpy.ndarray): The embedding to save
     Returns:
-        numpy.ndarray: The embedding saved"""
+        numpy.ndarray: The embedding saved
+    """
     if not isModelExist(ontology_name, algorithm):
         return None
 
@@ -81,11 +88,13 @@ def save_embedding(ontology_name, algorithm, embed):
 
 def load_embedding(ontology_name, algorithm):
     """Load the embedding from the directory
+
     Args:
         ontology_name (str): The name of the ontology
         algorithm (str): The name of the algorithm
     Returns:
-        numpy.ndarray: The embedding saved"""
+        numpy.ndarray: The embedding saved
+    """
     no_class = len(load_classes(ontology_name))
 
     if not isModelExist(ontology_name, algorithm):
