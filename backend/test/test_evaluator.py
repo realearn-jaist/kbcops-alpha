@@ -2,16 +2,22 @@ import sys
 import unittest
 from unittest.mock import patch
 
-sys.path.append('../backend')
+sys.path.append("../backend")
 import numpy as np
 from app import create_app
 from controllers.evaluator import InclusionEvaluator
 
 
 class TestInclusionEvaluator(unittest.TestCase):
+    """Test cases for evaluator.py"""
 
     def setUp(self):
-        """Create the Flask app and a test client for the app. Establish an application context before each test."""
+        """Create the Flask app and a test client for the app. Establish an application context before each test.
+        Args:
+            self: TestInclusionEvaluator object
+        Returns:
+            None
+        """
         self.app = create_app()
         self.app.testing = True
 
@@ -61,7 +67,14 @@ class TestInclusionEvaluator(unittest.TestCase):
     @patch("controllers.evaluator.write_evaluate", return_value=None)
     @patch("controllers.evaluator.write_garbage_metrics", return_value=[])
     def test_evaluate_method(self, mock_write_garbage_metrics, mock_write_evaluate):
-        """Test evaluate method in InclusionEvaluator class in evaluator.py"""
+        """Test evaluate method in InclusionEvaluator class in evaluator.py
+
+        Args:
+            mock_write_garbage_metrics: MagicMock object
+            mock_write_evaluate: MagicMock object
+        Returns:
+            None
+        """
         print("Classes:", self.classes)
         print("Test Samples:", self.test_samples)
 
@@ -77,7 +90,7 @@ class TestInclusionEvaluator(unittest.TestCase):
             self.inferred_ancestors,
             self.ontology,
             self.algorithm,
-            self.onto_type
+            self.onto_type,
         )
 
         class SimpleMockModel:
