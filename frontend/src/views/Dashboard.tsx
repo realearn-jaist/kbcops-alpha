@@ -162,19 +162,27 @@ export default function Dashboard() {
   }
 
   const get_evaluate = (onto_id: string, algo: string) => {
+    if (onto_id === "" || algo === "") return;
+
+    getOntologyStat(onto_id)
+    set_display_algo(algo)
+
     axios
       .get("http://127.0.0.1:5000/evaluate/" + onto_id + "/" + algo + "/stat")
       .then((response) => {
-        console.log("evaluate successful:", response.data);
-        getOntologyStat(onto_id)
-        set_display_algo(algo)
+        console.log("get evaluate stat successful:", response.data);
+
         set_display_eval_metric(response.data.performance)
         setDisplayGarbageMetric(response.data.garbage)
         setDisplayGarbageImage(response.data.images)
       })
       .catch((error) => {
-        console.error("evaluate failed:", error);
+        console.error("get evaluate stat failed:", error);
         // Handle error
+
+        set_display_eval_metric({mrr: 0, hit_at_1: 0, hit_at_5: 0, hit_at_10: 0, garbage: 0 })
+        setDisplayGarbageMetric([])
+        setDisplayGarbageImage([])
       });
   }
 

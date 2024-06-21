@@ -5,6 +5,7 @@ from controllers.evaluator_controller import predict_func
 from controllers.embed_controller import embed_func
 from flask import jsonify, request, Blueprint  # type: ignore
 from controllers.ontology_controller import get_onto_stat, getAll_ontology, upload_ontology, extract_data
+from models.graph_model import load_graph
 
 
 ontology_blueprint = Blueprint("ontology", __name__)
@@ -91,7 +92,7 @@ def get_evaluate_stat(ontology, algorithm):
         result["message"] = "load evaluate successful!"
         result["performance"] = read_evaluate(ontology, algorithm)
         result["garbage"] = read_garbage_metrics(ontology, algorithm)
-        result["images"] = create_graph(ontology, algorithm)
+        result["images"] = load_graph(ontology, algorithm)
         return jsonify(result), 200
     except:
         result["message"] = "load evaluate not successful!"

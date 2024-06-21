@@ -14,14 +14,17 @@ const EmbeddingForm: React.FC<EmbeddingFormProps> = ({ ontologyList, train_embed
   const [selectedAlgorithm, setSelectedAlgorithm] = useState('');
 
   const handleOntologyChange = (event: SelectChangeEvent<string>) => {
-    setSelectedOntology(event.target.value as string);
-    get_evaluate(selectedOntology, selectedAlgorithm)
+    const newOntology = event.target.value as string;
+    setSelectedOntology(newOntology);
+    get_evaluate(newOntology, selectedAlgorithm); // Use newOntology directly
   };
-
+  
   const handleAlgorithmChange = (event: SelectChangeEvent<string>) => {
-    setSelectedAlgorithm(event.target.value as string);
-    get_evaluate(selectedOntology, selectedAlgorithm)
+    const newAlgorithm = event.target.value as string;
+    setSelectedAlgorithm(newAlgorithm);
+    get_evaluate(selectedOntology, newAlgorithm); // Use newAlgorithm directly
   };
+  
 
   const handleRunClick = () => {
     train_embedder(selectedOntology, selectedAlgorithm);
