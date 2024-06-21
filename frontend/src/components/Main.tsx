@@ -1,8 +1,20 @@
 import React from "react";
-import { Box, Typography, Grid, Paper, Link, styled, Divider, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent } from "@mui/material";
+import {
+  Box,
+  Typography,
+  Grid,
+  Paper,
+  Link,
+  styled,
+  Divider,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
+  SelectChangeEvent,
+} from "@mui/material";
 import StatCard from "./MainComponents/StatCard";
 import Title from "./MainComponents/Title";
-import RequestComponent from "./request_sender";
 
 function Copyright(props: any) {
   return (
@@ -19,6 +31,7 @@ function Copyright(props: any) {
 
 const drawerWidth: number = 240;
 
+// Styled component for the main content area, adjusting width and margin based on drawer state
 const MainWrapper = styled('main', { shouldForwardProp: (prop) => prop !== 'open' })<{
   open?: boolean;
 }>(({ theme, open }) => ({
@@ -40,6 +53,7 @@ const MainWrapper = styled('main', { shouldForwardProp: (prop) => prop !== 'open
   }),
 }));
 
+// Type definitions for the component props and data structures
 type GarbageMetric = {
   Individual: string;
   Predicted: string;
@@ -72,10 +86,11 @@ interface MainProps {
     hit_at_10: number,
     garbage: number,
   };
-  garbage_metric: GarbageMetric[],
-  garbage_image: GarbageImage[],
+  garbage_metric: GarbageMetric[];
+  garbage_image: GarbageImage[];
 }
 
+// Main component
 const Main: React.FC<MainProps> = ({ open, onto_id, onto_data, algo, eval_metric, garbage_metric, garbage_image }) => {
   const StatCards = [
     { name: 'Classes', data: onto_data.no_class },
@@ -86,10 +101,10 @@ const Main: React.FC<MainProps> = ({ open, onto_id, onto_data, algo, eval_metric
 
   const [garbageIndex, setGarbageIndex] = React.useState<number>(0);
 
+  // Handler for changing the selected garbage metric
   const handleGarbageChange = (event: SelectChangeEvent<string>) => {
     setGarbageIndex(parseInt(event.target.value, 10));
   };
-
 
   return (
     <MainWrapper open={open} sx={{ mt: 8, overflow: "hidden" }}>
@@ -112,18 +127,19 @@ const Main: React.FC<MainProps> = ({ open, onto_id, onto_data, algo, eval_metric
             maxWidth: '1200px',
           }}
         >
+          {/* Display ontology ID and TBox/ABox information */}
           <Box sx={{ display: 'flex', alignItems: "center" }}>
             <Typography variant="h2" gutterBottom>
               {onto_id}
             </Typography>
             <Box component="section" sx={{ p: 2, border: '1px dashed grey', height: "72px", margin: "0px 0px 21px 20px", borderRadius: "10px", background: "gray" }}>
               <Typography variant="h4" gutterBottom>
-                {onto_data.no_individual > 0 ? "TBox & Abox" : "TBox"}
+                {onto_data.no_individual > 0 ? "TBox & ABox" : "TBox"}
               </Typography>
-
             </Box>
           </Box>
 
+          {/* Stat cards displaying ontology data */}
           <Grid container spacing={3}>
             {StatCards.map((stat, index) => (
               <Grid item xs={12} md={6} lg={3} key={index}>
@@ -145,6 +161,7 @@ const Main: React.FC<MainProps> = ({ open, onto_id, onto_data, algo, eval_metric
           <Divider />
           <br />
 
+          {/* Display algorithm name and evaluation metrics */}
           <Typography variant="h2" gutterBottom>
             {algo}
           </Typography>
@@ -159,12 +176,10 @@ const Main: React.FC<MainProps> = ({ open, onto_id, onto_data, algo, eval_metric
                 }}
               >
                 <Title>{"Hit@K"}</Title>
-
                 <Box
                   sx={{
                     display: 'flex',
                     alignItems: 'center',
-
                     bgcolor: 'background.paper',
                     color: 'text.secondary',
                     '& svg': {
@@ -208,7 +223,6 @@ const Main: React.FC<MainProps> = ({ open, onto_id, onto_data, algo, eval_metric
                     </Box>
                   </Box>
                 </Box>
-
               </Paper>
             </Grid>
             <Grid item xs={12} md={12} lg={3}>
@@ -235,10 +249,9 @@ const Main: React.FC<MainProps> = ({ open, onto_id, onto_data, algo, eval_metric
                 <StatCard name={"Garbage"} data={eval_metric.garbage} type="int" />
               </Paper>
             </Grid>
-
-
           </Grid>
 
+          {/* Dropdown for selecting garbage metrics */}
           <FormControl fullWidth sx={{ margin: "20px 0px" }}>
             <InputLabel id="select-garbage-label">Select Garbage</InputLabel>
             <Select
@@ -255,23 +268,24 @@ const Main: React.FC<MainProps> = ({ open, onto_id, onto_data, algo, eval_metric
             </Select>
           </FormControl>
 
+          {/* Display selected garbage image */}
           <Paper
             sx={{
               p: 2,
               display: 'flex',
               flexDirection: 'column',
-              // height: 500,
             }}
           >
             <img
-              src={`data:image/png;base64,${garbage_image.length > 0? garbage_image[garbageIndex].image : "none"}`}
+              src={`data:image/png;base64,${garbage_image.length > 0 ? garbage_image[garbageIndex].image : "none"}`}
               alt="displayed"
               style={{ maxHeight: '100%', maxWidth: '100%' }}
             />
           </Paper>
           <br />
-          <Grid container spacing={3}>
 
+          {/* Display selected garbage metrics */}
+          <Grid container spacing={3}>
             <Grid item xs={12} md={6} lg={3}>
               <Paper
                 sx={{
@@ -345,11 +359,8 @@ const Main: React.FC<MainProps> = ({ open, onto_id, onto_data, algo, eval_metric
               </Paper>
             </Grid>
           </Grid>
-
-
         </Box>
         <Copyright />
-        {/* <RequestComponent /> */}
       </Box>
     </MainWrapper>
   );

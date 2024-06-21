@@ -5,33 +5,35 @@ import Box from '@mui/material/Box';
 import axios from 'axios';
 
 import MyAppBar from '../components/MyAppBar';
-import MyDrawer from '../components/MyDrawer'
+import MyDrawer from '../components/MyDrawer';
 import Main from '../components/Main';
 
+// Define the theme for the app
 const defaultTheme = createTheme();
 
 export default function Dashboard() {
-
+  // State variables
   const [open, setOpen] = React.useState(true);
   const [selectedFiles, setSelectedFiles] = React.useState<File[]>([]);
   const [fileId, setFileId] = React.useState("");
-  const [ontology_list, set_onto_list] = React.useState<string[]>([]);
-  const [display_onto_id, set_display_onto_id] = React.useState<string>("<Ontology>");
-  const [display_onto_data, set_display_onto_data] = React.useState<{
+  const [ontologyList, setOntologyList] = React.useState<string[]>([]);
+  const [displayOntoId, setDisplayOntoId] = React.useState<string>("<Ontology>");
+  const [displayOntoData, setDisplayOntoData] = React.useState<{
     no_class: number;
     no_individual: number;
     no_axiom: number;
     no_annotation: number;
-  }>({ no_class: 0, no_individual: 0, no_axiom: 0, no_annotation: 0 })
-  const [display_algo, set_display_algo] = React.useState<string>("<Embedding Algorithm>");
-  const [display_eval_metric, set_display_eval_metric] = React.useState<{
-    mrr: number, 
-    hit_at_1: number, 
-    hit_at_5: number, 
-    hit_at_10: number, 
-    garbage: number 
-  }>({mrr: 0, hit_at_1: 0, hit_at_5: 0, hit_at_10: 0, garbage: 0 })
+  }>({ no_class: 0, no_individual: 0, no_axiom: 0, no_annotation: 0 });
+  const [displayAlgo, setDisplayAlgo] = React.useState<string>("<Embedding Algorithm>");
+  const [displayEvalMetric, setDisplayEvalMetric] = React.useState<{
+    mrr: number,
+    hit_at_1: number,
+    hit_at_5: number,
+    hit_at_10: number,
+    garbage: number
+  }>({ mrr: 0, hit_at_1: 0, hit_at_5: 0, hit_at_10: 0, garbage: 0 });
 
+  // Types for garbage metrics and images
   type GarbageMetric = {
     Individual: string;
     Predicted: string;
@@ -49,147 +51,137 @@ export default function Dashboard() {
   };
   const [displayGarbageImage, setDisplayGarbageImage] = React.useState<GarbageImage[]>([]);
 
+  // Fetch the ontology list when the component mounts
   React.useEffect(() => {
     getOntologyList();
   }, []);
 
+  // Toggle the drawer open/close state
   const toggleDrawer = () => {
     setOpen(!open);
   };
 
+  // Handle file selection
   const handleFilesSelected = (files: File[]) => {
     setSelectedFiles(files);
-    // Do whatever you want with the selected files
-    console.log("Selected files:", selectedFiles);
 
     if (files.length > 0) {
       setFileId(files[0].name);
     }
   };
 
+  // Handle file upload
   const handleUpload = () => {
     const file = selectedFiles[0];
     const formData = new FormData();
     formData.append('owl_file', file);
     formData.append('onto_id', fileId);
 
-    axios
-      .post("http://127.0.0.1:5000/upload", formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
-      })
-      .then((response) => {
-        console.log("Upload successful:", response.data);
-        getOntologyList();
-        extractOntology(response.data.onto_id);
-      })
-      .catch((error) => {
-        console.error("Upload failed:", error);
-        // Handle error
-      });
+    axios.post("http://127.0.0.1:5000/upload", formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    })
+    .then((response) => {
+      console.log("Upload successful:", response.data);
+      getOntologyList();
+      extractOntology(response.data.onto_id);
+    })
+    .catch((error) => {
+      console.error("Upload failed:", error);
+    });
   };
 
+  // Extract ontology data
   const extractOntology = (onto_id: string) => {
-    axios
-      .get("http://127.0.0.1:5000/extract/" + onto_id)
-      .then((response) => {
-        console.log("Extract successful:", response.data);
-        set_display_onto_id(onto_id)
-        set_display_onto_data(response.data.onto_data)
-      })
-      .catch((error) => {
-        console.error("Extract failed:", error);
-        // Handle error
-      });
-  }
+    axios.get(`http://127.0.0.1:5000/extract/${onto_id}`)
+    .then((response) => {
+      console.log("Extract successful:", response.data);
+      setDisplayOntoId(onto_id);
+      setDisplayOntoData(response.data.onto_data);
+    })
+    .catch((error) => {
+      console.error("Extract failed:", error);
+    });
+  };
 
+  // Fetch ontology statistics
   const getOntologyStat = (onto_id: string) => {
-    axios
-      .get("http://127.0.0.1:5000/ontology/" + onto_id)
-      .then((response) => {
-        console.log("Get stat successful:", response.data);
-        set_display_onto_id(onto_id)
-        set_display_onto_data(response.data.onto_data)
-      })
-      .catch((error) => {
-        console.error("Get stat failed:", error);
-        // Handle error
-      });
-  }
+    axios.get(`http://127.0.0.1:5000/ontology/${onto_id}`)
+    .then((response) => {
+      console.log("Get stat successful:", response.data);
+      setDisplayOntoId(onto_id);
+      setDisplayOntoData(response.data.onto_data);
+    })
+    .catch((error) => {
+      console.error("Get stat failed:", error);
+    });
+  };
 
+  // Fetch the ontology list
   const getOntologyList = () => {
-    axios
-      .get("http://127.0.0.1:5000/ontology")
-      .then((response) => {
-        console.log("load successful:", response.data);
-        set_onto_list(response.data.onto_list);
-      })
-      .catch((error) => {
-        console.error("load failed:", error);
-        // Handle error
-      });
-  }
+    axios.get("http://127.0.0.1:5000/ontology")
+    .then((response) => {
+      console.log("Load successful:", response.data);
+      setOntologyList(response.data.onto_list);
+    })
+    .catch((error) => {
+      console.error("Load failed:", error);
+    });
+  };
 
-  const train_embedder = (onto_id: string, algo: string) => {
-    axios
-      .get("http://127.0.0.1:5000/embed/" + onto_id + "?algo=" + algo)
-      .then((response) => {
-        console.log("embed successful:", response.data);
-        evaluate_embedder(response.data.onto_id, response.data.algo)
-      })
-      .catch((error) => {
-        console.error("embed failed:", error);
-        // Handle error
-      });
-  }
+  // Train the embedder
+  const trainEmbedder = (onto_id: string, algo: string) => {
+    axios.get(`http://127.0.0.1:5000/embed/${onto_id}?algo=${algo}`)
+    .then((response) => {
+      console.log("Embed successful:", response.data);
+      evaluateEmbedder(response.data.onto_id, response.data.algo);
+    })
+    .catch((error) => {
+      console.error("Embed failed:", error);
+    });
+  };
 
-  const evaluate_embedder = (onto_id: string, algo: string) => {
-    axios
-      .get("http://127.0.0.1:5000/evaluate/" + onto_id + "/" + algo)
-      .then((response) => {
-        console.log("evaluate successful:", response.data);
-        getOntologyStat(onto_id)
-        set_display_algo(algo)
-        set_display_eval_metric(response.data.performance)
-        setDisplayGarbageMetric(response.data.garbage)
-        setDisplayGarbageImage(response.data.images)
-      })
-      .catch((error) => {
-        console.error("evaluate failed:", error);
-        // Handle error
-      });
-  }
+  // Evaluate the embedder
+  const evaluateEmbedder = (onto_id: string, algo: string) => {
+    axios.get(`http://127.0.0.1:5000/evaluate/${onto_id}/${algo}`)
+    .then((response) => {
+      console.log("Evaluate successful:", response.data);
+      getOntologyStat(onto_id);
+      setDisplayAlgo(algo);
+      setDisplayEvalMetric(response.data.performance);
+      setDisplayGarbageMetric(response.data.garbage);
+      setDisplayGarbageImage(response.data.images);
+    })
+    .catch((error) => {
+      console.error("Evaluate failed:", error);
+    });
+  };
 
-  const get_evaluate = (onto_id: string, algo: string) => {
+  // Fetch evaluation statistics
+  const getEvaluate = (onto_id: string, algo: string) => {
     if (onto_id === "" || algo === "") return;
 
-    getOntologyStat(onto_id)
-    set_display_algo(algo)
+    getOntologyStat(onto_id);
+    setDisplayAlgo(algo);
 
-    axios
-      .get("http://127.0.0.1:5000/evaluate/" + onto_id + "/" + algo + "/stat")
-      .then((response) => {
-        console.log("get evaluate stat successful:", response.data);
-
-        set_display_eval_metric(response.data.performance)
-        setDisplayGarbageMetric(response.data.garbage)
-        setDisplayGarbageImage(response.data.images)
-      })
-      .catch((error) => {
-        console.error("get evaluate stat failed:", error);
-        // Handle error
-
-        set_display_eval_metric({mrr: 0, hit_at_1: 0, hit_at_5: 0, hit_at_10: 0, garbage: 0 })
-        setDisplayGarbageMetric([])
-        setDisplayGarbageImage([])
-      });
-  }
+    axios.get(`http://127.0.0.1:5000/evaluate/${onto_id}/${algo}/stat`)
+    .then((response) => {
+      console.log("Get evaluate stat successful:", response.data);
+      setDisplayEvalMetric(response.data.performance);
+      setDisplayGarbageMetric(response.data.garbage);
+      setDisplayGarbageImage(response.data.images);
+    })
+    .catch((error) => {
+      console.error("Get evaluate stat failed:", error);
+      setDisplayEvalMetric({ mrr: 0, hit_at_1: 0, hit_at_5: 0, hit_at_10: 0, garbage: 0 });
+      setDisplayGarbageMetric([]);
+      setDisplayGarbageImage([]);
+    });
+  };
 
   return (
     <ThemeProvider theme={defaultTheme}>
       <CssBaseline />
-      <Box sx={{ display: 'flex'}}>
+      <Box sx={{ display: 'flex' }}>
         <MyAppBar open={open} toggleDrawer={toggleDrawer} />
         <MyDrawer
           open={open}
@@ -198,24 +190,22 @@ export default function Dashboard() {
           fileId={fileId}
           setFileId={setFileId}
           handleUpload={handleUpload}
-          ontologyList={ontology_list}
+          ontologyList={ontologyList}
           handleFilesSelected={handleFilesSelected}
-          train_embedder={train_embedder}
-          get_evaluate={get_evaluate}
+          trainEmbedder={trainEmbedder}
+          getEvaluate={getEvaluate}
         />
         
         <Main
           open={open}
-          onto_id={display_onto_id}
-          onto_data={display_onto_data}
-          algo={display_algo}
-          eval_metric={display_eval_metric}
+          onto_id={displayOntoId}
+          onto_data={displayOntoData}
+          algo={displayAlgo}
+          eval_metric={displayEvalMetric}
           garbage_metric={displayGarbageMetric}
           garbage_image={displayGarbageImage}
         />
       </Box>
-
-
     </ThemeProvider>
   );
 }
