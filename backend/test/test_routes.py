@@ -7,14 +7,14 @@ sys.path.append("../backend")
 from app import create_app
 
 
-class TestOntologyUpload(unittest.TestCase):
+class TestRoutes(unittest.TestCase):
     """Test cases for routes.py"""
 
     @classmethod
     def setUp(self):
         """Create the Flask app and a test client for the app. Establish an application context before each test.
         Args:
-            self: TestOntologyUpload object
+            self: TestRoutes object
         Returns:
             None
         """
@@ -89,7 +89,7 @@ class TestOntologyUpload(unittest.TestCase):
         """Test that the upload route fails when no file is uploaded
 
         Args:
-            self: TestOntologyUpload object
+            self: TestRoutes object
         Returns:
             None
         """
