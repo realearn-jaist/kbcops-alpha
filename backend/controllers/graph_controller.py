@@ -9,6 +9,9 @@ from models.ontology_model import get_path_ontology, get_path_ontology_directory
 from models.extract_model import load_classes, load_individuals
 from owlready2 import *
 
+## Refactor code from https://github.com/realearn-jaist/kbc-ops/blob/main/app.py  ###########
+#############################################################################################
+
 
 def extract_garbage_value(onto_data):
     """Extracts the individual, true, and predicted values from the garbage metrics file
@@ -36,7 +39,7 @@ def find_parents_with_relations(cls, relation_list):
         None
     """
     # find its relations
-    temp = "obo." # this hard code for foodon dataset
+    temp = "obo."  # this hard code for foodon dataset
     try:
         parents = cls.is_a
         for parent in parents:
@@ -62,7 +65,7 @@ def find_parents_with_relations(cls, relation_list):
 
 
 def get_prefix(value):
-    """Get the prefix of the value
+    """Get the prefix of the value because in ontology the class and individual id are separated by # or /
 
     Args:
         value (str): The value to get the prefix of
@@ -86,11 +89,11 @@ def graph_maker(
     """Create a graph for each individual in the individual list
 
     Args:
-        onto_type (str): The type of ontology
+        onto_type (str): The type of ontology "ABox" or "TBox"
         onto_file (owlready2.namespace.Ontology): The ontology file
         entity_prefix (str): The prefix of the entity
         individual_list (list): The list of individuals
-        truth_list (list): The list of true values
+        truth_list (list): The list of ground truth values
         predict_list (list): The list of predicted values
         fig_directory (str): The directory to save the graph figures
     Returns:
@@ -159,14 +162,12 @@ def graph_maker(
                 x, y, label, horizontalalignment="center", verticalalignment="center"
             )
 
-        
         plt.savefig(f"{fig_directory}\graph_{i}.png", format="PNG")
 
 
 def create_graph(ontology_name, algorithm):
     # ontology_name, algorithm
-    """Create a graph for each individual in the individual list
-
+    """Create a graph for each class and individual in the ontology
     Args:
         onto (str): The name of the ontology
         algo (str): The name of the algorithm
@@ -206,3 +207,7 @@ def create_graph(ontology_name, algorithm):
     )
 
     return load_graph(ontology_name, algorithm)
+
+
+#############################################################################################
+#############################################################################################
