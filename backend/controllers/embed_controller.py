@@ -24,6 +24,9 @@ from models.ontology_model import get_path_ontology
 from owl2vec_star.RDF2Vec_Embed import get_rdf2vec_walks, get_rdf2vec_embed
 from owl2vec_star.Label import pre_process_words, URI_parse
 
+## Refactor code from https://github.com/KRR-Oxford/OWL2Vec-Star/tree/master/case_studies  ##
+#############################################################################################
+
 
 def opa2vec_or_onto2vec(ontology_name, config_file, algorithm):
     """Embedding function for OPA2Vec and Onto2Vec
@@ -246,6 +249,10 @@ def rdf2vec(ontology_name, config_file, algorithm):
     return f"{algorithm} embedded success!!"
 
 
+#############################################################################################
+#############################################################################################
+
+
 def embed_func(ontology_name, algorithm):
     """Embedding function for the given algorithm and ontology
 
@@ -321,29 +328,3 @@ def embed_opa_onto(model: gensim.models.Word2Vec, instances):
     all_e = np.array(all_e)
 
     return all_e
-
-
-# def embed_opa_onto_temp(w2v, classes, individuals):
-#     classes_e = [
-#         (
-#             w2v.wv.get_vector(c.lower())
-#             if c.lower() in w2v.wv.index_to_key
-#             else np.zeros(w2v.vector_size)
-#         )
-#         for c in classes
-#     ]
-#     classes_e = np.array(classes_e)
-
-#     individuals_e = [
-#         (
-#             w2v.wv.get_vector(i.lower())
-#             if i.lower() in w2v.wv.index_to_key
-#             else np.zeros(w2v.vector_size)
-#         )
-#         for i in individuals
-#     ]
-#     individuals_e = np.array(individuals_e)
-
-#     all_e = np.concatenate((classes_e, individuals_e))
-
-#     return classes_e, individuals_e

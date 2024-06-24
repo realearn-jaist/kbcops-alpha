@@ -17,8 +17,12 @@ from models.extract_model import load_classes
 from owl2vec_star.Evaluator import Evaluator
 
 
+## Refactor code from https://github.com/realearn-jaist/kbc-ops/tree/main/extraction  ##
+#############################################################################################
+
+
 def get_subfix(value):
-    """Get the subfix of a string
+    """Get the subfix of a string by delimiter because in ontology the class and individual id are separated by # or /
 
     Args:
         value (str): The string to get the subfix of
@@ -268,7 +272,6 @@ def predict_func(ontology, algorithm):
                 all_infer_classes if onto_type == "TBox" else all_infer_classes[1:]
             )
 
-    # evaluate
     print(f"evaluate {ontology} with {algorithm} embedding algorithm on random forest")
     evaluate = InclusionEvaluator(
         valid_samples,
@@ -290,3 +293,7 @@ def predict_func(ontology, algorithm):
     evaluate.result["images"] = create_graph(ontology, algorithm)
 
     return evaluate.result
+
+
+#############################################################################################
+#############################################################################################
