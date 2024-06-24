@@ -12,6 +12,8 @@ import Main from '../components/Main';
 const defaultTheme = createTheme();
 
 export default function Dashboard() {
+  const BACKEND_URI = import.meta.env.VITE_BACKEND_URI || "http://127.0.0.1:5000"
+
   // State variables
   const [open, setOpen] = React.useState(true);
   const [selectedFiles, setSelectedFiles] = React.useState<File[]>([]);
@@ -77,7 +79,7 @@ export default function Dashboard() {
     formData.append('owl_file', file);
     formData.append('onto_id', fileId);
 
-    axios.post("http://127.0.0.1:5000/upload", formData, {
+    axios.post(`${BACKEND_URI}/upload`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' }
     })
     .then((response) => {
@@ -92,7 +94,7 @@ export default function Dashboard() {
 
   // Extract ontology data
   const extractOntology = (onto_id: string) => {
-    axios.get(`http://127.0.0.1:5000/extract/${onto_id}`)
+    axios.get(`${BACKEND_URI}/extract/${onto_id}`)
     .then((response) => {
       console.log("Extract successful:", response.data);
       setDisplayOntoId(onto_id);
@@ -105,7 +107,7 @@ export default function Dashboard() {
 
   // Fetch ontology statistics
   const getOntologyStat = (onto_id: string) => {
-    axios.get(`http://127.0.0.1:5000/ontology/${onto_id}`)
+    axios.get(`${BACKEND_URI}/ontology/${onto_id}`)
     .then((response) => {
       console.log("Get stat successful:", response.data);
       setDisplayOntoId(onto_id);
@@ -118,7 +120,7 @@ export default function Dashboard() {
 
   // Fetch the ontology list
   const getOntologyList = () => {
-    axios.get("http://127.0.0.1:5000/ontology")
+    axios.get(`${BACKEND_URI}/ontology`)
     .then((response) => {
       console.log("Load successful:", response.data);
       setOntologyList(response.data.onto_list);
@@ -130,7 +132,7 @@ export default function Dashboard() {
 
   // Train the embedder
   const trainEmbedder = (onto_id: string, algo: string) => {
-    axios.get(`http://127.0.0.1:5000/embed/${onto_id}?algo=${algo}`)
+    axios.get(`${BACKEND_URI}/embed/${onto_id}?algo=${algo}`)
     .then((response) => {
       console.log("Embed successful:", response.data);
       evaluateEmbedder(response.data.onto_id, response.data.algo);
@@ -142,7 +144,7 @@ export default function Dashboard() {
 
   // Evaluate the embedder
   const evaluateEmbedder = (onto_id: string, algo: string) => {
-    axios.get(`http://127.0.0.1:5000/evaluate/${onto_id}/${algo}`)
+    axios.get(`${BACKEND_URI}/evaluate/${onto_id}/${algo}`)
     .then((response) => {
       console.log("Evaluate successful:", response.data);
       getOntologyStat(onto_id);
@@ -163,7 +165,7 @@ export default function Dashboard() {
     getOntologyStat(onto_id);
     setDisplayAlgo(algo);
 
-    axios.get(`http://127.0.0.1:5000/evaluate/${onto_id}/${algo}/stat`)
+    axios.get(`${BACKEND_URI}/evaluate/${onto_id}/${algo}/stat`)
     .then((response) => {
       console.log("Get evaluate stat successful:", response.data);
       setDisplayEvalMetric(response.data.performance);
