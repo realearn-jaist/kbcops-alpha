@@ -17,7 +17,7 @@ from owl2vec_star.Evaluator import Evaluator
 #############################################################################################
 
 
-def get_subfix(value):
+def get_subfix(value: str):
     """Get the subfix of a string by delimiter because in ontology the class and individual id are separated by # or /
 
     Args:
@@ -59,7 +59,7 @@ class InclusionEvaluator(Evaluator):
         self.onto_type = onto_type
         self.result = dict()
 
-    def evaluate(self, model, eva_samples):
+    def evaluate(self, model: object, eva_samples: list):
         """Evaluate the model
 
         Args:
@@ -207,7 +207,7 @@ class InclusionEvaluator(Evaluator):
         )
 
 
-def predict_func(ontology_name, algorithm):
+def predict_func(ontology_name: str, algorithm: str):
     """Predict the ontology with the algorithm
 
     Args:

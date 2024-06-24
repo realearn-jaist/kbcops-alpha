@@ -24,14 +24,14 @@ from owl2vec_star.Onto_Projection import Reasoner, OntologyProjection  # type: i
 from owl2vec_star.Label import pre_process_words  # type: ignore
 
 
-def upload_ontology(file, ontology_name):
+def upload_ontology(file, ontology_name: str):
     """Upload ontology file to the server and save it to the database
 
     Args:
         file (File): The ontology file to upload
-        id (str): The id of the ontology
+        ontology_name (str): The name of the ontology
     Returns:
-        id (str): The id of the ontology
+        ontology_name (str): The name of the ontology
     """
     if ontology_name.endswith(".owl"):
         ontology_name = ontology_name[:-4]
@@ -52,11 +52,11 @@ def get_all_ontology():
     return list_ontology()
 
 
-def get_onto_stat(ontology_name):
+def get_onto_stat(ontology_name: str):
     """Get the statistics of the ontology
 
     Args:
-        id (str): The id of the ontology
+        ontology_name (str): The name of the ontology
     Returns:
         dict: The statistics of the ontology
     """
@@ -80,7 +80,7 @@ def get_onto_stat(ontology_name):
 ###############################################################################################################
 
 
-def extract_data(ontology_name):
+def extract_data(ontology_name: str):
     """Extract data from the ontology file
 
     Args:
@@ -178,7 +178,7 @@ def extract_data(ontology_name):
 ##############################################################################################################
 
 
-def get_all_superclasses(cls, cache):
+def get_all_superclasses(cls, cache: dict):
     """Returns all superclasses of a class
 
     Args:
@@ -200,7 +200,7 @@ def get_all_superclasses(cls, cache):
     return superclasses
 
 
-def abox_infer(onto):
+def abox_infer(onto: Ontology):
     """Infer the classes of the individuals in the ABox
 
     Args:
@@ -225,7 +225,7 @@ def abox_infer(onto):
     return results
 
 
-def tbox_infer(onto):
+def tbox_infer(onto: Ontology):
     """Infer the classes of the classes in the TBox
 
     Args:
@@ -262,7 +262,7 @@ def get_ground_truth(class_or_individuals):
     return immediate_superclasses
 
 
-def train_test_val(class_or_individuals):
+def train_test_val(class_or_individuals: list):
     """Splits the classes or individuals into train, test, and val sets.
 
     Args:
@@ -285,13 +285,13 @@ def train_test_val(class_or_individuals):
     return train, test, val
 
 
-def write_positive_samples_to_csv(csv_path, classes_or_individuals, ontology_name):
+def write_positive_samples_to_csv(csv_path: str, classes_or_individuals: list, ontology_name: str):
     """Writes the positive samples to a CSV file.
 
     Args:
         csv_path (str): The path to the CSV file
         classes_or_individuals (list): The list of classes or individuals
-        id (str): The id of the ontology
+        ontology_name (str): The name of the ontology
     Returns:
         None
     """
@@ -314,7 +314,7 @@ def write_positive_samples_to_csv(csv_path, classes_or_individuals, ontology_nam
         print(f"CSV created successfully at: {csv_path}")
 
 
-def write_negative_samples_to_csv(csv_path, negative_samples):
+def write_negative_samples_to_csv(csv_path : str, negative_samples : list):
     """Writes the negative samples to a CSV file.
 
     Args:
@@ -348,11 +348,11 @@ def read_infer_classes(file):
     return infer_dict
 
 
-def generate_negative_samples_abox(onto, num_samples, infer_classes_path, label):
+def generate_negative_samples_abox(onto : Ontology, num_samples : int, infer_classes_path, label : int):
     """Generates negative samples for the ABox and returns them as a list.
 
     Args:
-        ontology (Ontology): The ontology to generate the negative samples from
+        onto (Ontology): The ontology to generate the negative samples from
         num_samples (int): The number of negative samples to generate
         infer_classes_path (File): The path to the infer_classes file
         label (int): The label for the negative samples
@@ -404,19 +404,19 @@ def generate_negative_samples_abox(onto, num_samples, infer_classes_path, label)
     return negative_samples
 
 
-def generate_negative_samples_tbox(onto, num_samples, infer_classes_path, label):
+def generate_negative_samples_tbox(onto : Ontology, num_samples : int, infer_classes_list : list, label : int):
     """Generates negative samples for the TBox and returns them as a list.
 
     Args:
-        ontology (Ontology): The ontology to generate the negative samples from
+        onto (Ontology): The ontology to generate the negative samples from
         num_samples (int): The number of negative samples to generate
-        infer_classes_path (File): The path to the infer_classes file
+        infer_classes_list (list): The path to the infer_classes file
         label (int): The label for the negative samples
     Returns:
         list: The list of negative samples
     """
     all_classes = list(onto.classes())
-    infer_classes = read_infer_classes(infer_classes_path)
+    infer_classes = read_infer_classes(infer_classes_list)
     negative_samples = []
 
     num_random_class_samples = num_samples // 2
@@ -448,7 +448,7 @@ def generate_negative_samples_tbox(onto, num_samples, infer_classes_path, label)
     ) as pbar:
         while len(negative_samples) < num_samples:
             cls = random.choice(all_classes)
-            all_classes = list(ontology.classes())
+            all_classes = list(onto.classes())
             if infer_classes[cls.iri] != []:
                 negative_class_iri = random.choice(infer_classes[cls.iri])
                 negative_samples.append((cls, negative_class_iri, label))
@@ -456,7 +456,7 @@ def generate_negative_samples_tbox(onto, num_samples, infer_classes_path, label)
     return negative_samples
 
 
-def train_test_val_gen_abox(onto, ontology_name):
+def train_test_val_gen_abox(onto : Ontology, ontology_name : str):
     """Main function for generating training, test, and validation sets for the ABox.
 
     Args:
