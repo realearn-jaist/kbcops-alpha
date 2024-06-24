@@ -13,6 +13,9 @@ from models.ontology_model import get_path_ontology
 from owl2vec_star.RDF2Vec_Embed import get_rdf2vec_walks, get_rdf2vec_embed
 from owl2vec_star.Label import pre_process_words, URI_parse
 
+## Refactor code from https://github.com/KRR-Oxford/OWL2Vec-Star/tree/master/case_studies  ##
+#############################################################################################
+
 
 def opa2vec_or_onto2vec(ontology_name, config_file, algorithm):
     """Embedding function for OPA2Vec and Onto2Vec
@@ -231,6 +234,10 @@ def rdf2vec(ontology_name, config_file, algorithm):
     save_model(ontology_name, algorithm, model_rdf2vec)
     save_embedding(ontology_name, algorithm, embeddings)
     return f"{algorithm} embedded success!!"
+
+
+#############################################################################################
+#############################################################################################
 
 
 def embed_func(ontology_name, algorithm):

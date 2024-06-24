@@ -13,8 +13,12 @@ from models.embed_model import load_embedding_value
 from owl2vec_star.Evaluator import Evaluator
 
 
+## Refactor code from https://github.com/realearn-jaist/kbc-ops/tree/main/extraction  ##
+#############################################################################################
+
+
 def get_subfix(value):
-    """Get the subfix of a string
+    """Get the subfix of a string by delimiter because in ontology the class and individual id are separated by # or /
 
     Args:
         value (str): The string to get the subfix of
@@ -296,3 +300,7 @@ def predict_func(ontology_name, algorithm):
     evaluate.result["images"] = create_graph(ontology_name, algorithm)
 
     return evaluate.result
+
+
+#############################################################################################
+#############################################################################################

@@ -180,7 +180,9 @@ class TestRoutes(unittest.TestCase):
         }
         response = self.app.get("/ontology/test_ontology")
         self.assertEqual(response.status_code, 200)
-        self.assertIn("Ontologies listed successfully", response.get_json()["message"])
+        self.assertIn(
+            "load Ontologies Stats successfully", response.get_json()["message"]
+        )
         self.assertEqual(
             {
                 "no_class": 0,
@@ -225,7 +227,7 @@ class TestRoutes(unittest.TestCase):
         with patch("os.path.exists") as mock_exists:
             mock_exists.return_value = False
             response = self.app.get("/embed/test_ontology?algo=test_algo")
-            print("embed re", response.get_json())
+
             self.assertEqual(response.status_code, 200)
             self.assertIn(
                 "test_algo embedded success!!", response.get_json()["message"]
@@ -258,7 +260,7 @@ class TestRoutes(unittest.TestCase):
             "images": [],
         }
         response = self.app.get("/evaluate/test_ontology/test_model")
-        print("predict re", response.get_json())
+
         self.assertEqual(response.status_code, 200)
         self.assertIn("evaluate successful!", response.get_json()["message"])
         self.assertEqual(

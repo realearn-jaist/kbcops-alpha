@@ -72,6 +72,14 @@ def get_onto_stat(ontology_name):
     }
 
 
+## Refactor code from https://github.com/KRR-Oxford/OWL2Vec-Star/blob/master/OWL2Vec_Standalone.py  ###########
+###############################################################################################################
+
+
+## Refactor code from https://github.com/KRR-Oxford/OWL2Vec-Star/blob/master/OWL2Vec_Standalone.py  ###########
+###############################################################################################################
+
+
 def extract_data(ontology_name):
     """Extract data from the ontology file
 
@@ -166,6 +174,10 @@ def extract_data(ontology_name):
     }
 
 
+##############################################################################################################
+##############################################################################################################
+
+
 def get_all_superclasses(cls, cache):
     """Returns all superclasses of a class
 
@@ -214,12 +226,12 @@ def abox_infer(onto):
 
 
 def tbox_infer(onto):
-    """Infer the classes of the individuals in the TBox
+    """Infer the classes of the classes in the TBox
 
     Args:
         onto (Ontology): The ontology to infer the classes from
     Returns:
-        list: The list of inferred classes of the individuals in the TBox
+        list: The list of inferred classes of the classes in the TBox
     """
     superclass_cache = defaultdict(list)
     results = []
@@ -362,7 +374,9 @@ def generate_negative_samples_abox(onto, num_samples, infer_classes_path, label)
         num_random_class_samples += num_samples
         num_samples *= 2
 
-    with tqdm(total=num_random_class_samples, desc="Generating random class samples") as pbar:
+    with tqdm(
+        total=num_random_class_samples, desc="Generating random class samples"
+    ) as pbar:
         while len(negative_samples) < num_random_class_samples:
             ind = random.choice(all_individuals)
             all_classes = list(onto.classes())
@@ -377,7 +391,9 @@ def generate_negative_samples_abox(onto, num_samples, infer_classes_path, label)
                 negative_samples.append((ind, negative_class.iri, 0))
                 pbar.update(1)
 
-    with tqdm(total=num_inferred_class_samples, desc="Generating inferred class samples") as pbar:
+    with tqdm(
+        total=num_inferred_class_samples, desc="Generating inferred class samples"
+    ) as pbar:
         while len(negative_samples) < num_samples:
             ind = random.choice(all_individuals)
             all_classes = list(onto.classes())
@@ -410,7 +426,9 @@ def generate_negative_samples_tbox(onto, num_samples, infer_classes_path, label)
         num_random_class_samples += num_samples
         num_samples *= 2
 
-    with tqdm(total=num_random_class_samples, desc="Generating random class samples") as pbar:
+    with tqdm(
+        total=num_random_class_samples, desc="Generating random class samples"
+    ) as pbar:
         while len(negative_samples) < num_random_class_samples:
             cls = random.choice(all_classes)
             all_classes = list(onto.classes())
@@ -425,12 +443,12 @@ def generate_negative_samples_tbox(onto, num_samples, infer_classes_path, label)
                 negative_samples.append((cls, negative_class.iri, 0))
                 pbar.update(1)
 
-    with tqdm(total=num_inferred_class_samples, desc="Generating inferred class samples") as pbar:
+    with tqdm(
+        total=num_inferred_class_samples, desc="Generating inferred class samples"
+    ) as pbar:
         while len(negative_samples) < num_samples:
             cls = random.choice(all_classes)
-            all_classes = list(onto.classes())
-            # handle case where there are no inferred classes
-            # negative_class_iri = owl.Thing.iri
+            all_classes = list(ontology.classes())
             if infer_classes[cls.iri] != []:
                 negative_class_iri = random.choice(infer_classes[cls.iri])
                 negative_samples.append((cls, negative_class_iri, label))
@@ -464,7 +482,6 @@ def train_test_val_gen_abox(onto, ontology_name):
 
     write_positive_samples_to_csv(test_csv_path, test_individuals, ontology_name)
     write_positive_samples_to_csv(val_csv_path, val_individuals, ontology_name)
-    # i want to set seed to 0 so that the negative samples are the same for both infered classes to 0 and 1
 
     start_time = time.time()
     negative_samples = generate_negative_samples_abox(
@@ -511,7 +528,7 @@ def train_test_val_gen_tbox(onto, ontology_name):
     write_positive_samples_to_csv(test_csv_path, test_classes, ontology_name)
     write_positive_samples_to_csv(val_csv_path, val_classes, ontology_name)
 
-    # generate negative samples for considering infered classes to 1 and save to csv
+    # generate negative samples for considering inferred classes to 1 and save to csv
     start_time = time.time()
     negative_samples = generate_negative_samples_tbox(
         onto, len(train_classes), load_input_file(ontology_name, "inferred_ancestors.txt"), 1
@@ -519,7 +536,7 @@ def train_test_val_gen_tbox(onto, ontology_name):
     write_negative_samples_to_csv(train_csv_path_0, negative_samples)
     print("tbox negative sample (-1) time usage:", time.time() - start_time)
 
-    # generate negative samples for considering infered classes to 0 and save to csv
+    # generate negative samples for considering inferred classes to 0 and save to csv
     start_time = time.time()
     negative_samples = generate_negative_samples_tbox(
         onto, len(train_classes), load_input_file(ontology_name, "inferred_ancestors.txt"), 0
