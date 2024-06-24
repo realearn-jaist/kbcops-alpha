@@ -1,8 +1,18 @@
 # Knowledge Base Completion Operations (KBCOps)
 
-## Introduction
+## What is Knowledge Base Completion (KBC)?
 
-Knowledge bases (KBs), particularly ontologies, are often incomplete, necessitating the need for KB completion operations. One critical aspect to consider in KB completion is the presence of "garbage" information. In this context, "garbage" refers to implicit or duplicated facts that do not contribute meaningfully to the completeness of the ontology.
+Knowledge Base Completion (KBC) is a task in Knowledge Graph (KG) completion that aims to predict missing relationships or facts in a knowledge base. The goal is to infer new knowledge based on existing information in the knowledge graph. Key points related to KBC include:
+
+- **Task Definition:** KBC involves predicting missing links or triples in a knowledge graph by leveraging the existing information and relationships within the graph.
+
+- **Methods:** Various machine learning and knowledge representation techniques are used for KBC, including embedding models (e.g., TransE, DistMult), rule-based reasoning, and neural network architectures.
+
+- **Applications:** KBC has applications in recommendation systems, question answering, information retrieval, and semantic search, where completing the knowledge graph can enhance the performance of these tasks.
+
+## Introduction of this project
+
+Knowledge bases (KBs), particularly ontologies, are often incomplete, necessitating the need for Knowledge Base Completion. One critical aspect to consider in KB completion is the presence of **"garbage"** information. In this context, **"garbage"** refers to implicit or duplicated facts that do not contribute meaningfully to the completeness of the ontology.
 
 These tools are designed to provide users with the ability to compare and evaluate the presence of garbage across different algorithms and ontologies used in KB completion operations. By offering transparency and insights into the quality of completion results, the monitoring tools aim to empower users to make informed decisions and optimize the completeness of knowledge bases effectively.
 
