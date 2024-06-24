@@ -4,18 +4,6 @@ from owlready2 import *
 from tqdm import tqdm
 from collections import defaultdict
 
-'''from models.extract_model import (
-    load_annotations,
-    load_axioms,
-    load_classes,
-    load_individuals,
-    load_infer,
-    save_annotations,
-    save_axioms,
-    save_classes,
-    save_individuals,
-    save_infer,
-)'''
 from models.extract_model import (
     load_input_file,
     load_multi_input_files,

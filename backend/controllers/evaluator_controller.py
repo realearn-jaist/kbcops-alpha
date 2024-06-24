@@ -70,7 +70,7 @@ class InclusionEvaluator(Evaluator):
         MRR_sum, hits1_sum, hits5_sum, hits10_sum = 0, 0, 0, 0
         nifMRR_sum, nifhits1_sum, nifhits5_sum, nifhits10_sum = 0, 0, 0, 0
         avgDLRank, avgRank, DLcount = 0, 0, 0
-
+        total_predict = len(eva_samples)
         # test sample
         progress_bar = tqdm(eva_samples, desc="Evaluating Samples")
         for k, sample in enumerate(progress_bar):
@@ -168,9 +168,13 @@ class InclusionEvaluator(Evaluator):
             "Testing (No inference checking), MRR: %.3f, Hits@1: %.3f, Hits@5: %.3f, Hits@10: %.3f\n\n"
             % (nife_MRR, nifhits1, nifhits5, nifhits10)
         )
-        avgDLRank = math.ceil(avgDLRank / DLcount)
-        avgRank = math.ceil(avgRank / DLcount)
+        avgRank = math.ceil(avgRank / total_predict)
+        
+        if(DLcount > 0):
+            avgDLRank = math.ceil(avgDLRank / DLcount)
+        
         print(f"""count:{DLcount}, DL:{avgDLRank}, ground:{avgRank}\n""")
+
 
         performance_data = {
             "mrr": e_MRR,
@@ -178,6 +182,9 @@ class InclusionEvaluator(Evaluator):
             "hit_at_5": hits5,
             "hit_at_10": hits10,
             "garbage": DLcount,
+            'total' : total_predict,
+            'average_garbage_Rank' : avgDLRank,
+            'average_Rank' : avgRank
         }
 
         write_evaluate(self.ontology, self.algorithm, performance_data)

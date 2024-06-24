@@ -69,17 +69,20 @@ class TestOntologyModule(unittest.TestCase):
         mock_list_ontology.return_value = ["onto1", "onto2"]
         result = get_all_ontology()
         self.assertEqual(result, ["onto1", "onto2"])
-
-    @patch("controllers.ontology_controller.load_axioms")
-    @patch("controllers.ontology_controller.load_classes")
-    @patch("controllers.ontology_controller.load_individuals")
-    @patch("controllers.ontology_controller.load_annotations")
+    
+    @patch(
+        "controllers.ontology_controller.load_multi_input_files",
+        return_value={
+            "axioms" : ["axiom1", "axiom2"], 
+            "classes" : ["class1", "class2"], 
+            "individuals" : ["individual1", "individual2"], 
+            "uri_labels" : ["uri1 label1", "uri2 label2 label3"], 
+            "annotations" : ["uri1 annotation1", "uri2 annotation2"]
+        },
+    )
     def test_get_onto_stat(
         self,
-        mock_load_annotations,
-        mock_load_individuals,
-        mock_load_classes,
-        mock_load_axioms,
+        mock_load_multi_input_files,
     ):
         """Test get_onto_stat function in ontology_controller.py
 
@@ -91,20 +94,15 @@ class TestOntologyModule(unittest.TestCase):
         Returns:
             None
         """
-        mock_load_axioms.return_value = ["axiom1", "axiom2"]
-        mock_load_classes.return_value = ["class1", "class2"]
-        mock_load_individuals.return_value = ["ind1", "ind2"]
-        mock_load_annotations.return_value = (
-            ["uri1 label1", "uri2 label2 label3"],
-            ["uri1 annotation1", "uri2 annotation2"],
-        )
-
-        id = "test_id"
+        
+        id = "ontology_name"
         result = get_onto_stat(id)
         self.assertEqual(
             result,
             {"no_class": 2, "no_individual": 2, "no_axiom": 2, "no_annotation": 4},
         )
+
+        mock_load_multi_input_files.assert_called_once_with("ontology_name", ["axioms", "classes", "individuals", "uri_labels", "annotations"])
 
     @patch("controllers.ontology_controller.get_path_ontology")
     @patch("controllers.ontology_controller.OntologyProjection")
@@ -116,16 +114,20 @@ class TestOntologyModule(unittest.TestCase):
     @patch("controllers.ontology_controller.tbox_infer")
     @patch("controllers.ontology_controller.abox_infer")
     @patch("controllers.ontology_controller.save_infer")
-    @patch("controllers.ontology_controller.load_classes")
-    @patch("controllers.ontology_controller.load_individuals")
-    @patch("controllers.ontology_controller.train_test_val_abox")
-    @patch("controllers.ontology_controller.train_test_val_tbox")
+    @patch(
+        "controllers.ontology_controller.load_multi_input_files",
+        return_value={ 
+            "classes" : ["class1", "class2"], 
+            "individuals" : ["individual1", "individual2"],
+        },
+    )
+    @patch("controllers.ontology_controller.train_test_val_gen_abox")
+    @patch("controllers.ontology_controller.train_test_val_gen_tbox")
     def test_extract_data(
         self,
-        mock_train_test_val_tbox,
-        mock_train_test_val_abox,
-        mocl_load_individuals,
-        mock_load_classes,
+        mock_train_test_val_gen_tbox,
+        mock_train_test_val_gen_abox,
+        mock_load_multi_input_files,
         mock_save_infer,
         mock_abox_infer,
         mock_tbox_infer,
@@ -164,10 +166,11 @@ class TestOntologyModule(unittest.TestCase):
         mock_abox_infer.return_value = []
         mock_tbox_infer.return_value = []
         mock_save_infer.return_value = None
-        mocl_load_individuals.return_value = {"ind1", "ind2"}
-        mock_load_classes.return_value = {"class1", "class2"}
-        mock_train_test_val_tbox.return_value = None
-        mock_train_test_val_abox.return_value = None
+        
+        mock_train_test_val_gen_tbox.return_value = None
+        mock_train_test_val_gen_abox.return_value = None
+        
+        
 
         mock_projection_instance.createManchesterSyntaxAxioms.return_value = None
         mock_projection_instance.axioms_manchester = ["axiom1", "axiom2"]
@@ -192,7 +195,7 @@ class TestOntologyModule(unittest.TestCase):
             ["ind2", "Label3"],
         ]
 
-        id = "test_id"
+        id = "ontology_name"
         result = extract_data(id)
 
         self.assertEqual(
@@ -211,9 +214,12 @@ class TestOntologyModule(unittest.TestCase):
             additional_synonyms_annotations=set(),
             memory_reasoner="13351",
         )
+        
+        mock_load_multi_input_files.assert_called_once_with("ontology_name", ["classes", "individuals"])
         mock_save_axioms.assert_called_once_with(id, ["axiom1", "axiom2"])
         mock_save_classes.assert_called_once_with(id, {"class1", "class2"})
         mock_save_individuals.assert_called_once_with(id, {"ind1", "ind2"})
+        
         self.assertTrue(mock_save_annotations.called)
 
 

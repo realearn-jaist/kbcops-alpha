@@ -249,6 +249,7 @@ def embed_func(ontology_name, algorithm):
 
     config_file = "controllers/default.cfg"
 
+
     algorithms = {
         "owl2vec-star": owl2vec_star,
         "rdf2vec": rdf2vec,
