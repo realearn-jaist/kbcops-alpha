@@ -5,33 +5,42 @@ import { SelectChangeEvent } from '@mui/material/Select';
 
 interface EmbeddingFormProps {
   ontologyList: string[];
-  train_embedder: (onto_id: string, algo: string) => void;
-  get_evaluate: (onto_id: string, algo: string) => void;
+  trainEmbedder: (onto_id: string, algo: string) => void;
+  getEvaluate: (onto_id: string, algo: string) => void;
 }
 
-const EmbeddingForm: React.FC<EmbeddingFormProps> = ({ ontologyList, train_embedder, get_evaluate }) => {
+const EmbeddingForm: React.FC<EmbeddingFormProps> = ({ ontologyList, trainEmbedder, getEvaluate }) => {
+  // State variables for selected ontology and algorithm
   const [selectedOntology, setSelectedOntology] = useState('');
   const [selectedAlgorithm, setSelectedAlgorithm] = useState('');
 
+  // Handler for changing the selected ontology
   const handleOntologyChange = (event: SelectChangeEvent<string>) => {
-    setSelectedOntology(event.target.value as string);
-    get_evaluate(selectedOntology, selectedAlgorithm)
+    const newOntology = event.target.value as string;
+    setSelectedOntology(newOntology);
+    getEvaluate(newOntology, selectedAlgorithm); // Evaluate with the new ontology and current algorithm
   };
 
+  // Handler for changing the selected algorithm
   const handleAlgorithmChange = (event: SelectChangeEvent<string>) => {
-    setSelectedAlgorithm(event.target.value as string);
-    get_evaluate(selectedOntology, selectedAlgorithm)
+    const newAlgorithm = event.target.value as string;
+    setSelectedAlgorithm(newAlgorithm);
+    getEvaluate(selectedOntology, newAlgorithm); // Evaluate with the current ontology and new algorithm
   };
 
+  // Handler for the run button click event
   const handleRunClick = () => {
-    train_embedder(selectedOntology, selectedAlgorithm);
+    trainEmbedder(selectedOntology, selectedAlgorithm);
   };
 
   return (
     <>
+      {/* Title */}
       <Typography variant='h6' sx={{ paddingLeft: '10px' }}>
         Embedding
       </Typography>
+      
+      {/* Ontology Selection */}
       <FormControl sx={{ margin: '10px' }}>
         <InputLabel id="onto-list-label">Ontologies</InputLabel>
         <Select
@@ -40,7 +49,7 @@ const EmbeddingForm: React.FC<EmbeddingFormProps> = ({ ontologyList, train_embed
           label="Ontology"
           value={selectedOntology}
           onChange={handleOntologyChange}
-          disabled={ontologyList.length === 0}
+          disabled={ontologyList.length === 0} // Disable if there are no ontologies
         >
           {ontologyList.map((ontology, index) => (
             <MenuItem key={index} value={ontology}>
@@ -49,6 +58,8 @@ const EmbeddingForm: React.FC<EmbeddingFormProps> = ({ ontologyList, train_embed
           ))}
         </Select>
       </FormControl>
+      
+      {/* Algorithm Selection */}
       <FormControl sx={{ margin: '10px' }}>
         <InputLabel id="algo-list-label">Algorithms</InputLabel>
         <Select
@@ -57,7 +68,7 @@ const EmbeddingForm: React.FC<EmbeddingFormProps> = ({ ontologyList, train_embed
           label="Algorithm"
           value={selectedAlgorithm}
           onChange={handleAlgorithmChange}
-          disabled={ontologyList.length === 0}
+          disabled={ontologyList.length === 0} // Disable if there are no ontologies
         >
           <MenuItem value="owl2vec-star">OWL2Vec*</MenuItem>
           <MenuItem value="opa2vec">OPA2Vec</MenuItem>
@@ -65,6 +76,8 @@ const EmbeddingForm: React.FC<EmbeddingFormProps> = ({ ontologyList, train_embed
           <MenuItem value="onto2vec">Onto2Vec</MenuItem>
         </Select>
       </FormControl>
+      
+      {/* Run Button */}
       <Button
         component="label"
         role={undefined}
@@ -72,7 +85,7 @@ const EmbeddingForm: React.FC<EmbeddingFormProps> = ({ ontologyList, train_embed
         tabIndex={-1}
         startIcon={<PlayArrow />}
         sx={{ margin: '10px', height: '50px' }}
-        disabled={ontologyList.length === 0 || !selectedOntology || !selectedAlgorithm}
+        disabled={ontologyList.length === 0 || !selectedOntology || !selectedAlgorithm} // Disable if no ontology or algorithm is selected
         onClick={handleRunClick}
       >
         Run

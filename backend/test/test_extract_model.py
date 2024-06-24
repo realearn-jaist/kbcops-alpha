@@ -18,18 +18,18 @@ from models.extract_model import (
 class TestOntologyModelOperations(unittest.TestCase):
     """Test cases for extract_model.py"""
 
-    @patch("models.extract_model.getPath_ontology_directory")
+    @patch("models.extract_model.get_path_ontology_directory")
     @patch("builtins.open", new_callable=mock_open)
-    def test_save_axioms(self, mock_open, mock_getPath):
+    def test_save_axioms(self, mock_open, mock_get_path):
         """Test save_axioms function in extract_model.py
 
         Args:
             mock_open: MagicMock object
-            mock_getPath: MagicMock object
+            mock_get_path: MagicMock object
         Returns:
             None
         """
-        mock_getPath.return_value = "\\fake\\path"
+        mock_get_path.return_value = "\\fake\\path"
         axioms = ["axiom1", "axiom2"]
 
         result = save_axioms("test_id", axioms)
@@ -42,18 +42,18 @@ class TestOntologyModelOperations(unittest.TestCase):
         handle.write.assert_any_call("axiom2\n")
         self.assertEqual(result, axioms)
 
-    @patch("models.extract_model.getPath_ontology_directory")
+    @patch("models.extract_model.get_path_ontology_directory")
     @patch("builtins.open", new_callable=mock_open)
-    def test_save_classes(self, mock_open, mock_getPath):
+    def test_save_classes(self, mock_open, mock_get_path):
         """Test save_classes function in extract_model.py
 
         Args:
             mock_open: MagicMock object
-            mock_getPath: MagicMock object
+            mock_get_path: MagicMock object
         Returns:
             None
         """
-        mock_getPath.return_value = "\\fake\\path"
+        mock_get_path.return_value = "\\fake\\path"
         classes = {"class1", "class2"}
 
         result = save_classes("test_id", classes)
@@ -66,18 +66,18 @@ class TestOntologyModelOperations(unittest.TestCase):
         handle.write.assert_any_call("class2\n")
         self.assertEqual(result, classes)
 
-    @patch("models.extract_model.getPath_ontology_directory")
+    @patch("models.extract_model.get_path_ontology_directory")
     @patch("builtins.open", new_callable=mock_open)
-    def test_save_individuals(self, mock_open, mock_getPath):
+    def test_save_individuals(self, mock_open, mock_get_path):
         """Test save_individuals function in extract_model.py
 
         Args:
             mock_open: MagicMock object
-            mock_getPath: MagicMock object
+            mock_get_path: MagicMock object
         Returns:
             None
         """
-        mock_getPath.return_value = "\\fake\\path"
+        mock_get_path.return_value = "\\fake\\path"
         individuals = {"ind1", "ind2"}
 
         result = save_individuals("test_id", individuals)
@@ -90,18 +90,18 @@ class TestOntologyModelOperations(unittest.TestCase):
         handle.write.assert_any_call("ind2\n")
         self.assertEqual(result, individuals)
 
-    @patch("models.extract_model.getPath_ontology_directory")
+    @patch("models.extract_model.get_path_ontology_directory")
     @patch("builtins.open", new_callable=mock_open)
-    def test_save_annotations(self, mock_open, mock_getPath):
+    def test_save_annotations(self, mock_open, mock_get_path):
         """Test save_annotations function in extract_model.py
 
         Args:
             mock_open: MagicMock object
-            mock_getPath: MagicMock object
+            mock_get_path: MagicMock object
         Returns:
             None
         """
-        mock_getPath.return_value = "\\fake\\path"
+        mock_get_path.return_value = "\\fake\\path"
         annotations = [["ann1", "ann2"], ["ann3", "ann4"]]
         projection = MagicMock()
         projection.entityToPreferredLabels = {
@@ -135,18 +135,18 @@ class TestOntologyModelOperations(unittest.TestCase):
         ]
         mock_open.assert_has_calls(calls)
 
-    @patch("models.extract_model.getPath_ontology_directory")
+    @patch("models.extract_model.get_path_ontology_directory")
     @patch("builtins.open", new_callable=mock_open, read_data="axiom1\naxiom2\n")
-    def test_load_axioms(self, mock_open, mock_getPath):
+    def test_load_axioms(self, mock_open, mock_get_path):
         """Test load_axioms function in extract_model.py
 
         Args:
             mock_open: MagicMock object
-            mock_getPath: MagicMock object
+            mock_get_path: MagicMock object
         Returns:
             None
         """
-        mock_getPath.return_value = "\\fake\\path"
+        mock_get_path.return_value = "\\fake\\path"
 
         result = load_axioms("test_id")
 
@@ -155,18 +155,18 @@ class TestOntologyModelOperations(unittest.TestCase):
         )
         self.assertEqual(result, ["axiom1", "axiom2"])
 
-    @patch("models.extract_model.getPath_ontology_directory")
+    @patch("models.extract_model.get_path_ontology_directory")
     @patch("builtins.open", new_callable=mock_open, read_data="class1\nclass2\n")
-    def test_load_classes(self, mock_open, mock_getPath):
+    def test_load_classes(self, mock_open, mock_get_path):
         """Test load_classes function in extract_model.py
 
         Args:
             mock_open: MagicMock object
-            mock_getPath: MagicMock object
+            mock_get_path: MagicMock object
         Returns:
             None
         """
-        mock_getPath.return_value = "\\fake\\path"
+        mock_get_path.return_value = "\\fake\\path"
 
         result = load_classes("test_id")
 
@@ -175,18 +175,18 @@ class TestOntologyModelOperations(unittest.TestCase):
         )
         self.assertEqual(result, ["class1", "class2"])
 
-    @patch("models.extract_model.getPath_ontology_directory")
+    @patch("models.extract_model.get_path_ontology_directory")
     @patch("builtins.open", new_callable=mock_open, read_data="ind1\nind2\n")
-    def test_load_individuals(self, mock_open, mock_getPath):
+    def test_load_individuals(self, mock_open, mock_get_path):
         """Test load_individuals function in extract_model.py
 
         Args:
             mock_open: MagicMock object
-            mock_getPath: MagicMock object
+            mock_get_path: MagicMock object
         Returns:
             None
         """
-        mock_getPath.return_value = "\\fake\\path"
+        mock_get_path.return_value = "\\fake\\path"
 
         result = load_individuals("test_id")
 
@@ -195,18 +195,18 @@ class TestOntologyModelOperations(unittest.TestCase):
         )
         self.assertEqual(result, ["ind1", "ind2"])
 
-    @patch("models.extract_model.getPath_ontology_directory")
-    def test_load_annotations(self, mock_getPath):
+    @patch("models.extract_model.get_path_ontology_directory")
+    def test_load_annotations(self, mock_get_path):
         """Test load_annotations function in extract_model.py
 
         Args:
-            mock_getPath: MagicMock object
+            mock_get_path: MagicMock object
         Returns:
             None
         """
 
-        # Mock the return value of getPath_ontology_directory
-        mock_getPath.return_value = "\\fake\\path"
+        # Mock the return value of get_path_ontology_directory
+        mock_get_path.return_value = "\\fake\\path"
 
         # Mock data for the files
         annotation_data = "ann1 ann2\nann3 ann4 ann5\n"

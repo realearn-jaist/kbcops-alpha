@@ -365,25 +365,29 @@ def generate_negative_samples_abox(ontology, num_samples, infer_classes_path, la
         num_random_class_samples += num_samples
         num_samples *= 2
 
-    while len(negative_samples) < num_random_class_samples:
-        ind = random.choice(all_individuals)
-        all_classes = list(ontology.classes())
-        negative_class = random.choice(all_classes)
-        ind_classes_is_a = [cls.iri for cls in ind.is_a if hasattr(cls, "iri")]
+    with tqdm(total=num_random_class_samples, desc="Generating random class samples") as pbar:
+        while len(negative_samples) < num_random_class_samples:
+            ind = random.choice(all_individuals)
+            all_classes = list(ontology.classes())
+            negative_class = random.choice(all_classes)
+            ind_classes_is_a = [cls.iri for cls in ind.is_a if hasattr(cls, "iri")]
 
-        if (
-            negative_class.iri not in ind_classes_is_a
-            and negative_class.iri not in infer_classes[ind.iri]
-        ):
+            if (
+                negative_class.iri not in ind_classes_is_a
+                and negative_class.iri not in infer_classes[ind.iri]
+            ):
 
-            negative_samples.append((ind, negative_class.iri, 0))
+                negative_samples.append((ind, negative_class.iri, 0))
+                pbar.update(1)
 
-    while len(negative_samples) < num_samples:
-        ind = random.choice(all_individuals)
-        all_classes = list(ontology.classes())
-        negative_class_iri = random.choice(infer_classes[ind.iri])
-        if negative_class_iri != "owl:Thing":
-            negative_samples.append((ind, negative_class_iri, label))
+    with tqdm(total=num_inferred_class_samples, desc="Generating inferred class samples") as pbar:
+        while len(negative_samples) < num_samples:
+            ind = random.choice(all_individuals)
+            all_classes = list(ontology.classes())
+            negative_class_iri = random.choice(infer_classes[ind.iri])
+            if negative_class_iri != "owl:Thing":
+                negative_samples.append((ind, negative_class_iri, label))
+                pbar.update(1)
     return negative_samples
 
 
@@ -403,33 +407,37 @@ def generate_negative_samples_tbox(ontology, num_samples, infer_classes_path, la
     negative_samples = []
 
     num_random_class_samples = num_samples // 2
-    # num_inferred_class_samples = num_samples - num_random_class_samples
+    num_inferred_class_samples = num_samples - num_random_class_samples
 
     if label == 1:
         num_random_class_samples += num_samples
         num_samples *= 2
 
-    while len(negative_samples) < num_random_class_samples:
-        cls = random.choice(all_classes)
-        all_classes = list(ontology.classes())
-        negative_class = random.choice(all_classes)
-        cls_classes_is_a = [cls.iri for cls in cls.is_a if hasattr(cls, "iri")]
+    with tqdm(total=num_random_class_samples, desc="Generating random class samples") as pbar:
+        while len(negative_samples) < num_random_class_samples:
+            cls = random.choice(all_classes)
+            all_classes = list(ontology.classes())
+            negative_class = random.choice(all_classes)
+            cls_classes_is_a = [cls.iri for cls in cls.is_a if hasattr(cls, "iri")]
 
-        if (
-            negative_class.iri not in cls_classes_is_a
-            and negative_class.iri not in infer_classes[cls.iri]
-        ):
+            if (
+                negative_class.iri not in cls_classes_is_a
+                and negative_class.iri not in infer_classes[cls.iri]
+            ):
 
-            negative_samples.append((cls, negative_class.iri, 0))
+                negative_samples.append((cls, negative_class.iri, 0))
+                pbar.update(1)
 
-    while len(negative_samples) < num_samples:
-        cls = random.choice(all_classes)
-        all_classes = list(ontology.classes())
-        # handle case where there are no inferred classes
-        # negative_class_iri = owl.Thing.iri
-        if infer_classes[cls.iri] != []:
-            negative_class_iri = random.choice(infer_classes[cls.iri])
-            negative_samples.append((cls, negative_class_iri, label))
+    with tqdm(total=num_inferred_class_samples, desc="Generating inferred class samples") as pbar:
+        while len(negative_samples) < num_samples:
+            cls = random.choice(all_classes)
+            all_classes = list(ontology.classes())
+            # handle case where there are no inferred classes
+            # negative_class_iri = owl.Thing.iri
+            if infer_classes[cls.iri] != []:
+                negative_class_iri = random.choice(infer_classes[cls.iri])
+                negative_samples.append((cls, negative_class_iri, label))
+                pbar.update(1)
     return negative_samples
 
 
