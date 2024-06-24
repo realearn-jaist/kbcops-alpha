@@ -1,10 +1,9 @@
 import os
 
-from owl2vec_star.Label import pre_process_words
 from models.ontology_model import get_path_ontology_directory  # type: ignore
 
 
-def save_axioms(id, axioms):
+def save_axioms(ontology_name, axioms):
     """Save axioms to a file
 
     Args:
@@ -13,7 +12,7 @@ def save_axioms(id, axioms):
     Returns:
         list: The list of axioms saved to the file
     """
-    path = os.path.join(get_path_ontology_directory(id), "axioms.txt")
+    path = os.path.join(get_path_ontology_directory(ontology_name), "axioms.txt")
 
     with open(path, "w", encoding="utf-8") as f:
         for axiom in axioms:
@@ -22,7 +21,7 @@ def save_axioms(id, axioms):
     return axioms
 
 
-def save_classes(id, classes):
+def save_classes(ontology_name, classes):
     """Save classes to a file
 
     Args:
@@ -31,7 +30,7 @@ def save_classes(id, classes):
     Returns:
         list: The list of classes saved to the file
     """
-    path = os.path.join(get_path_ontology_directory(id), "classes.txt")
+    path = os.path.join(get_path_ontology_directory(ontology_name), "classes.txt")
 
     with open(path, "w", encoding="utf-8") as f:
         for cl in classes:
@@ -40,7 +39,7 @@ def save_classes(id, classes):
     return classes
 
 
-def save_individuals(id, individuals):
+def save_individuals(ontology_name, individuals):
     """Save individuals to a file
 
     Args:
@@ -49,7 +48,7 @@ def save_individuals(id, individuals):
     Returns:
         list: The list of individuals saved to the file
     """
-    path = os.path.join(get_path_ontology_directory(id), "individuals.txt")
+    path = os.path.join(get_path_ontology_directory(ontology_name), "individuals.txt")
 
     with open(path, "w", encoding="utf-8") as f:
         for individual in individuals:
@@ -58,7 +57,7 @@ def save_individuals(id, individuals):
     return individuals
 
 
-def save_annotations(id, annotations, projection):
+def save_annotations(ontology_name, annotations, projection):
     """Save annotations to a file
 
     Args:
@@ -71,7 +70,7 @@ def save_annotations(id, annotations, projection):
     lines = []
 
     # uri label
-    path = os.path.join(get_path_ontology_directory(id), "uri_labels.txt")
+    path = os.path.join(get_path_ontology_directory(ontology_name), "uri_labels.txt")
     with open(path, "w", encoding="utf-8") as f:
         for e in projection.entityToPreferredLabels:
             for v in projection.entityToPreferredLabels[e]:
@@ -80,7 +79,7 @@ def save_annotations(id, annotations, projection):
         lines += file.readlines()
 
     # annotation
-    path = os.path.join(get_path_ontology_directory(id), "annotations.txt")
+    path = os.path.join(get_path_ontology_directory(ontology_name), "annotations.txt")
     with open(path, "w", encoding="utf-8") as f:
         for a in annotations:
             f.write("%s\n" % " ".join(a))
@@ -119,7 +118,7 @@ def load_input_file(ontology_name, input_file):
     return [line.strip() for line in open(path, 'r', encoding='utf-8').readlines()]
     
 
-def load_axioms(id):
+def load_axioms(ontology_name):
     """Load axioms from a file
 
     Args:
@@ -127,12 +126,12 @@ def load_axioms(id):
     Returns:
         list: The list of axioms loaded from the file
     """
-    path = os.path.join(get_path_ontology_directory(id), "axioms.txt")
+    path = os.path.join(get_path_ontology_directory(ontology_name), "axioms.txt")
 
     return [line.strip() for line in open(path, 'r', encoding='utf-8').readlines()]
 
 
-def load_classes(id):
+def load_classes(ontology_name):
     """Load classes from a file
 
     Args:
@@ -140,12 +139,12 @@ def load_classes(id):
     Returns:
         list: The list of classes loaded from the file
     """
-    path = os.path.join(get_path_ontology_directory(id), "classes.txt")
+    path = os.path.join(get_path_ontology_directory(ontology_name), "classes.txt")
 
     return [line.strip() for line in open(path, 'r', encoding='utf-8').readlines()]
 
 
-def load_individuals(id):
+def load_individuals(ontology_name):
     """Load individuals from a file
 
     Args:
@@ -153,12 +152,12 @@ def load_individuals(id):
     Returns:
         list: The list of individuals loaded from the file
     """
-    path = os.path.join(get_path_ontology_directory(id), "individuals.txt")
+    path = os.path.join(get_path_ontology_directory(ontology_name), "individuals.txt")
 
     return [line.strip() for line in open(path, 'r', encoding='utf-8').readlines()]
 
 
-def load_annotations(id):
+def load_annotations(ontology_name):
     """Load annotations from a file
 
     Args:
@@ -168,12 +167,12 @@ def load_annotations(id):
     """
     uri_label, annotations = list(), list()
 
-    path = os.path.join(get_path_ontology_directory(id), "uri_labels.txt")
+    path = os.path.join(get_path_ontology_directory(ontology_name), "uri_labels.txt")
     
     with open( path, "r", encoding="utf-8" ) as f:
         uri_label = [line.strip() for line in f.readlines()]
     
-    path = os.path.join(get_path_ontology_directory(id), "annotations.txt")
+    path = os.path.join(get_path_ontology_directory(ontology_name), "annotations.txt")
     
     with open( path, "r", encoding="utf-8" ) as f:
         annotations = [line.strip() for line in f.readlines()]
@@ -181,7 +180,7 @@ def load_annotations(id):
     return uri_label, annotations
 
 
-def save_infer(id, infers):
+def save_infer(ontology_name, infers):
     """Save inferred ancestors to a file
 
     Args:
@@ -190,7 +189,7 @@ def save_infer(id, infers):
     Returns:
         list: The list of inferred ancestors saved to the file
     """
-    path = os.path.join(get_path_ontology_directory(id), "inferred_ancestors.txt")
+    path = os.path.join(get_path_ontology_directory(ontology_name), "inferred_ancestors.txt")
 
     with open(path, "w", encoding="utf-8") as f:
         for result in infers:
@@ -199,7 +198,7 @@ def save_infer(id, infers):
     return infers
 
 
-def load_infer(id):
+def load_infer(ontology_name):
     """Load inferred ancestors from a file
 
     Args:
@@ -207,7 +206,7 @@ def load_infer(id):
     Returns:
         list: The list of inferred ancestors loaded from the file
     """
-    path = os.path.join(get_path_ontology_directory(id), "inferred_ancestors.txt")
+    path = os.path.join(get_path_ontology_directory(ontology_name), "inferred_ancestors.txt")
 
     with open(path, "r", encoding="utf-8") as f:
         return f.readlines()

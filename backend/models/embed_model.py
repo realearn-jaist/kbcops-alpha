@@ -5,7 +5,7 @@ import numpy
 
 from models.extract_model import load_classes
 from utils.file_handler import replace_or_create_folder
-from models.ontology_model import get_path_ontology, get_path_ontology_directory
+from models.ontology_model import get_path_ontology_directory
 
 
 def isModelExist(ontology_name, algorithm):

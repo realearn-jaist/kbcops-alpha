@@ -1,6 +1,5 @@
 import time
 from models.evaluator_model import read_evaluate, read_garbage_metrics
-from controllers.graph_controller import create_graph
 from controllers.evaluator_controller import predict_func
 from controllers.embed_controller import embed_func
 from flask import jsonify, request, Blueprint  # type: ignore

@@ -19,11 +19,11 @@ def extract_garbage_value(onto_data):
         individual_list (list): The list of individuals
     """
     # Extract columns into lists
-    individual_list = onto_data["Individual"].tolist()
+    class_individual_list = onto_data["Individual"].tolist()
     truth_list = onto_data["True"].tolist()
     predict_list = onto_data["Predicted"].tolist()
 
-    return individual_list, truth_list, predict_list
+    return class_individual_list, truth_list, predict_list
 
 
 def find_parents_with_relations(cls, relation_list):
@@ -78,7 +78,7 @@ def graph_maker(
     onto_type,
     onto_file,
     entity_prefix,
-    individual_list,
+    class_individual_list,
     truth_list,
     predict_list,
     fig_directory,
@@ -97,7 +97,7 @@ def graph_maker(
         None
     """
     replace_or_create_folder(fig_directory)
-    for i, v in enumerate(individual_list):
+    for i, v in enumerate(class_individual_list):
         entity_uri = entity_prefix + v
         entity = onto_file.search(iri=entity_uri)[0]
         subs = entity.INDIRECT_is_a
@@ -124,11 +124,14 @@ def graph_maker(
             G.add_edge(source, target, label=relation)
             G.add_nodes_from([source, target])
 
+        G.add_edge(class_individual_list[i], predict_list[i])
+        # G.add_nodes_from([class_individual_list[i], predict_list[i]])
+
         node_colors = [
             (
                 "gray"
                 if node != truth_list[i]
-                and node != individual_list[i]
+                and node != class_individual_list[i]
                 and node != predict_list[i]
                 else (
                     "#94F19C"
@@ -194,12 +197,12 @@ def create_graph(ontology_name, algorithm):
     onto = get_ontology(onto_file_path).load()
     garbage_file = read_garbage_metrics_pd(ontology_name, algorithm)
 
-    individual_list, truth_list, predict_list = extract_garbage_value(garbage_file)
+    class_individual_list, truth_list, predict_list = extract_garbage_value(garbage_file)
     graph_maker(
         onto_type,
         onto,
         entity_prefix,
-        individual_list,
+        class_individual_list,
         truth_list,
         predict_list,
         fig_directory,

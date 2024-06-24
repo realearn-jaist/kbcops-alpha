@@ -7,13 +7,7 @@ import nltk
 
 nltk.download("punkt")
 
-from models.extract_model import (
-    load_annotations,
-    load_axioms,
-    load_classes,
-    load_individuals,
-    load_multi_input_files,
-)
+from models.extract_model import load_multi_input_files
 from models.embed_model import isModelExist, save_embedding, save_model
 from models.ontology_model import get_path_ontology
 from owl2vec_star.RDF2Vec_Embed import get_rdf2vec_walks, get_rdf2vec_embed
@@ -36,12 +30,11 @@ def opa2vec_or_onto2vec(ontology_name, config_file, algorithm):
 
     # retrieve file
     files_list = ["axioms", "classes", "individuals", "uri_labels", "annotations"]
-    
     files = load_multi_input_files(ontology_name, files_list)
 
     # check opa2vec or onto2vec
     if algorithm == "opa2vec":
-        lines = files['axioms'] + files['annotations'] + files['uri_label']
+        lines = files['axioms'] + files['annotations'] + files['uri_labels']
     else:
         lines = files['axioms']
 
@@ -78,22 +71,22 @@ def owl2vec_star(ontology_name, config_file, algorithm):
     Returns:
         str: The result of the embedding process
     """
+    
     config = configparser.ConfigParser()
     config.read(config_file)
-
+    
     # retrieve file
-    axioms = load_axioms(ontology_name)
-    classes = load_classes(ontology_name)
-    individuals = load_individuals(ontology_name)
-    entities = classes + individuals
-    uri_label_load, annotations_load = load_annotations(ontology_name)
+    files_list = ["axioms", "classes", "individuals", "uri_labels", "annotations"]
+    files = load_multi_input_files(ontology_name, files_list)
+
+    entities = files['classes'] + files['individuals']
 
     uri_label, annotations = dict(), list()
 
-    for line in uri_label_load:
+    for line in files['uri_labels']:
         tmp = line.strip().split()
         uri_label[tmp[0]] = pre_process_words(tmp[1:])
-    for line in annotations_load:
+    for line in files['annotations']:
         tmp = line.strip().split()
         annotations.append(tmp)
 
@@ -113,7 +106,7 @@ def owl2vec_star(ontology_name, config_file, algorithm):
         print("Extracted %d walks for %d seed entities" % (len(walks_), len(entities)))
         walk_sentences += [list(map(str, x)) for x in walks_]
 
-        for line in axioms:
+        for line in files['axioms']:
             axiom_sentence = [item for item in line.strip().split()]
             axiom_sentences.append(axiom_sentence)
         print("Extracted %d axiom sentences" % len(axiom_sentences))
@@ -181,6 +174,7 @@ def owl2vec_star(ontology_name, config_file, algorithm):
         "URI_Doc: %d, Lit_Doc: %d, Mix_Doc: %d"
         % (len(URI_Doc), len(Lit_Doc), len(Mix_Doc))
     )
+
     all_doc = URI_Doc + Lit_Doc + Mix_Doc
 
     random.shuffle(all_doc)
@@ -199,7 +193,7 @@ def owl2vec_star(ontology_name, config_file, algorithm):
         seed=int(config["MODEL_OWL2VECSTAR"]["seed"]),
     )
 
-    embeddings = retrieval_embed_owl2vec(model_, classes + individuals)
+    embeddings = retrieval_embed_owl2vec(model_, files['classes'] + files['individuals'])
 
     save_model(ontology_name, algorithm, model_)
     save_embedding(ontology_name, algorithm, embeddings)
@@ -216,13 +210,15 @@ def rdf2vec(ontology_name, config_file, algorithm):
     Returns:
         str: The result of the embedding process
     """
+
     config = configparser.ConfigParser()
     config.read(config_file)
 
     # retrieve file
-    classes = load_classes(ontology_name)
-    individuals = load_individuals(ontology_name)
-    entities = classes + individuals
+    files_list = ["classes", "individuals"]
+    files = load_multi_input_files(ontology_name, files_list)
+
+    entities = files['classes'] + files['individuals']
 
     embeddings, model_rdf2vec = get_rdf2vec_embed(
         onto_file=get_path_ontology(ontology_name),
