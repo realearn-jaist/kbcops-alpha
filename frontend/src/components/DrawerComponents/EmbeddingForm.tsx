@@ -1,37 +1,23 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Typography, FormControl, InputLabel, MenuItem, Select, Button } from '@mui/material';
 import { PlayArrow } from '@mui/icons-material';
 import { SelectChangeEvent } from '@mui/material/Select';
 
 interface EmbeddingFormProps {
-  ontologyList: string[];
-  trainEmbedder: (onto_id: string, algo: string) => void;
-  getEvaluate: (onto_id: string, algo: string) => void;
+  data_pack: {
+    ontologyList: string[], 
+    selectedOntology: string, 
+    selectedAlgorithm: string, 
+    selectedCompletionType: string, 
+    selectedClassifier: string
+  };
+  handleOntologyChange: (event: SelectChangeEvent<string>) => void;
+  handleAlgorithmChange: (event: SelectChangeEvent<string>) => void;
+  handleEmbedClick: () => void;
 }
 
-const EmbeddingForm: React.FC<EmbeddingFormProps> = ({ ontologyList, trainEmbedder, getEvaluate }) => {
-  // State variables for selected ontology and algorithm
-  const [selectedOntology, setSelectedOntology] = useState('');
-  const [selectedAlgorithm, setSelectedAlgorithm] = useState('');
+const EmbeddingForm: React.FC<EmbeddingFormProps> = ({ data_pack, handleOntologyChange, handleAlgorithmChange, handleEmbedClick }) => {
 
-  // Handler for changing the selected ontology
-  const handleOntologyChange = (event: SelectChangeEvent<string>) => {
-    const newOntology = event.target.value as string;
-    setSelectedOntology(newOntology);
-    getEvaluate(newOntology, selectedAlgorithm); // Evaluate with the new ontology and current algorithm
-  };
-
-  // Handler for changing the selected algorithm
-  const handleAlgorithmChange = (event: SelectChangeEvent<string>) => {
-    const newAlgorithm = event.target.value as string;
-    setSelectedAlgorithm(newAlgorithm);
-    getEvaluate(selectedOntology, newAlgorithm); // Evaluate with the current ontology and new algorithm
-  };
-
-  // Handler for the run button click event
-  const handleRunClick = () => {
-    trainEmbedder(selectedOntology, selectedAlgorithm);
-  };
 
   return (
     <>
@@ -47,11 +33,11 @@ const EmbeddingForm: React.FC<EmbeddingFormProps> = ({ ontologyList, trainEmbedd
           labelId="onto-list-label"
           id="onto-list"
           label="Ontology"
-          value={selectedOntology}
+          value={data_pack.selectedOntology}
           onChange={handleOntologyChange}
-          disabled={ontologyList.length === 0} // Disable if there are no ontologies
+          disabled={data_pack.ontologyList.length === 0} // Disable if there are no ontologies
         >
-          {ontologyList.map((ontology, index) => (
+          {data_pack.ontologyList.map((ontology, index) => (
             <MenuItem key={index} value={ontology}>
               {ontology}
             </MenuItem>
@@ -66,9 +52,9 @@ const EmbeddingForm: React.FC<EmbeddingFormProps> = ({ ontologyList, trainEmbedd
           labelId="algo-list-label"
           id="algo-list"
           label="Algorithm"
-          value={selectedAlgorithm}
+          value={data_pack.selectedAlgorithm}
           onChange={handleAlgorithmChange}
-          disabled={ontologyList.length === 0} // Disable if there are no ontologies
+          disabled={data_pack.ontologyList.length === 0} // Disable if there are no ontologies
         >
           <MenuItem value="owl2vec-star">OWL2Vec*</MenuItem>
           <MenuItem value="opa2vec">OPA2Vec</MenuItem>
@@ -85,10 +71,10 @@ const EmbeddingForm: React.FC<EmbeddingFormProps> = ({ ontologyList, trainEmbedd
         tabIndex={-1}
         startIcon={<PlayArrow />}
         sx={{ margin: '10px', height: '50px' }}
-        disabled={ontologyList.length === 0 || !selectedOntology || !selectedAlgorithm} // Disable if no ontology or algorithm is selected
-        onClick={handleRunClick}
+        disabled={data_pack.ontologyList.length === 0 || !data_pack.selectedOntology || !data_pack.selectedAlgorithm} // Disable if no ontology or algorithm is selected
+        onClick={handleEmbedClick}
       >
-        Run
+        Embed
       </Button>
     </>
   );

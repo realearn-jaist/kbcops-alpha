@@ -29,7 +29,7 @@ function Copyright(props: any) {
   );
 }
 
-const drawerWidth: number = 240;
+const drawerWidth: number = 300;
 
 // Styled component for the main content area, adjusting width and margin based on drawer state
 const MainWrapper = styled('main', { shouldForwardProp: (prop) => prop !== 'open' })<{
@@ -71,7 +71,7 @@ type GarbageImage = {
 
 interface MainProps {
   open: boolean;
-  onto_id: string;
+  ontology_name: string;
   onto_data: {
     no_class: number;
     no_individual: number;
@@ -91,7 +91,7 @@ interface MainProps {
 }
 
 // Main component
-const Main: React.FC<MainProps> = ({ open, onto_id, onto_data, algo, eval_metric, garbage_metric, garbage_image }) => {
+const Main: React.FC<MainProps> = ({ open, ontology_name, onto_data, algo, eval_metric, garbage_metric, garbage_image }) => {
   const StatCards = [
     { name: 'Classes', data: onto_data.no_class },
     { name: 'Individuals', data: onto_data.no_individual },
@@ -130,7 +130,7 @@ const Main: React.FC<MainProps> = ({ open, onto_id, onto_data, algo, eval_metric
           {/* Display ontology ID and TBox/ABox information */}
           <Box sx={{ display: 'flex', alignItems: "center" }}>
             <Typography variant="h2" gutterBottom>
-              {onto_id}
+              {ontology_name}
             </Typography>
             <Box component="section" sx={{ p: 2, border: '1px dashed grey', height: "72px", margin: "0px 0px 21px 20px", borderRadius: "10px", background: "gray" }}>
               <Typography variant="h4" gutterBottom>

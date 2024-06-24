@@ -3,7 +3,7 @@ import { AppBar as MuiAppBar, Toolbar, IconButton } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import MenuIcon from '@mui/icons-material/Menu';
 
-const drawerWidth = 240; // Width of the drawer
+const drawerWidth: number = 300; // Width of the drawer
 
 // Styled component for the AppBar with conditional styling based on the 'open' prop
 const AppBarWrapper = styled(MuiAppBar, {
