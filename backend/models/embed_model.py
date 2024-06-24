@@ -5,7 +5,7 @@ import numpy
 
 from models.extract_model import load_classes
 from utils.file_handler import replace_or_create_folder
-from models.ontology_model import get_path_ontology, get_path_ontology_directory
+from models.ontology_model import get_path_ontology_directory
 
 
 def isModelExist(ontology_name, algorithm):
@@ -86,7 +86,7 @@ def save_embedding(ontology_name, algorithm, embed):
     return embed
 
 
-def load_embedding(ontology_name, algorithm):
+def load_embedding_value(ontology_name, algorithm):
     """Load the embedding from the directory
 
     Args:

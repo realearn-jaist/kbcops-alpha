@@ -148,8 +148,8 @@ class TestRoutes(unittest.TestCase):
         self.assertEqual(response.status_code, 500)
         self.assertIn("Extraction failed", response.get_json()["message"])
 
-    @patch("routes.routes.getAll_ontology")
-    def test_list_ontologies(self, mock_getAll_ontology):
+    @patch("routes.routes.get_all_ontology")
+    def test_list_ontologies(self, mock_get_all_ontology):
         """Test that the list_ontologies route works successfully when ontologies are listed successfully
 
         Args:
@@ -157,7 +157,7 @@ class TestRoutes(unittest.TestCase):
         Returns:
             None
         """
-        mock_getAll_ontology.return_value = ["ontology1", "ontology2"]
+        mock_get_all_ontology.return_value = ["ontology1", "ontology2"]
         response = self.app.get("/ontology")
         self.assertEqual(response.status_code, 200)
         self.assertIn("Ontologies listed successfully", response.get_json()["message"])
