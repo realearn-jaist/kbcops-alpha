@@ -15,6 +15,7 @@ import {
 } from "@mui/material";
 import StatCard from "./MainComponents/StatCard";
 import Title from "./MainComponents/Title";
+import GarbageMetrics from "./MainComponents/GarbageMetrics";
 
 function Copyright(props: any) {
   return (
@@ -192,33 +193,33 @@ const Main: React.FC<MainProps> = ({ open, ontology_name, onto_data, algo, eval_
                 >
                   <Box sx={{ display: "flex", flexGrow: 1 }}>
                     <Typography component="p" variant="h6" color="primary">
-                      {"1"}
+                      {"K=1"}
                     </Typography>
                     <Box sx={{ flexGrow: 1, display: "flex", justifyContent: "center" }}>
                       <Typography component="p" variant="h4" color="black">
-                        {(Math.round(eval_metric.hit_at_1 * 100) / 100).toFixed(2)}
+                        {(Math.round(eval_metric.hit_at_1 * 10000) / 100).toFixed(2)}%
                       </Typography>
                     </Box>
                   </Box>
                   <Divider orientation="vertical" flexItem />
                   <Box sx={{ display: "flex", flexGrow: 1 }}>
                     <Typography component="p" variant="h6" color="primary">
-                      {"5"}
+                      {"K=5"}
                     </Typography>
                     <Box sx={{ flexGrow: 1, display: "flex", justifyContent: "center" }}>
                       <Typography component="p" variant="h4" color="black">
-                        {(Math.round(eval_metric.hit_at_5 * 100) / 100).toFixed(2)}
+                        {(Math.round(eval_metric.hit_at_5 * 10000) / 100).toFixed(2)}%
                       </Typography>
                     </Box>
                   </Box>
                   <Divider orientation="vertical" flexItem />
                   <Box sx={{ display: "flex", flexGrow: 1 }}>
                     <Typography component="p" variant="h6" color="primary">
-                      {"10"}
+                      {"K=10"}
                     </Typography>
                     <Box sx={{ flexGrow: 1, display: "flex", justifyContent: "center" }}>
                       <Typography component="p" variant="h4" color="black">
-                        {(Math.round(eval_metric.hit_at_10 * 100) / 100).toFixed(2)}
+                        {(Math.round(eval_metric.hit_at_10 * 10000) / 100).toFixed(2)}%
                       </Typography>
                     </Box>
                   </Box>
@@ -285,80 +286,7 @@ const Main: React.FC<MainProps> = ({ open, ontology_name, onto_data, algo, eval_
           <br />
 
           {/* Display selected garbage metrics */}
-          <Grid container spacing={3}>
-            <Grid item xs={12} md={6} lg={3}>
-              <Paper
-                sx={{
-                  p: 2,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  height: 70,
-                }}
-              >
-                <Typography variant="h6">
-                  Ground Truth Score: {
-                    (garbage_metric.length > 0) ?
-                      (Math.round(garbage_metric[garbageIndex].Score_true * 100) / 100).toFixed(2) :
-                      (Math.round(0)).toFixed(2)
-                  }
-                </Typography>
-              </Paper>
-            </Grid>
-            <Grid item xs={12} md={6} lg={3}>
-              <Paper
-                sx={{
-                  p: 2,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  height: 70,
-                }}
-              >
-                <Typography variant="h6">
-                  Ground Truth Rank: {
-                    (garbage_metric.length > 0) ?
-                      garbage_metric[garbageIndex].True_rank :
-                      0
-                  }
-                </Typography>
-              </Paper>
-            </Grid>
-            <Grid item xs={12} md={6} lg={3}>
-              <Paper
-                sx={{
-                  p: 2,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  height: 70,
-                }}
-              >
-                <Typography variant="h6">
-                  Garbage Score: {
-                    (garbage_metric.length > 0) ?
-                      (Math.round(garbage_metric[garbageIndex].Score_predict * 100) / 100).toFixed(2) :
-                      (Math.round(0)).toFixed(2)
-                  }
-                </Typography>
-              </Paper>
-            </Grid>
-            <Grid item xs={12} md={6} lg={3}>
-              <Paper
-                sx={{
-                  p: 2,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  height: 70,
-                }}
-              >
-                <Typography variant="h6">
-                  Garbage Rank: {
-                    (garbage_metric.length > 0) ?
-                      garbage_metric[garbageIndex].Predicted_rank :
-                      0
-                  }
-                </Typography>
-              </Paper>
-            </Grid>
-          </Grid>
+          <GarbageMetrics garbage_metric={garbage_metric} garbageIndex={garbageIndex} />
         </Box>
         <Copyright />
       </Box>

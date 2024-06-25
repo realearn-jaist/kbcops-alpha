@@ -12,7 +12,7 @@ const StatC: React.FC<{
     <React.Fragment>
       <Title>{name}</Title>
       <Typography component="p" variant="h4">
-        {type == "float" ? (Math.round(data * 100) / 100).toFixed(2) : Math.round(data)}
+        {type == "float" ? String((Math.round(data * 10000) / 100).toFixed(2)) + "%" : Math.round(data)}
       </Typography>
     </React.Fragment>
   );
