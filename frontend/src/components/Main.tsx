@@ -81,11 +81,14 @@ interface MainProps {
   };
   algo: string;
   eval_metric: {
-    mrr: number,
-    hit_at_1: number,
-    hit_at_5: number,
-    hit_at_10: number,
-    garbage: number,
+    mrr: number;
+    hit_at_1: number;
+    hit_at_5: number;
+    hit_at_10: number;
+    garbage: number;
+    total: number;
+    average_garbage_Rank: number;
+    average_Rank: number;
   };
   garbage_metric: GarbageMetric[];
   garbage_image: GarbageImage[];
@@ -167,6 +170,30 @@ const Main: React.FC<MainProps> = ({ open, ontology_name, onto_data, algo, eval_
             {algo}
           </Typography>
           <Grid container spacing={3}>
+            <Grid item xs={12} md={6} lg={3}>
+              <Paper
+                sx={{
+                  p: 2,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  height: 150,
+                }}
+              >
+                <StatCard name={"Total Validate Sample"} data={eval_metric.total} type="int" />
+              </Paper>
+            </Grid>
+            <Grid item xs={12} md={6} lg={3}>
+              <Paper
+                sx={{
+                  p: 2,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  height: 150,
+                }}
+              >
+                <StatCard name={"MRR"} data={eval_metric.mrr} type="float" />
+              </Paper>
+            </Grid>
             <Grid item xs={12} md={12} lg={6}>
               <Paper
                 sx={{
@@ -226,7 +253,8 @@ const Main: React.FC<MainProps> = ({ open, ontology_name, onto_data, algo, eval_
                 </Box>
               </Paper>
             </Grid>
-            <Grid item xs={12} md={12} lg={3}>
+            
+            <Grid item xs={12} md={12} lg={6}>
               <Paper
                 sx={{
                   p: 2,
@@ -235,10 +263,46 @@ const Main: React.FC<MainProps> = ({ open, ontology_name, onto_data, algo, eval_
                   height: 150,
                 }}
               >
-                <StatCard name={"MRR"} data={eval_metric.mrr} type="float" />
+                <Title>{"Garbage / Total"}</Title>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    bgcolor: 'background.paper',
+                    color: 'text.secondary',
+                    '& svg': {
+                      m: 1,
+                    },
+                    '& hr': {
+                      mx: 0.5,
+                    },
+                  }}
+                >
+                  <Box sx={{ display: "flex", flexGrow: 1 }}>
+                    <Typography component="p" variant="h6" color="primary">
+                      {"Total"}
+                    </Typography>
+                    <Box sx={{ flexGrow: 1, display: "flex", justifyContent: "center" }}>
+                      <Typography component="p" variant="h4" color="black">
+                        {eval_metric.total === 0 ? "None" : String(eval_metric.garbage) + "/" + String(eval_metric.total)}
+                      </Typography>
+                    </Box>
+                  </Box>
+                  <Divider orientation="vertical" flexItem />
+                  <Box sx={{ display: "flex", flexGrow: 1 }}>
+                    <Typography component="p" variant="h6" color="primary">
+                      {"Percent"}
+                    </Typography>
+                    <Box sx={{ flexGrow: 1, display: "flex", justifyContent: "center" }}>
+                      <Typography component="p" variant="h4" color="black">
+                        {eval_metric.total === 0 ? "None" : String((Math.round(eval_metric.garbage/eval_metric.total * 10000) / 100).toFixed(2)) + "%"}
+                      </Typography>
+                    </Box>
+                  </Box>
+                </Box>
               </Paper>
             </Grid>
-            <Grid item xs={12} md={12} lg={3}>
+            <Grid item xs={12} md={6} lg={3}>
               <Paper
                 sx={{
                   p: 2,
@@ -247,7 +311,19 @@ const Main: React.FC<MainProps> = ({ open, ontology_name, onto_data, algo, eval_
                   height: 150,
                 }}
               >
-                <StatCard name={"Garbage"} data={eval_metric.garbage} type="int" />
+                <StatCard name={"Avg. Garbage Rank"} data={eval_metric.average_garbage_Rank} type="int" />
+              </Paper>
+            </Grid>
+            <Grid item xs={12} md={6} lg={3}>
+              <Paper
+                sx={{
+                  p: 2,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  height: 150,
+                }}
+              >
+                <StatCard name={"Avg. Ground Truth Rank"} data={eval_metric.average_Rank} type="int" />
               </Paper>
             </Grid>
           </Grid>

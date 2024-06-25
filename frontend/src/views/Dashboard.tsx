@@ -32,8 +32,11 @@ export default function Dashboard() {
     hit_at_1: number,
     hit_at_5: number,
     hit_at_10: number,
-    garbage: number
-  }>({ mrr: 0, hit_at_1: 0, hit_at_5: 0, hit_at_10: 0, garbage: 0 });
+    garbage: number,
+    total: number,
+    average_garbage_Rank: number,
+    average_Rank: number,
+  }>({ mrr: 0, hit_at_1: 0, hit_at_5: 0, hit_at_10: 0, garbage: 0, total: 0, average_garbage_Rank: 0, average_Rank: 0 });
 
   // Types for garbage metrics and images
   type GarbageMetric = {
@@ -173,7 +176,7 @@ export default function Dashboard() {
     })
     .catch((error) => {
       console.error("Get evaluate stat failed:", error);
-      setDisplayEvalMetric({ mrr: 0, hit_at_1: 0, hit_at_5: 0, hit_at_10: 0, garbage: 0 });
+      setDisplayEvalMetric({ mrr: 0, hit_at_1: 0, hit_at_5: 0, hit_at_10: 0, garbage: 0, total: 0, average_garbage_Rank: 0, average_Rank: 0 });
       setDisplayGarbageMetric([]);
       setDisplayGarbageImage([]);
     });

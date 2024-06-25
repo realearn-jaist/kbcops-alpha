@@ -44,7 +44,7 @@ class InclusionEvaluator(Evaluator):
         inferred_ancestors,
         ontology,
         algorithm,
-        onto_type,
+        completion_type,
     ):
         super(InclusionEvaluator, self).__init__(
             valid_samples, test_samples, train_X, train_y
@@ -56,7 +56,7 @@ class InclusionEvaluator(Evaluator):
         self.individuals = individuals
         self.individuals_e = individuals_e
         self.algorithm = algorithm
-        self.onto_type = onto_type
+        self.completion_type = completion_type
         self.result = dict()
 
     def evaluate(self, model: object, eva_samples: list):
@@ -80,7 +80,7 @@ class InclusionEvaluator(Evaluator):
         for k, sample in enumerate(progress_bar):
             sub, gt = sample[0], sample[1]
             sub_v = None
-            if self.onto_type == "TBox":
+            if self.completion_type == "tbox":
                 sub_index = self.classes.index(sub)
                 sub_v = self.classes_e[sub_index]
             else:
@@ -207,7 +207,7 @@ class InclusionEvaluator(Evaluator):
         )
 
 
-def predict_func(ontology_name: str, algorithm: str, classifier: str):
+def predict_func(ontology_name: str, algorithm: str, completion_type: str, classifier: str, ):
     """Predict the ontology with the algorithm
 
     Args:
@@ -226,8 +226,6 @@ def predict_func(ontology_name: str, algorithm: str, classifier: str):
 
     # load classes file
     print(f"load {ontology_name} classes")
-
-    onto_type = "ABox" if individuals_count > int(0.1 * len(files['classes'])) else "TBox"
 
     # embed class with model
     print(f"embedding {ontology_name} classes")
@@ -253,7 +251,7 @@ def predict_func(ontology_name: str, algorithm: str, classifier: str):
         # when it come to ABox sub will consider as a individual and sup consider as a class
         sub, sup, label = s[0], s[1], s[2]
         sub_v = None
-        if onto_type == "TBox":
+        if completion_type == "tbox":
             sub_v = classes_e[files['classes'].index(sub)]
         else:
             sub_v = individuals_e[files['individuals'].index(sub)]
@@ -275,11 +273,11 @@ def predict_func(ontology_name: str, algorithm: str, classifier: str):
             all_infer_classes = line.strip().split(",")
             cls = all_infer_classes[0]
             inferred_ancestors[cls] = (
-                all_infer_classes if onto_type == "TBox" else all_infer_classes[1:]
+                all_infer_classes if completion_type == "tbox" else all_infer_classes[1:]
             )
 
     # evaluate
-    print(f"evaluate {ontology_name} with {algorithm} embedding algorithm on random forest")
+    print(f"evaluate {ontology_name} with {algorithm} embedding algorithm on {classifier}")
     evaluate = InclusionEvaluator(
         valid_samples,
         test_samples,
@@ -292,17 +290,19 @@ def predict_func(ontology_name: str, algorithm: str, classifier: str):
         inferred_ancestors,
         ontology_name,
         algorithm,
-        onto_type,
+        completion_type,
     )
     # evaluate.run_random_forest()
+    print(classifier)
 
     classifiers = {
         "mlp": evaluate.run_mlp,
-        "logistic_regression": evaluate.run_logistic_regression,
+        "logistic-regression": evaluate.run_logistic_regression,
         "svm": evaluate.run_svm,
-        "linear_svc": evaluate.run_linear_svc,
-        "decision_tree": evaluate.run_decision_tree,
-        "sgd_log": evaluate.run_sgd_log
+        "linear-svc": evaluate.run_linear_svc,
+        "decision-tree": evaluate.run_decision_tree,
+        "sgd-log": evaluate.run_sgd_log,
+        "random-forest": evaluate.run_random_forest,
     }
     
     if classifier in classifiers:

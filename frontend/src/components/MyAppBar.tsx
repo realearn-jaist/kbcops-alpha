@@ -37,7 +37,7 @@ const MyAppBar: React.FC<AppBarProps> = ({ open, toggleDrawer }) => {
 
   // Define the paths for the tabs
   const pages = [
-    { label: 'Page 1', path: '/page1' },
+    { label: 'Dashboard', path: '/dashboard' },
     { label: 'Page 2', path: '/page2' }
   ];
 

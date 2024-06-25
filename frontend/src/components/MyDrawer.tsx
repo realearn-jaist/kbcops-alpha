@@ -85,7 +85,7 @@ const CustomDrawer: React.FC<DrawerProps> = ({
 
   // Handler for the run button click event
   const handleRunClick = () => {
-    evaluateEmbedder(selectedOntology, selectedAlgorithm, selectedClassifier, selectedCompletionType);
+    evaluateEmbedder(selectedOntology, selectedAlgorithm, selectedCompletionType, selectedClassifier);
   };
 
 

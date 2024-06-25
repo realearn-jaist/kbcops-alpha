@@ -23,18 +23,18 @@ def upload():
         return jsonify({"message": "No file part"}), 400
 
     file = request.files["owl_file"]
-    id = request.form.get("onto_id")
+    ontology_name = request.form.get("ontology_name")
 
     if file.filename == "":
         return jsonify({"message": "No selected file"}), 400
 
-    if not id:
-        return jsonify({"message": "No id provided"}), 400
+    if not ontology_name:
+        return jsonify({"message": "No ontology name provided"}), 400
 
-    onto_id = upload_ontology(file, id)
-    if onto_id:
+    ontology_name = upload_ontology(file, ontology_name)
+    if ontology_name:
         return (
-            jsonify({"message": "File uploaded successfully", "onto_id": onto_id}),
+            jsonify({"message": "File uploaded successfully", "ontology_name": ontology_name}),
             200,
         )
     else:
@@ -103,7 +103,7 @@ def predict_route(ontology, algorithm):
     classifier = request.args.get("classifier")
 
     start_time = time.time()
-    result = predict_func(ontology_name=ontology, algorithm=algorithm)
+    result = predict_func(ontology_name=ontology, algorithm=algorithm, completion_type=completion_type, classifier=classifier)
     print(
         "---------------> time usage for evaluate {} with {}: {} <---------------".format(
             ontology, algorithm, time.time() - start_time
