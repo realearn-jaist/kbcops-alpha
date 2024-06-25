@@ -207,7 +207,7 @@ class InclusionEvaluator(Evaluator):
         )
 
 
-def predict_func(ontology_name: str, algorithm: str):
+def predict_func(ontology_name: str, algorithm: str, classifier: str):
     """Predict the ontology with the algorithm
 
     Args:
@@ -294,7 +294,21 @@ def predict_func(ontology_name: str, algorithm: str):
         algorithm,
         onto_type,
     )
-    evaluate.run_random_forest()
+    # evaluate.run_random_forest()
+
+    classifiers = {
+        "mlp": evaluate.run_mlp,
+        "logistic_regression": evaluate.run_logistic_regression,
+        "svm": evaluate.run_svm,
+        "linear_svc": evaluate.run_linear_svc,
+        "decision_tree": evaluate.run_decision_tree,
+        "sgd_log": evaluate.run_sgd_log
+    }
+    
+    if classifier in classifiers:
+        classifiers[classifier]()
+    else:
+        print("Unknown classifier!")
 
     # load image
     evaluate.result["images"] = create_graph(ontology_name, algorithm)
