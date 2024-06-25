@@ -186,7 +186,7 @@ export default function Dashboard() {
     <ThemeProvider theme={defaultTheme}>
       <CssBaseline />
       <Box sx={{ display: 'flex' }}>
-        <MyAppBar open={open} toggleDrawer={toggleDrawer} />
+        <MyAppBar open={open} toggleDrawer={toggleDrawer} openable={true}/>
         <MyDrawer
           open={open}
           toggleDrawer={toggleDrawer}

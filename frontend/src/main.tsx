@@ -5,6 +5,7 @@ import Dashboard from './views/Dashboard.tsx';
 import './index.css';
 import SignIn from './views/SignIn.tsx';
 import SignUp from './views/SignUp.tsx';
+import DownloadFile from './views/DownloadFile.tsx';
 
 // Optional NotFound Component
 const NotFound = () => {
@@ -15,9 +16,8 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Navigate to="/signin" replace />} />
-        <Route path="signin" element={<SignIn />} />
-        <Route path="signup" element={<SignUp />} />
+        <Route path="/" element={<Navigate to="/dashboard" replace />} />
+        <Route path="file" element={<DownloadFile />} />
         <Route path="dashboard" element={<Dashboard />} />
         {/* Optional: Add a NotFound Route */}
         <Route path="*" element={<NotFound />} />

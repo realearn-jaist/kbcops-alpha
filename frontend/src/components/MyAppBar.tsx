@@ -28,10 +28,11 @@ const AppBarWrapper = styled(MuiAppBar, {
 interface AppBarProps {
   open: boolean;
   toggleDrawer: () => void;
+  openable: boolean;
 }
 
 // Functional component for the AppBar
-const MyAppBar: React.FC<AppBarProps> = ({ open, toggleDrawer }) => {
+const MyAppBar: React.FC<AppBarProps> = ({ open, toggleDrawer, openable }) => {
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -48,8 +49,8 @@ const MyAppBar: React.FC<AppBarProps> = ({ open, toggleDrawer }) => {
   };
 
   return (
-    <AppBarWrapper position="absolute" open={open} sx={{ background: 'none', boxShadow: 'none' }}>
-      <Toolbar sx={{ minHeight: 48, padding: '0 !important' }}>
+    <AppBarWrapper position="absolute" open={open} sx={{ background: '#F3F3F3', boxShadow: 'none'}}>
+      <Toolbar sx={{ minHeight: 48, padding: '0 !important', height: "100%"}}>
         {/* Menu button to toggle the drawer */}
         <IconButton
           edge="start"
@@ -57,8 +58,9 @@ const MyAppBar: React.FC<AppBarProps> = ({ open, toggleDrawer }) => {
           onClick={toggleDrawer}
           sx={{
             marginRight: '36px',
+            marginLeft: '36px',
             color: 'grey',
-            ...(open && { display: 'none' }), // Hide button when drawer is open
+            ...((open || !openable) && { display: 'none' }), // Hide button when drawer is open
           }}
         >
           <MenuIcon />
