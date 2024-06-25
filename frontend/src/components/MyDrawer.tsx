@@ -1,12 +1,12 @@
 import React from 'react';
-import { Drawer, IconButton, Divider, TextField, Button } from '@mui/material';
+import { Drawer, IconButton, Divider, SelectChangeEvent } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
-import { UploadFile } from '@mui/icons-material';
-import FileUpload from './DrawerComponents/FileUpload';
 import EmbeddingForm from './DrawerComponents/EmbeddingForm';
+import FileUploadSection from './DrawerComponents/FileUploadSection';
+import ClassifierSection from './DrawerComponents/ClassifierSection';
 
-const drawerWidth = 240; // Width of the drawer
+const drawerWidth: number = 300; // Width of the drawer
 
 // Styled component for the drawer header
 const DrawerHeader = styled('div')(({ theme }) => ({
@@ -27,7 +27,8 @@ interface DrawerProps {
   ontologyList: string[];
   handleFilesSelected: (files: File[]) => void;
   trainEmbedder: (onto_id: string, algo: string) => void;
-  getEvaluate: (onto_id: string, algo: string) => void;
+  getEvaluate: (onto_id: string, algo: string, com_type: string, classifier: string) => void;
+  evaluateEmbedder: (onto_id: string, algo: string, com_type: string, classifier: string) => void;
 }
 
 const CustomDrawer: React.FC<DrawerProps> = ({
@@ -41,7 +42,53 @@ const CustomDrawer: React.FC<DrawerProps> = ({
   handleFilesSelected,
   trainEmbedder,
   getEvaluate,
+  evaluateEmbedder,
 }) => {
+  // State variables for selected ontology, algorithm, classifier, completionType
+  const [selectedOntology, setSelectedOntology] = React.useState("");
+  const [selectedAlgorithm, setSelectedAlgorithm] = React.useState("");
+  const [selectedClassifier, setSelectedClassifier] = React.useState("");
+  const [selectedCompletionType, setSelectedCompletionType] = React.useState("");
+
+  // Handler for changing the selected ontology
+  const handleOntologyChange = (event: SelectChangeEvent<string>) => {
+    const newOntology = event.target.value as string;
+    setSelectedOntology(newOntology);
+    getEvaluate(newOntology, selectedAlgorithm, selectedCompletionType, selectedClassifier); // Evaluate with the new ontology
+  };
+
+  // Handler for changing the selected algorithm
+  const handleAlgorithmChange = (event: SelectChangeEvent<string>) => {
+    const newAlgorithm = event.target.value as string;
+    setSelectedAlgorithm(newAlgorithm);
+    getEvaluate(selectedOntology, newAlgorithm, selectedCompletionType, selectedClassifier); // Evaluate with the new algorithm
+  };
+
+  // Handler for changing the selected CompletionType
+  const handleCompletionTypeChange = (event: SelectChangeEvent<string>) => {
+    const newCompletionType = event.target.value as string;
+    setSelectedCompletionType(newCompletionType);
+    getEvaluate(selectedOntology, selectedAlgorithm, newCompletionType, selectedClassifier); // Evaluate with the new Completion Type
+  };
+
+  // Handler for changing the selected Classifier
+  const handleClassifierChange = (event: SelectChangeEvent<string>) => {
+    const newClassifier = event.target.value as string;
+    setSelectedClassifier(newClassifier);
+    getEvaluate(selectedOntology, selectedAlgorithm, selectedCompletionType, newClassifier); // Evaluate with the new Classifier
+  };
+
+  // Handler for the Embed button click event
+  const handleEmbedClick = () => {
+    trainEmbedder(selectedOntology, selectedAlgorithm);
+  };
+
+  // Handler for the run button click event
+  const handleRunClick = () => {
+    evaluateEmbedder(selectedOntology, selectedAlgorithm, selectedCompletionType, selectedClassifier);
+  };
+
+
   return (
     <Drawer
       sx={{
@@ -63,41 +110,45 @@ const CustomDrawer: React.FC<DrawerProps> = ({
         </IconButton>
       </DrawerHeader>
       <Divider />
-      
-      {/* File upload component */}
-      <FileUpload onFilesSelected={handleFilesSelected} />
-      
-      {/* TextField for file identifier */}
-      <TextField
-        sx={{ margin: '10px' }}
-        disabled={selectedFiles.length !== 1} // Disable if no file or more than one file is selected
-        required
-        id="identifier"
-        label="Identifier"
-        value={selectedFiles.length === 1 ? fileId : ''} // Show identifier only if one file is selected
-        onChange={(e) => setFileId(e.target.value)} // Update fileId state on change
+
+      {/* File upload section */}
+      <FileUploadSection
+        selectedFiles={selectedFiles}
+        fileId={fileId}
+        setFileId={setFileId}
+        handleUpload={handleUpload}
+        handleFilesSelected={handleFilesSelected}
       />
-      
-      {/* Button to upload file */}
-      <Button
-        component="label"
-        role={undefined}
-        variant="contained"
-        tabIndex={-1}
-        startIcon={<UploadFile />}
-        sx={{ margin: '10px', height: '50px' }}
-        disabled={selectedFiles.length !== 1} // Disable if no file or more than one file is selected
-        onClick={handleUpload} // Call handleUpload function on click
-      >
-        Upload file
-      </Button>
+
       <Divider />
-      
+
+
       {/* Embedding form component */}
       <EmbeddingForm
-        ontologyList={ontologyList}
-        trainEmbedder={trainEmbedder}
-        getEvaluate={getEvaluate}
+        data_pack={{
+          ontologyList: ontologyList,
+          selectedOntology: selectedOntology,
+          selectedAlgorithm: selectedAlgorithm,
+          selectedCompletionType: selectedCompletionType,
+          selectedClassifier: selectedClassifier
+        }}
+        handleOntologyChange={handleOntologyChange}
+        handleAlgorithmChange={handleAlgorithmChange}
+        handleEmbedClick={handleEmbedClick}
+      />
+
+      {/* Classifier section */}
+      <ClassifierSection
+        data_pack={{
+          ontologyList: ontologyList,
+          selectedOntology: selectedOntology,
+          selectedAlgorithm: selectedAlgorithm,
+          selectedCompletionType: selectedCompletionType,
+          selectedClassifier: selectedClassifier
+        }}
+        handleCompletionTypeChange={handleCompletionTypeChange}
+        handleClassifierChange={handleClassifierChange}
+        handleRunClick={handleRunClick}
       />
     </Drawer>
   );

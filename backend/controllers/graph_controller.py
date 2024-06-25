@@ -29,7 +29,7 @@ def extract_garbage_value(onto_data):
     return class_individual_list, truth_list, predict_list
 
 
-def find_parents_with_relations(cls, relation_list=None):
+def find_parents_with_relations(cls, splitter, relation_list=None):
     """Find the parents of a class and its relations
 
     Args:
@@ -42,24 +42,24 @@ def find_parents_with_relations(cls, relation_list=None):
     if relation_list is None:
         relation_list = []
 
-    temp = "obo."  # Assuming this is required for formatting class names
+    # split = "obo."  # Assuming this is required for formatting class names
 
     try:
         parents = cls.is_a
         for parent in parents:
             if parent != owl.Thing:
                 relation_list.append([
-                    str(cls).split(temp)[-1].split(")")[0],
+                    str(cls).split(splitter)[-1].split(")")[0],
                     "subclassOf",
-                    str(parent).split(temp)[-1].split(")")[0],
+                    str(parent).split(splitter)[-1].split(")")[0],
                 ])
                 # Recursively find parents' relations
-                relation_list.extend(find_parents_with_relations(parent))
+                relation_list.extend(find_parents_with_relations(parent, splitter))
             else:
                 relation_list.append([
-                    str(cls).split(temp)[-1].split(")")[0],
+                    str(cls).split(splitter)[-1].split(")")[0],
                     "subclassOf",
-                    str(parent).split(temp)[-1].split(")")[0],
+                    str(parent).split(splitter)[-1].split(")")[0],
                 ])
     except Exception as e:
         pass
@@ -84,6 +84,7 @@ def graph_maker(
     onto_type,
     onto_file,
     entity_prefix,
+    entity_split,
     class_individual_list,
     truth_list,
     predict_list,
@@ -111,7 +112,7 @@ def graph_maker(
         relations = list()
 
         if onto_type == "TBox":
-            relations = find_parents_with_relations(entity)
+            relations = find_parents_with_relations(entity, entity_split)
         else:
             subs = sorted(list(subs), key=lambda sub: len(list(sub.INDIRECT_is_a)))
             subs = [
@@ -193,10 +194,19 @@ def create_graph(ontology_name, algorithm):
     # consider as a ABox iff individuals_count is excess 10 percent of classes amount
     onto_type = "ABox" if individuals_count > int(0.1 * len(classes)) else "TBox"
 
-    entity_prefix = get_prefix(individuals[0])
-
+    # load ontology
     onto_file_path = get_path_ontology(ontology_name)
     onto = get_ontology(onto_file_path).load()
+
+    # get prefix and its splitter
+    tmp_class_ind = individuals[0]
+
+    entity_prefix = get_prefix(tmp_class_ind)
+
+    entity = onto.search(iri=tmp_class_ind)[0]
+    entity_split = str(entity).split('.')[0] + '.'
+
+
     garbage_file = read_garbage_metrics_pd(ontology_name, algorithm)
 
     class_individual_list, truth_list, predict_list = extract_garbage_value(garbage_file)
@@ -204,6 +214,7 @@ def create_graph(ontology_name, algorithm):
         onto_type,
         onto,
         entity_prefix,
+        entity_split,
         class_individual_list,
         truth_list,
         predict_list,

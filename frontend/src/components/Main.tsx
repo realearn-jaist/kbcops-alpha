@@ -15,6 +15,7 @@ import {
 } from "@mui/material";
 import StatCard from "./MainComponents/StatCard";
 import Title from "./MainComponents/Title";
+import GarbageMetrics from "./MainComponents/GarbageMetrics";
 
 function Copyright(props: any) {
   return (
@@ -29,7 +30,7 @@ function Copyright(props: any) {
   );
 }
 
-const drawerWidth: number = 240;
+const drawerWidth: number = 300;
 
 // Styled component for the main content area, adjusting width and margin based on drawer state
 const MainWrapper = styled('main', { shouldForwardProp: (prop) => prop !== 'open' })<{
@@ -71,7 +72,7 @@ type GarbageImage = {
 
 interface MainProps {
   open: boolean;
-  onto_id: string;
+  ontology_name: string;
   onto_data: {
     no_class: number;
     no_individual: number;
@@ -80,18 +81,21 @@ interface MainProps {
   };
   algo: string;
   eval_metric: {
-    mrr: number,
-    hit_at_1: number,
-    hit_at_5: number,
-    hit_at_10: number,
-    garbage: number,
+    mrr: number;
+    hit_at_1: number;
+    hit_at_5: number;
+    hit_at_10: number;
+    garbage: number;
+    total: number;
+    average_garbage_Rank: number;
+    average_Rank: number;
   };
   garbage_metric: GarbageMetric[];
   garbage_image: GarbageImage[];
 }
 
 // Main component
-const Main: React.FC<MainProps> = ({ open, onto_id, onto_data, algo, eval_metric, garbage_metric, garbage_image }) => {
+const Main: React.FC<MainProps> = ({ open, ontology_name, onto_data, algo, eval_metric, garbage_metric, garbage_image }) => {
   const StatCards = [
     { name: 'Classes', data: onto_data.no_class },
     { name: 'Individuals', data: onto_data.no_individual },
@@ -130,7 +134,7 @@ const Main: React.FC<MainProps> = ({ open, onto_id, onto_data, algo, eval_metric
           {/* Display ontology ID and TBox/ABox information */}
           <Box sx={{ display: 'flex', alignItems: "center" }}>
             <Typography variant="h2" gutterBottom>
-              {onto_id}
+              {ontology_name}
             </Typography>
             <Box component="section" sx={{ p: 2, border: '1px dashed grey', height: "72px", margin: "0px 0px 21px 20px", borderRadius: "10px", background: "gray" }}>
               <Typography variant="h4" gutterBottom>
@@ -166,6 +170,30 @@ const Main: React.FC<MainProps> = ({ open, onto_id, onto_data, algo, eval_metric
             {algo}
           </Typography>
           <Grid container spacing={3}>
+            <Grid item xs={12} md={6} lg={3}>
+              <Paper
+                sx={{
+                  p: 2,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  height: 150,
+                }}
+              >
+                <StatCard name={"Total Validate Sample"} data={eval_metric.total} type="int" />
+              </Paper>
+            </Grid>
+            <Grid item xs={12} md={6} lg={3}>
+              <Paper
+                sx={{
+                  p: 2,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  height: 150,
+                }}
+              >
+                <StatCard name={"MRR"} data={eval_metric.mrr} type="float" />
+              </Paper>
+            </Grid>
             <Grid item xs={12} md={12} lg={6}>
               <Paper
                 sx={{
@@ -192,40 +220,41 @@ const Main: React.FC<MainProps> = ({ open, onto_id, onto_data, algo, eval_metric
                 >
                   <Box sx={{ display: "flex", flexGrow: 1 }}>
                     <Typography component="p" variant="h6" color="primary">
-                      {"1"}
+                      {"K=1"}
                     </Typography>
                     <Box sx={{ flexGrow: 1, display: "flex", justifyContent: "center" }}>
                       <Typography component="p" variant="h4" color="black">
-                        {(Math.round(eval_metric.hit_at_1 * 100) / 100).toFixed(2)}
+                        {(Math.round(eval_metric.hit_at_1 * 10000) / 100).toFixed(2)}%
                       </Typography>
                     </Box>
                   </Box>
                   <Divider orientation="vertical" flexItem />
                   <Box sx={{ display: "flex", flexGrow: 1 }}>
                     <Typography component="p" variant="h6" color="primary">
-                      {"5"}
+                      {"K=5"}
                     </Typography>
                     <Box sx={{ flexGrow: 1, display: "flex", justifyContent: "center" }}>
                       <Typography component="p" variant="h4" color="black">
-                        {(Math.round(eval_metric.hit_at_5 * 100) / 100).toFixed(2)}
+                        {(Math.round(eval_metric.hit_at_5 * 10000) / 100).toFixed(2)}%
                       </Typography>
                     </Box>
                   </Box>
                   <Divider orientation="vertical" flexItem />
                   <Box sx={{ display: "flex", flexGrow: 1 }}>
                     <Typography component="p" variant="h6" color="primary">
-                      {"10"}
+                      {"K=10"}
                     </Typography>
                     <Box sx={{ flexGrow: 1, display: "flex", justifyContent: "center" }}>
                       <Typography component="p" variant="h4" color="black">
-                        {(Math.round(eval_metric.hit_at_10 * 100) / 100).toFixed(2)}
+                        {(Math.round(eval_metric.hit_at_10 * 10000) / 100).toFixed(2)}%
                       </Typography>
                     </Box>
                   </Box>
                 </Box>
               </Paper>
             </Grid>
-            <Grid item xs={12} md={12} lg={3}>
+            
+            <Grid item xs={12} md={12} lg={6}>
               <Paper
                 sx={{
                   p: 2,
@@ -234,10 +263,46 @@ const Main: React.FC<MainProps> = ({ open, onto_id, onto_data, algo, eval_metric
                   height: 150,
                 }}
               >
-                <StatCard name={"MRR"} data={eval_metric.mrr} type="float" />
+                <Title>{"Garbage / Total"}</Title>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    bgcolor: 'background.paper',
+                    color: 'text.secondary',
+                    '& svg': {
+                      m: 1,
+                    },
+                    '& hr': {
+                      mx: 0.5,
+                    },
+                  }}
+                >
+                  <Box sx={{ display: "flex", flexGrow: 1 }}>
+                    <Typography component="p" variant="h6" color="primary">
+                      {"Total"}
+                    </Typography>
+                    <Box sx={{ flexGrow: 1, display: "flex", justifyContent: "center" }}>
+                      <Typography component="p" variant="h4" color="black">
+                        {eval_metric.total === 0 ? "None" : String(eval_metric.garbage) + "/" + String(eval_metric.total)}
+                      </Typography>
+                    </Box>
+                  </Box>
+                  <Divider orientation="vertical" flexItem />
+                  <Box sx={{ display: "flex", flexGrow: 1 }}>
+                    <Typography component="p" variant="h6" color="primary">
+                      {"Percent"}
+                    </Typography>
+                    <Box sx={{ flexGrow: 1, display: "flex", justifyContent: "center" }}>
+                      <Typography component="p" variant="h4" color="black">
+                        {eval_metric.total === 0 ? "None" : String((Math.round(eval_metric.garbage/eval_metric.total * 10000) / 100).toFixed(2)) + "%"}
+                      </Typography>
+                    </Box>
+                  </Box>
+                </Box>
               </Paper>
             </Grid>
-            <Grid item xs={12} md={12} lg={3}>
+            <Grid item xs={12} md={6} lg={3}>
               <Paper
                 sx={{
                   p: 2,
@@ -246,7 +311,19 @@ const Main: React.FC<MainProps> = ({ open, onto_id, onto_data, algo, eval_metric
                   height: 150,
                 }}
               >
-                <StatCard name={"Garbage"} data={eval_metric.garbage} type="int" />
+                <StatCard name={"Avg. Garbage Rank"} data={eval_metric.average_garbage_Rank} type="int" />
+              </Paper>
+            </Grid>
+            <Grid item xs={12} md={6} lg={3}>
+              <Paper
+                sx={{
+                  p: 2,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  height: 150,
+                }}
+              >
+                <StatCard name={"Avg. Ground Truth Rank"} data={eval_metric.average_Rank} type="int" />
               </Paper>
             </Grid>
           </Grid>
@@ -285,80 +362,7 @@ const Main: React.FC<MainProps> = ({ open, onto_id, onto_data, algo, eval_metric
           <br />
 
           {/* Display selected garbage metrics */}
-          <Grid container spacing={3}>
-            <Grid item xs={12} md={6} lg={3}>
-              <Paper
-                sx={{
-                  p: 2,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  height: 70,
-                }}
-              >
-                <Typography variant="h6">
-                  Ground Truth Score: {
-                    (garbage_metric.length > 0) ?
-                      (Math.round(garbage_metric[garbageIndex].Score_true * 100) / 100).toFixed(2) :
-                      (Math.round(0)).toFixed(2)
-                  }
-                </Typography>
-              </Paper>
-            </Grid>
-            <Grid item xs={12} md={6} lg={3}>
-              <Paper
-                sx={{
-                  p: 2,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  height: 70,
-                }}
-              >
-                <Typography variant="h6">
-                  Ground Truth Rank: {
-                    (garbage_metric.length > 0) ?
-                      garbage_metric[garbageIndex].True_rank :
-                      0
-                  }
-                </Typography>
-              </Paper>
-            </Grid>
-            <Grid item xs={12} md={6} lg={3}>
-              <Paper
-                sx={{
-                  p: 2,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  height: 70,
-                }}
-              >
-                <Typography variant="h6">
-                  Garbage Score: {
-                    (garbage_metric.length > 0) ?
-                      (Math.round(garbage_metric[garbageIndex].Score_predict * 100) / 100).toFixed(2) :
-                      (Math.round(0)).toFixed(2)
-                  }
-                </Typography>
-              </Paper>
-            </Grid>
-            <Grid item xs={12} md={6} lg={3}>
-              <Paper
-                sx={{
-                  p: 2,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  height: 70,
-                }}
-              >
-                <Typography variant="h6">
-                  Garbage Rank: {
-                    (garbage_metric.length > 0) ?
-                      garbage_metric[garbageIndex].Predicted_rank :
-                      0
-                  }
-                </Typography>
-              </Paper>
-            </Grid>
-          </Grid>
+          <GarbageMetrics garbage_metric={garbage_metric} garbageIndex={garbageIndex} />
         </Box>
         <Copyright />
       </Box>
