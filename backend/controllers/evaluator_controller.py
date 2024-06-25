@@ -5,15 +5,11 @@ import math
 
 from tqdm import tqdm
 
-from models.extract_model import (
-    load_classes,
-    load_individuals,
-)
+from models.extract_model import load_multi_input_files
 from controllers.graph_controller import create_graph
 from models.evaluator_model import write_garbage_metrics, write_evaluate
 from models.ontology_model import get_path_ontology_directory
-from models.embed_model import load_embedding
-from models.extract_model import load_classes
+from models.embed_model import load_embedding_value
 from owl2vec_star.Evaluator import Evaluator
 
 
@@ -78,7 +74,7 @@ class InclusionEvaluator(Evaluator):
         MRR_sum, hits1_sum, hits5_sum, hits10_sum = 0, 0, 0, 0
         nifMRR_sum, nifhits1_sum, nifhits5_sum, nifhits10_sum = 0, 0, 0, 0
         avgDLRank, avgRank, DLcount = 0, 0, 0
-
+        total_predict = len(eva_samples)
         # test sample
         progress_bar = tqdm(eva_samples, desc="Evaluating Samples")
         for k, sample in enumerate(progress_bar):
@@ -176,9 +172,13 @@ class InclusionEvaluator(Evaluator):
             "Testing (No inference checking), MRR: %.3f, Hits@1: %.3f, Hits@5: %.3f, Hits@10: %.3f\n\n"
             % (nife_MRR, nifhits1, nifhits5, nifhits10)
         )
-        avgDLRank = math.ceil(avgDLRank / DLcount)
-        avgRank = math.ceil(avgRank / DLcount)
+        avgRank = math.ceil(avgRank / total_predict)
+        
+        if(DLcount > 0):
+            avgDLRank = math.ceil(avgDLRank / DLcount)
+        
         print(f"""count:{DLcount}, DL:{avgDLRank}, ground:{avgRank}\n""")
+
 
         performance_data = {
             "mrr": e_MRR,
@@ -186,6 +186,9 @@ class InclusionEvaluator(Evaluator):
             "hit_at_5": hits5,
             "hit_at_10": hits10,
             "garbage": DLcount,
+            'total' : total_predict,
+            'average_garbage_Rank' : avgDLRank,
+            'average_Rank' : avgRank
         }
 
         write_evaluate(self.ontology, self.algorithm, performance_data)
@@ -204,7 +207,7 @@ class InclusionEvaluator(Evaluator):
         )
 
 
-def predict_func(ontology, algorithm):
+def predict_func(ontology_name, algorithm):
     """Predict the ontology with the algorithm
 
     Args:
@@ -213,24 +216,27 @@ def predict_func(ontology, algorithm):
     Returns:
         dict: The result of the prediction
     """
+
+    # retrieve file
+    files_list = ["classes", "individuals"]
+    files = load_multi_input_files(ontology_name, files_list)
+
     # load individuals
-    individuals = load_individuals(ontology)
-    individuals_count = len(individuals)
+    individuals_count = len(files['individuals'])
 
     # load classes file
-    print(f"load {ontology} classes")
-    classes = load_classes(ontology)
+    print(f"load {ontology_name} classes")
 
-    onto_type = "ABox" if individuals_count > int(0.1 * len(classes)) else "TBox"
+    onto_type = "ABox" if individuals_count > int(0.1 * len(files['classes'])) else "TBox"
 
     # embed class with model
-    print(f"embedding {ontology} classes")
-    classes_e, individuals_e = load_embedding(ontology, algorithm)
+    print(f"embedding {ontology_name} classes")
+    classes_e, individuals_e = load_embedding_value(ontology_name, algorithm)
 
     # load train test val file
-    print(f"load {ontology} train/test/validate")
+    print(f"load {ontology_name} train/test/validate")
 
-    file_path = get_path_ontology_directory(ontology)
+    file_path = get_path_ontology_directory(ontology_name)
 
     train_path = os.path.join(file_path, "train-infer-0.csv")
     valid_path = os.path.join(file_path, "valid.csv")
@@ -248,10 +254,10 @@ def predict_func(ontology, algorithm):
         sub, sup, label = s[0], s[1], s[2]
         sub_v = None
         if onto_type == "TBox":
-            sub_v = classes_e[classes.index(sub)]
+            sub_v = classes_e[files['classes'].index(sub)]
         else:
-            sub_v = individuals_e[individuals.index(sub)]
-        sup_v = classes_e[classes.index(sup)]
+            sub_v = individuals_e[files['individuals'].index(sub)]
+        sup_v = classes_e[files['classes'].index(sup)]
         if not (np.all(sub_v == 0) or np.all(sup_v == 0)):
             train_x_list.append(np.concatenate((sub_v, sup_v)))
             train_y_list.append(int(label))
@@ -259,10 +265,10 @@ def predict_func(ontology, algorithm):
     print("train_X: %s, train_y: %s" % (str(train_X.shape), str(train_y.shape)))
 
     # load infer file
-    print(f"load {ontology} inferences")
+    print(f"load {ontology_name} inferences")
     inferred_ancestors = dict()
     infer_path = os.path.join(
-        get_path_ontology_directory(ontology), "inferred_ancestors.txt"
+        get_path_ontology_directory(ontology_name), "inferred_ancestors.txt"
     )
     with open(infer_path, "r", encoding="utf-8") as f:
         for line in f.readlines():
@@ -272,25 +278,26 @@ def predict_func(ontology, algorithm):
                 all_infer_classes if onto_type == "TBox" else all_infer_classes[1:]
             )
 
-    print(f"evaluate {ontology} with {algorithm} embedding algorithm on random forest")
+    # evaluate
+    print(f"evaluate {ontology_name} with {algorithm} embedding algorithm on random forest")
     evaluate = InclusionEvaluator(
         valid_samples,
         test_samples,
         train_X,
         train_y,
-        classes,
+        files['classes'],
         classes_e,
-        individuals,
+        files['individuals'],
         individuals_e,
         inferred_ancestors,
-        ontology,
+        ontology_name,
         algorithm,
         onto_type,
     )
     evaluate.run_random_forest()
 
     # load image
-    evaluate.result["images"] = create_graph(ontology, algorithm)
+    evaluate.result["images"] = create_graph(ontology_name, algorithm)
 
     return evaluate.result
 

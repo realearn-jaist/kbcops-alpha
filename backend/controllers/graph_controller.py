@@ -22,46 +22,49 @@ def extract_garbage_value(onto_data):
         individual_list (list): The list of individuals
     """
     # Extract columns into lists
-    individual_list = onto_data["Individual"].tolist()
+    class_individual_list = onto_data["Individual"].tolist()
     truth_list = onto_data["True"].tolist()
     predict_list = onto_data["Predicted"].tolist()
 
-    return individual_list, truth_list, predict_list
+    return class_individual_list, truth_list, predict_list
 
 
-def find_parents_with_relations(cls, relation_list):
+def find_parents_with_relations(cls, relation_list=None):
     """Find the parents of a class and its relations
 
     Args:
         cls (owlready2.entity.ThingClass): The class to find the parents of
-        relation_list (list): The list of relations to append to
+        relation_list (list, optional): The list of relations to append to. Defaults to None.
+    
     Returns:
-        None
+        list: List of relations in the form of [child_class_name, "subclassOf", parent_class_name]
     """
-    # find its relations
-    temp = "obo."  # this hard code for foodon dataset
+    if relation_list is None:
+        relation_list = []
+
+    temp = "obo."  # Assuming this is required for formatting class names
+
     try:
         parents = cls.is_a
         for parent in parents:
             if parent != owl.Thing:
-                relation_list.append(
-                    [
-                        str(cls).split(temp)[-1].split(")")[0],
-                        "subclassOf",
-                        str(parent).split(temp)[-1].split(")")[0],
-                    ]
-                )
-                find_parents_with_relations(parent, relation_list)
+                relation_list.append([
+                    str(cls).split(temp)[-1].split(")")[0],
+                    "subclassOf",
+                    str(parent).split(temp)[-1].split(")")[0],
+                ])
+                # Recursively find parents' relations
+                relation_list.extend(find_parents_with_relations(parent))
             else:
-                relation_list.append(
-                    [
-                        str(cls).split(temp)[-1].split(")")[0],
-                        "subclassOf",
-                        str(parent).split(temp)[-1].split(")")[0],
-                    ]
-                )
+                relation_list.append([
+                    str(cls).split(temp)[-1].split(")")[0],
+                    "subclassOf",
+                    str(parent).split(temp)[-1].split(")")[0],
+                ])
     except Exception as e:
         pass
+
+    return relation_list
 
 
 def get_prefix(value):
@@ -81,7 +84,7 @@ def graph_maker(
     onto_type,
     onto_file,
     entity_prefix,
-    individual_list,
+    class_individual_list,
     truth_list,
     predict_list,
     fig_directory,
@@ -100,7 +103,7 @@ def graph_maker(
         None
     """
     replace_or_create_folder(fig_directory)
-    for i, v in enumerate(individual_list):
+    for i, v in enumerate(class_individual_list):
         entity_uri = entity_prefix + v
         entity = onto_file.search(iri=entity_uri)[0]
         subs = entity.INDIRECT_is_a
@@ -108,7 +111,7 @@ def graph_maker(
         relations = list()
 
         if onto_type == "TBox":
-            find_parents_with_relations(entity, relations)
+            relations = find_parents_with_relations(entity)
         else:
             subs = sorted(list(subs), key=lambda sub: len(list(sub.INDIRECT_is_a)))
             subs = [
@@ -127,11 +130,13 @@ def graph_maker(
             G.add_edge(source, target, label=relation)
             G.add_nodes_from([source, target])
 
+        G.add_edge(class_individual_list[i], predict_list[i], label='predict')
+
         node_colors = [
             (
                 "gray"
                 if node != truth_list[i]
-                and node != individual_list[i]
+                and node != class_individual_list[i]
                 and node != predict_list[i]
                 else (
                     "#94F19C"
@@ -154,7 +159,6 @@ def graph_maker(
             font_size=12,
             font_weight="bold",
         )
-
         for edge, label in nx.get_edge_attributes(G, "label").items():
             x = (pos[edge[0]][0] + pos[edge[1]][0]) / 2
             y = (pos[edge[0]][1] + pos[edge[1]][1]) / 2
@@ -195,12 +199,12 @@ def create_graph(ontology_name, algorithm):
     onto = get_ontology(onto_file_path).load()
     garbage_file = read_garbage_metrics_pd(ontology_name, algorithm)
 
-    individual_list, truth_list, predict_list = extract_garbage_value(garbage_file)
+    class_individual_list, truth_list, predict_list = extract_garbage_value(garbage_file)
     graph_maker(
         onto_type,
         onto,
         entity_prefix,
-        individual_list,
+        class_individual_list,
         truth_list,
         predict_list,
         fig_directory,

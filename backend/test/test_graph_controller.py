@@ -31,12 +31,12 @@ class TestGraphModule(unittest.TestCase):
         )
 
         # Call the function under test
-        individuals, truths, predictions = gm.extract_garbage_value(mock_data)
+        class_individual_list, truth_list, predict_list = gm.extract_garbage_value(mock_data)
 
         # Assert the expected results
-        self.assertEqual(individuals, ["Ind1", "Ind2"])
-        self.assertEqual(truths, ["True1", "True2"])
-        self.assertEqual(predictions, ["Pred1", "Pred2"])
+        self.assertEqual(class_individual_list, ["Ind1", "Ind2"])
+        self.assertEqual(truth_list, ["True1", "True2"])
+        self.assertEqual(predict_list, ["Pred1", "Pred2"])
 
     def test_get_prefix(self):
         """Test get_prefix function in graph_controller.py
@@ -54,9 +54,10 @@ class TestGraphModule(unittest.TestCase):
     @patch("controllers.graph_controller.nx.nx_pydot.graphviz_layout")
     @patch("controllers.graph_controller.nx.draw")
     @patch("controllers.graph_controller.replace_or_create_folder")
+    @patch("controllers.graph_controller.find_parents_with_relations")
     @patch("controllers.graph_controller.plt.savefig")
     def test_graph_maker(
-        self, mock_savefig, mock_replace_or_create_folder, mock_draw, mock_layout
+        self, mock_savefig, mock_find_parents_with_relations, mock_replace_or_create_folder, mock_draw, mock_layout
     ):
         """Test graph_maker function in graph_controller.py
 
@@ -68,13 +69,14 @@ class TestGraphModule(unittest.TestCase):
         Returns:
             None
         """
-        mock_layout.return_value = {"Entity1": (0, 0), "Entity2": (1, 1)}
+        mock_layout.return_value = {"Ind1": (0, 0), "True1": (1, 1), "Pred1": (3, 3), "owl.Thing": (4, 4)}
         mock_replace_or_create_folder.return_value = None
+        mock_find_parents_with_relations.return_value = [["Ind1", "relation", "True1"], ["True1", "relation", "Pred1"], ["Pred1", "relation", "owl.Thing"]]
 
         entity_prefix = "http://example.com#"
-        individual_list = ["Entity1", "Entity2"]
-        truth_list = ["True1", "True2"]
-        predict_list = ["Pred1", "Pred2"]
+        class_individual_list = ["Ind1"]
+        truth_list = ["True1"]
+        predict_list = ["Pred1"]
         fig_directory = "fake_directory"
 
         mock_ontology = MagicMock()
@@ -95,7 +97,7 @@ class TestGraphModule(unittest.TestCase):
                 "TBox",
                 mock_ontology,
                 entity_prefix,
-                individual_list,
+                class_individual_list,
                 truth_list,
                 predict_list,
                 fig_directory,
@@ -109,7 +111,7 @@ class TestGraphModule(unittest.TestCase):
     @patch("controllers.graph_controller.load_individuals")
     @patch("controllers.graph_controller.load_classes")
     @patch("controllers.graph_controller.get_prefix")
-    @patch("controllers.graph_controller.graph_maker")
+    @patch("controllers.graph_controller.graph_maker", return_value=None)
     @patch("controllers.graph_controller.read_garbage_metrics_pd")
     @patch("controllers.graph_controller.extract_garbage_value")
     @patch("controllers.graph_controller.load_graph")
@@ -170,8 +172,8 @@ class TestGraphModule(unittest.TestCase):
             ["True1", "True2"],
             ["Pred1", "Pred2"],
         )
+        mock_graph_maker.return_value = None
         mock_load_graph.return_value = "mock_graph_data"
-
         # Call the function under test
         result = gm.create_graph(id, algo)
 

@@ -1,12 +1,10 @@
 import base64
 import os
 
-from flask import jsonify
-
 from models.ontology_model import get_path_ontology_directory
 
 
-def load_graph(onto, algo):
+def load_graph(ontology_name, algorithm):
     """Load graph fig from directory
 
     Args:
@@ -16,7 +14,7 @@ def load_graph(onto, algo):
         list: The list of graph fig
     """
     directory = os.path.join(
-        get_path_ontology_directory(onto), algo, "graph_fig"
+        get_path_ontology_directory(ontology_name), algorithm, "graph_fig"
     )  # where graph fig save
 
     images = []
@@ -24,7 +22,7 @@ def load_graph(onto, algo):
     if not os.path.exists(directory):
         raise ValueError(f"Directory '{directory}' does not exist.")
 
-    for i, filename in enumerate(os.listdir(directory)):
+    for _, filename in enumerate(os.listdir(directory)):
         if (
             filename.endswith(".png")
             or filename.endswith(".jpg")
