@@ -17,7 +17,7 @@ from owl2vec_star.Evaluator import Evaluator
 #############################################################################################
 
 
-def get_subfix(value):
+def get_subfix(value: str):
     """Get the subfix of a string by delimiter because in ontology the class and individual id are separated by # or /
 
     Args:
@@ -59,7 +59,7 @@ class InclusionEvaluator(Evaluator):
         self.onto_type = onto_type
         self.result = dict()
 
-    def evaluate(self, model, eva_samples):
+    def evaluate(self, model: object, eva_samples: list):
         """Evaluate the model
 
         Args:
@@ -207,7 +207,7 @@ class InclusionEvaluator(Evaluator):
         )
 
 
-def predict_func(ontology_name, algorithm):
+def predict_func(ontology_name: str, algorithm: str, classifier: str):
     """Predict the ontology with the algorithm
 
     Args:
@@ -294,7 +294,21 @@ def predict_func(ontology_name, algorithm):
         algorithm,
         onto_type,
     )
-    evaluate.run_random_forest()
+    # evaluate.run_random_forest()
+
+    classifiers = {
+        "mlp": evaluate.run_mlp,
+        "logistic_regression": evaluate.run_logistic_regression,
+        "svm": evaluate.run_svm,
+        "linear_svc": evaluate.run_linear_svc,
+        "decision_tree": evaluate.run_decision_tree,
+        "sgd_log": evaluate.run_sgd_log
+    }
+    
+    if classifier in classifiers:
+        classifiers[classifier]()
+    else:
+        print("Unknown classifier!")
 
     # load image
     evaluate.result["images"] = create_graph(ontology_name, algorithm)

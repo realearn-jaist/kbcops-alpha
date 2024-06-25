@@ -5,7 +5,7 @@ from controllers.embed_controller import embed_func
 from flask import jsonify, request, Blueprint  # type: ignore
 from controllers.ontology_controller import (
     get_onto_stat,
-    getAll_ontology,
+    get_all_ontology,
     upload_ontology,
     extract_data,
 )
@@ -60,7 +60,7 @@ def extract(ontology):
 @ontology_blueprint.route("/ontology", methods=["GET"])
 def list_ontologies():
     """Lists all the ontologies that have been uploaded to the server"""
-    ontologies = getAll_ontology()
+    ontologies = get_all_ontology()
     return (
         jsonify({"message": "Ontologies listed successfully", "onto_list": ontologies}),
         200,
@@ -103,7 +103,7 @@ def predict_route(ontology, algorithm):
     classifier = request.args.get("classifier")
 
     start_time = time.time()
-    result = predict_func(ontology=ontology, algorithm=algorithm)
+    result = predict_func(ontology_name=ontology, algorithm=algorithm)
     print(
         "---------------> time usage for evaluate {} with {}: {} <---------------".format(
             ontology, algorithm, time.time() - start_time
