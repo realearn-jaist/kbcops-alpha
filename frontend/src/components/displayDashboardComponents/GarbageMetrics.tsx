@@ -29,7 +29,7 @@ const GarbageMetrics: React.FC<GarbageMetricProps> = ({ garbage_metric, garbageI
 
   return (
     <Grid container spacing={3}>
-      <Grid item xs={12} md={6} lg={3}>
+      <Grid item xs={12} md={6}>
         <Paper
           sx={{
             p: 2,
@@ -43,7 +43,7 @@ const GarbageMetrics: React.FC<GarbageMetricProps> = ({ garbage_metric, garbageI
           </Typography>
         </Paper>
       </Grid>
-      <Grid item xs={12} md={6} lg={3}>
+      <Grid item xs={12} md={6}>
         <Paper
           sx={{
             p: 2,
@@ -57,7 +57,7 @@ const GarbageMetrics: React.FC<GarbageMetricProps> = ({ garbage_metric, garbageI
           </Typography>
         </Paper>
       </Grid>
-      <Grid item xs={12} md={6} lg={3}>
+      <Grid item xs={12} md={6}>
         <Paper
           sx={{
             p: 2,
@@ -71,7 +71,7 @@ const GarbageMetrics: React.FC<GarbageMetricProps> = ({ garbage_metric, garbageI
           </Typography>
         </Paper>
       </Grid>
-      <Grid item xs={12} md={6} lg={3}>
+      <Grid item xs={12} md={6}>
         <Paper
           sx={{
             p: 2,

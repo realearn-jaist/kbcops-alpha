@@ -1,5 +1,5 @@
 import React from 'react';
-import { TextField, Button } from '@mui/material';
+import { TextField, Button, Box } from '@mui/material';
 import { UploadFile } from '@mui/icons-material';
 import FileUpload from './FileUpload';
 
@@ -22,7 +22,7 @@ const FileUploadSection: React.FC<FileUploadSectionProps> = ({
     <>
       {/* File upload component */}
       <FileUpload onFilesSelected={handleFilesSelected} />
-      
+
       {/* TextField for ontology name */}
       <TextField
         sx={{ margin: '10px' }}
@@ -33,7 +33,7 @@ const FileUploadSection: React.FC<FileUploadSectionProps> = ({
         value={selectedFiles.length === 1 ? fileId : ''} // Show identifier only if one file is selected
         onChange={(e) => setFileId(e.target.value)} // Update fileId state on change
       />
-      
+
       {/* Button to upload file */}
       <Button
         component="label"
@@ -47,6 +47,7 @@ const FileUploadSection: React.FC<FileUploadSectionProps> = ({
       >
         Upload file
       </Button>
+
     </>
   );
 };

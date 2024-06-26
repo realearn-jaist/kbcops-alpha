@@ -4,7 +4,7 @@ import os
 from models.ontology_model import get_path_ontology_directory
 
 
-def load_graph(ontology_name, algorithm):
+def load_graph(ontology_name, algorithm, classifier):
     """Load graph fig from directory
 
     Args:
@@ -14,7 +14,7 @@ def load_graph(ontology_name, algorithm):
         list: The list of graph fig
     """
     directory = os.path.join(
-        get_path_ontology_directory(ontology_name), algorithm, "graph_fig"
+        get_path_ontology_directory(ontology_name), algorithm, classifier, "graph_fig"
     )  # where graph fig save
 
     images = []

@@ -170,7 +170,7 @@ def graph_maker(
         plt.savefig(f"{fig_directory}\graph_{i}.png", format="PNG")
 
 
-def create_graph(ontology_name, algorithm):
+def create_graph(ontology_name, algorithm, classifier):
     # ontology_name, algorithm
     """Create a graph for each class and individual in the ontology
     Args:
@@ -181,7 +181,7 @@ def create_graph(ontology_name, algorithm):
     """
     # load individuals for checking whether it Tbox or not, and finding its prefix.
     fig_directory = os.path.join(
-        get_path_ontology_directory(ontology_name), algorithm, "graph_fig"
+        get_path_ontology_directory(ontology_name), algorithm, classifier, "graph_fig"
     )  # where graph fig is save
     replace_or_create_folder(fig_directory)
 
@@ -207,7 +207,7 @@ def create_graph(ontology_name, algorithm):
     entity_split = str(entity).split('.')[0] + '.'
 
 
-    garbage_file = read_garbage_metrics_pd(ontology_name, algorithm)
+    garbage_file = read_garbage_metrics_pd(ontology_name, algorithm, classifier)
 
     class_individual_list, truth_list, predict_list = extract_garbage_value(garbage_file)
     graph_maker(
@@ -221,7 +221,7 @@ def create_graph(ontology_name, algorithm):
         fig_directory,
     )
 
-    return load_graph(ontology_name, algorithm)
+    return load_graph(ontology_name, algorithm, classifier)
 
 
 #############################################################################################

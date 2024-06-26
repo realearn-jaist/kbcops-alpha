@@ -160,8 +160,8 @@ def extract_data(ontology_name: str):
 
     # check onto type
     # consider as a ABox iff individuals_count is excess 10 percent of classes amount
-    onto_type = "ABox" if individuals_count > int(0.1 * len(files['classes'])) else "TBox"
-    if onto_type == "ABox":
+    onto_type = "abox" if individuals_count > int(0.1 * len(files['classes'])) else "tbox"
+    if onto_type == "abox":
         train_test_val_gen_abox(onto, ontology_name)
 
     else:

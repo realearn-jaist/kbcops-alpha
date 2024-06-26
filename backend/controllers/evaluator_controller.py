@@ -11,6 +11,7 @@ from models.evaluator_model import write_garbage_metrics, write_evaluate
 from models.ontology_model import get_path_ontology_directory
 from models.embed_model import load_embedding_value
 from owl2vec_star.Evaluator import Evaluator
+from utils.file_handler import replace_or_create_folder
 
 
 ## Refactor code from https://github.com/realearn-jaist/kbc-ops/tree/main/extraction  ##
@@ -44,7 +45,8 @@ class InclusionEvaluator(Evaluator):
         inferred_ancestors,
         ontology,
         algorithm,
-        completion_type,
+        classifier,
+        onto_type,
     ):
         super(InclusionEvaluator, self).__init__(
             valid_samples, test_samples, train_X, train_y
@@ -56,7 +58,8 @@ class InclusionEvaluator(Evaluator):
         self.individuals = individuals
         self.individuals_e = individuals_e
         self.algorithm = algorithm
-        self.completion_type = completion_type
+        self.onto_type = onto_type
+        self.classifier = classifier
         self.result = dict()
 
     def evaluate(self, model: object, eva_samples: list):
@@ -80,7 +83,7 @@ class InclusionEvaluator(Evaluator):
         for k, sample in enumerate(progress_bar):
             sub, gt = sample[0], sample[1]
             sub_v = None
-            if self.completion_type == "tbox":
+            if self.onto_type == "tbox":
                 sub_index = self.classes.index(sub)
                 sub_v = self.classes_e[sub_index]
             else:
@@ -152,7 +155,7 @@ class InclusionEvaluator(Evaluator):
 
         data = sorted([x for x in data], key=lambda x: x["Dif"], reverse=True)
         garbage_data = data[:5] if len(data) >= 5 else data
-        write_garbage_metrics(self.ontology, self.algorithm, garbage_data)
+        write_garbage_metrics(self.ontology, self.algorithm, self.classifier, garbage_data)
 
         eva_n = len(eva_samples)
         e_MRR, hits1, hits5, hits10 = (
@@ -191,7 +194,7 @@ class InclusionEvaluator(Evaluator):
             'average_Rank' : avgRank
         }
 
-        write_evaluate(self.ontology, self.algorithm, performance_data)
+        write_evaluate(self.ontology, self.algorithm, self.classifier, performance_data)
 
         self.result = {
             "message": "evaluate successful!",
@@ -207,7 +210,7 @@ class InclusionEvaluator(Evaluator):
         )
 
 
-def predict_func(ontology_name: str, algorithm: str, completion_type: str, classifier: str, ):
+def predict_func(ontology_name: str, algorithm: str, classifier: str, ):
     """Predict the ontology with the algorithm
 
     Args:
@@ -226,6 +229,8 @@ def predict_func(ontology_name: str, algorithm: str, completion_type: str, class
 
     # load classes file
     print(f"load {ontology_name} classes")
+    
+    onto_type = "abox" if individuals_count > int(0.1 * len(files['classes'])) else "tbox"
 
     # embed class with model
     print(f"embedding {ontology_name} classes")
@@ -251,7 +256,7 @@ def predict_func(ontology_name: str, algorithm: str, completion_type: str, class
         # when it come to ABox sub will consider as a individual and sup consider as a class
         sub, sup, label = s[0], s[1], s[2]
         sub_v = None
-        if completion_type == "tbox":
+        if onto_type == "tbox":
             sub_v = classes_e[files['classes'].index(sub)]
         else:
             sub_v = individuals_e[files['individuals'].index(sub)]
@@ -273,7 +278,7 @@ def predict_func(ontology_name: str, algorithm: str, completion_type: str, class
             all_infer_classes = line.strip().split(",")
             cls = all_infer_classes[0]
             inferred_ancestors[cls] = (
-                all_infer_classes if completion_type == "tbox" else all_infer_classes[1:]
+                all_infer_classes if onto_type == "tbox" else all_infer_classes[1:]
             )
 
     # evaluate
@@ -290,10 +295,9 @@ def predict_func(ontology_name: str, algorithm: str, completion_type: str, class
         inferred_ancestors,
         ontology_name,
         algorithm,
-        completion_type,
+        classifier,
+        onto_type,
     )
-    # evaluate.run_random_forest()
-    print(classifier)
 
     classifiers = {
         "mlp": evaluate.run_mlp,
@@ -306,12 +310,13 @@ def predict_func(ontology_name: str, algorithm: str, completion_type: str, class
     }
     
     if classifier in classifiers:
+        replace_or_create_folder(os.path.join(get_path_ontology_directory(ontology_name), algorithm, classifier))
         classifiers[classifier]()
     else:
         print("Unknown classifier!")
 
     # load image
-    evaluate.result["images"] = create_graph(ontology_name, algorithm)
+    evaluate.result["images"] = create_graph(ontology_name, algorithm, classifier)
 
     return evaluate.result
 

@@ -1,21 +1,49 @@
 import * as React from 'react';
-import { createTheme, ThemeProvider } from '@mui/material/styles';
+
 import CssBaseline from '@mui/material/CssBaseline';
 import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
+import Grid from '@mui/material/Grid';
+import Stack from '@mui/material/Stack';
+import Typography from '@mui/material/Typography';
+
+import { createTheme, ThemeProvider } from '@mui/material/styles';
+import { PaletteMode } from '@mui/material';
+
+import ChevronLeftRoundedIcon from '@mui/icons-material/ChevronLeftRounded';
+import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded';
+
+import DisplayDashboard from '../components/DisplayDashboard';
+import getCheckoutTheme from '../assets/getCheckoutTheme';
+import DashboardController from '../components/dashboardSidebarComponents/DashboardController';
+import DashboardControllerMobile from '../components/dashboardSidebarComponents/DashboardControllerMobile';
+import ToggleColorMode from '../components/displayDashboardComponents/ToggleColorMode';
 import axios from 'axios';
 
-import MyAppBar from '../components/MyAppBar';
-import MyDrawer from '../components/MyDrawer';
-import Main from '../components/Main';
-
-// Define the theme for the app
-const defaultTheme = createTheme();
+const steps = ['Shipping address', 'Payment details', 'Review your order', "hello"];
 
 export default function Dashboard() {
+  const [mode, setMode] = React.useState<PaletteMode>('light');
+  const checkoutTheme = createTheme(getCheckoutTheme(mode));
+  const [activeStep, setActiveStep] = React.useState(0);
+
+  const toggleColorMode = () => {
+    setMode((prev) => (prev === 'dark' ? 'light' : 'dark'));
+  };
+
+  const handleNext = () => {
+    setActiveStep(activeStep + 1);
+  };
+
+  const handleBack = () => {
+    setActiveStep(activeStep - 1);
+  };
+
   const BACKEND_URI = import.meta.env.VITE_BACKEND_URI || "http://127.0.0.1:5000"
 
   // State variables
-  const [open, setOpen] = React.useState(true);
   const [selectedFiles, setSelectedFiles] = React.useState<File[]>([]);
   const [fileId, setFileId] = React.useState("");
   const [ontologyList, setOntologyList] = React.useState<string[]>([]);
@@ -27,6 +55,7 @@ export default function Dashboard() {
     no_annotation: number;
   }>({ no_class: 0, no_individual: 0, no_axiom: 0, no_annotation: 0 });
   const [displayAlgo, setDisplayAlgo] = React.useState<string>("<Embedding Algorithm>");
+  const [displayClassifier, setDisplayClassifier] = React.useState<string>("<classifier>")
   const [displayEvalMetric, setDisplayEvalMetric] = React.useState<{
     mrr: number,
     hit_at_1: number,
@@ -56,15 +85,31 @@ export default function Dashboard() {
   };
   const [displayGarbageImage, setDisplayGarbageImage] = React.useState<GarbageImage[]>([]);
 
+  // Ref and state for managing the height of the second grid
+  const secondGridRef = React.useRef<HTMLDivElement>(null);
+  const [containerHeight, setContainerHeight] = React.useState<number>(0);
+
   // Fetch the ontology list when the component mounts
   React.useEffect(() => {
     getOntologyList();
   }, []);
 
-  // Toggle the drawer open/close state
-  const toggleDrawer = () => {
-    setOpen(!open);
-  };
+  // Effect to update the height of the container
+  React.useEffect(() => {
+    const updateContainerHeight = () => {
+      if (secondGridRef.current) {
+        setContainerHeight(secondGridRef.current.scrollHeight);
+      }
+    };
+
+    // Update height initially and on window resize
+    updateContainerHeight();
+    window.addEventListener('resize', updateContainerHeight);
+
+    return () => {
+      window.removeEventListener('resize', updateContainerHeight);
+    };
+  }, []);
 
   // Handle file selection
   const handleFilesSelected = (files: File[]) => {
@@ -85,132 +130,239 @@ export default function Dashboard() {
     axios.post(`${BACKEND_URI}/upload`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' }
     })
-    .then((response) => {
-      console.log("Upload successful:", response.data);
-      getOntologyList();
-      extractOntology(response.data.ontology_name);
-    })
-    .catch((error) => {
-      console.error("Upload failed:", error);
-    });
+      .then((response) => {
+        console.log("Upload successful:", response.data);
+        extractOntology(response.data.ontology_name);
+      })
+      .catch((error) => {
+        console.error("Upload failed:", error);
+      });
   };
 
   // Extract ontology data
   const extractOntology = (ontology_name: string) => {
     axios.get(`${BACKEND_URI}/extract/${ontology_name}`)
-    .then((response) => {
-      console.log("Extract successful:", response.data);
-      setDisplayOntoName(ontology_name);
-      setDisplayOntoData(response.data.onto_data);
-    })
-    .catch((error) => {
-      console.error("Extract failed:", error);
-    });
+      .then((response) => {
+        console.log("Extract successful:", response.data);
+        getOntologyList();
+        setDisplayOntoName(ontology_name);
+        setDisplayOntoData(response.data.onto_data);
+      })
+      .catch((error) => {
+        console.error("Extract failed:", error);
+      });
   };
 
   // Fetch ontology statistics
   const getOntologyStat = (ontology_name: string) => {
     axios.get(`${BACKEND_URI}/ontology/${ontology_name}`)
-    .then((response) => {
-      console.log("Get stat successful:", response.data);
-      setDisplayOntoName(ontology_name);
-      setDisplayOntoData(response.data.onto_data);
-    })
-    .catch((error) => {
-      console.error("Get stat failed:", error);
-    });
+      .then((response) => {
+        console.log("Get stat successful:", response.data);
+        setDisplayOntoName(ontology_name);
+        setDisplayOntoData(response.data.onto_data);
+      })
+      .catch((error) => {
+        console.error("Get stat failed:", error);
+      });
   };
 
   // Fetch the ontology list
   const getOntologyList = () => {
     axios.get(`${BACKEND_URI}/ontology`)
-    .then((response) => {
-      console.log("Load successful:", response.data);
-      setOntologyList(response.data.onto_list);
-    })
-    .catch((error) => {
-      console.error("Load failed:", error);
-    });
+      .then((response) => {
+        console.log("Load successful:", response.data);
+        setOntologyList(response.data.onto_list);
+      })
+      .catch((error) => {
+        console.error("Load failed:", error);
+      });
   };
 
   // Train the embedder
-  const trainEmbedder = (ontology_name: string, algorithm: string) => {
+  const trainEmbedder = (ontology_name: string, algorithm: string, classifier: string) => {
     axios.get(`${BACKEND_URI}/embed/${ontology_name}?algo=${algorithm}`)
-    .then((response) => {
-      console.log("Embed successful:", response.data);
-    })
-    .catch((error) => {
-      console.error("Embed failed:", error);
-    });
+      .then((response) => {
+        console.log("Embed successful:", response.data);
+        evaluateEmbedder(ontology_name, algorithm, classifier)
+      })
+      .catch((error) => {
+        console.error("Embed failed:", error);
+      });
   };
 
   // Evaluate the embedder
-  const evaluateEmbedder = (ontology_name: string, algorithm: string, com_type: string, classifier: string) => {
-    axios.get(`${BACKEND_URI}/evaluate/${ontology_name}/${algorithm}?com-type=${com_type}&classifier=${classifier}`)
-    .then((response) => {
-      console.log("Evaluate successful:", response.data);
-      getOntologyStat(ontology_name);
-      setDisplayAlgo(algorithm);
-      setDisplayEvalMetric(response.data.performance);
-      setDisplayGarbageMetric(response.data.garbage);
-      setDisplayGarbageImage(response.data.images);
-    })
-    .catch((error) => {
-      console.error("Evaluate failed:", error);
-    });
+  const evaluateEmbedder = (ontology_name: string, algorithm: string, classifier: string) => {
+    axios.get(`${BACKEND_URI}/evaluate/${ontology_name}/${algorithm}/${classifier}`)
+      .then((response) => {
+        console.log("Evaluate successful:", response.data);
+        getOntologyStat(ontology_name);
+        setDisplayAlgo(algorithm);
+        setDisplayClassifier(classifier);
+        setDisplayEvalMetric(response.data.performance);
+        setDisplayGarbageMetric(response.data.garbage);
+        setDisplayGarbageImage(response.data.images);
+      })
+      .catch((error) => {
+        console.error("Evaluate failed:", error);
+      });
   };
 
   // Fetch evaluation statistics
-  const getEvaluate = (ontology_name: string, algorithm: string, com_type: string, classifier: string) => {
-    if (ontology_name === "" || algorithm === "" || com_type === "" || classifier === "") return;
+  const getEvaluate = (ontology_name: string, algorithm: string, classifier: string) => {
+    if (ontology_name === "" || algorithm === "" || classifier === "") return;
 
     getOntologyStat(ontology_name);
     setDisplayAlgo(algorithm);
+    setDisplayClassifier(classifier)
 
-    axios.get(`${BACKEND_URI}/evaluate/${ontology_name}/${algorithm}/stat`)
-    .then((response) => {
-      console.log("Get evaluate stat successful:", response.data);
-      setDisplayEvalMetric(response.data.performance);
-      setDisplayGarbageMetric(response.data.garbage);
-      setDisplayGarbageImage(response.data.images);
-    })
-    .catch((error) => {
-      console.error("Get evaluate stat failed:", error);
-      setDisplayEvalMetric({ mrr: 0, hit_at_1: 0, hit_at_5: 0, hit_at_10: 0, garbage: 0, total: 0, average_garbage_Rank: 0, average_Rank: 0 });
-      setDisplayGarbageMetric([]);
-      setDisplayGarbageImage([]);
-    });
+    axios.get(`${BACKEND_URI}/evaluate/${ontology_name}/${algorithm}/${classifier}/stat`)
+      .then((response) => {
+        console.log("Get evaluate stat successful:", response.data);
+        setDisplayEvalMetric(response.data.performance);
+        setDisplayGarbageMetric(response.data.garbage);
+        setDisplayGarbageImage(response.data.images);
+      })
+      .catch((error) => {
+        console.error("Get evaluate stat failed:", error);
+        setDisplayEvalMetric({ mrr: 0, hit_at_1: 0, hit_at_5: 0, hit_at_10: 0, garbage: 0, total: 0, average_garbage_Rank: 0, average_Rank: 0 });
+        setDisplayGarbageMetric([]);
+        setDisplayGarbageImage([]);
+      });
   };
 
   return (
-    <ThemeProvider theme={defaultTheme}>
+    <ThemeProvider theme={checkoutTheme}>
       <CssBaseline />
-      <Box sx={{ display: 'flex' }}>
-        <MyAppBar open={open} toggleDrawer={toggleDrawer} openable={true}/>
-        <MyDrawer
-          open={open}
-          toggleDrawer={toggleDrawer}
-          selectedFiles={selectedFiles}
-          fileId={fileId}
-          setFileId={setFileId}
-          handleUpload={handleUpload}
-          ontologyList={ontologyList}
-          handleFilesSelected={handleFilesSelected}
-          trainEmbedder={trainEmbedder}
-          getEvaluate={getEvaluate}
-          evaluateEmbedder={evaluateEmbedder}
-        />
-        
-        <Main
-          open={open}
-          ontology_name={displayOntoName}
-          onto_data={displayOntoData}
-          algo={displayAlgo}
-          eval_metric={displayEvalMetric}
-          garbage_metric={displayGarbageMetric}
-          garbage_image={displayGarbageImage}
-        />
-      </Box>
+      <Grid container sx={{ height: `${containerHeight}px` }}>
+        <Grid
+          item
+          xs={12}
+          sm={4}
+          lg={3}
+          sx={{
+            display: { xs: 'none', md: 'flex' },
+            flexDirection: 'column',
+            backgroundColor: 'background.paper',
+            borderRight: { sm: 'none', md: '1px solid' },
+            borderColor: { sm: 'none', md: 'divider' },
+            alignItems: 'start',
+            pt: 4,
+            px: 2,
+            gap: 4,
+            height: "100%",
+          }}
+        >
+          <Box
+            mt={"100px"}
+            sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              flexGrow: 1,
+              width: '100%',
+              maxWidth: 500,
+            }}
+          >
+            <DashboardController
+              selectedFiles={selectedFiles}
+              fileId={fileId}
+              setFileId={setFileId}
+              handleUpload={handleUpload}
+              ontologyList={ontologyList}
+              handleFilesSelected={handleFilesSelected}
+              trainEmbedder={trainEmbedder}
+              getEvaluate={getEvaluate}
+            />
+          </Box>
+        </Grid>
+        <Grid
+          item
+          sm={12}
+          md={8}
+          lg={9}
+          ref={secondGridRef} // Attach the ref to the second grid
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            maxWidth: '100%',
+            width: '100%',
+            backgroundColor: { xs: 'transparent', sm: 'background.default' },
+            alignItems: 'start',
+            pt: { xs: 2, sm: 4 },
+            px: { xs: 2, sm: 10 },
+            gap: { xs: 4, md: 8 },
+          }}
+        >
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'flex-end',
+              alignItems: 'center',
+              width: '100%',
+              maxWidth: { sm: '100%', md: '100%' },
+            }}
+          >
+            <ToggleColorMode mode={mode} toggleColorMode={toggleColorMode} />
+          </Box>
+
+          <Card
+            sx={{
+              display: { xs: 'flex', md: 'none' },
+              width: '100%',
+            }}
+          >
+            <CardContent
+              sx={{
+                display: 'flex',
+                width: '100%',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                ':last-child': { pb: 2 },
+              }}
+            >
+              <div>
+                <Typography variant="subtitle2" gutterBottom>
+                  Selected ontology
+                </Typography>
+                <Typography variant="body1">
+                  {activeStep >= 2 ? '$144.97' : '$134.98'}
+                </Typography>
+              </div>
+              <DashboardControllerMobile
+                selectedFiles={selectedFiles}
+                fileId={fileId}
+                setFileId={setFileId}
+                handleUpload={handleUpload}
+                ontologyList={ontologyList}
+                handleFilesSelected={handleFilesSelected}
+                trainEmbedder={trainEmbedder}
+                getEvaluate={getEvaluate} />
+            </CardContent>
+          </Card>
+
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              flexGrow: 1,
+              width: '100%',
+              maxWidth: { sm: '100%', md: '100%' },
+              height: 'auto',
+              gap: { xs: 5, md: 'none' },
+              pb: 4
+            }}
+          >
+            <DisplayDashboard
+              ontology_name={displayOntoName}
+              onto_data={displayOntoData}
+              algo={displayAlgo}
+              classifier={displayClassifier}
+              eval_metric={displayEvalMetric}
+              garbage_metric={displayGarbageMetric}
+              garbage_image={displayGarbageImage}
+            />
+          </Box>
+        </Grid>
+      </Grid>
     </ThemeProvider>
   );
 }
