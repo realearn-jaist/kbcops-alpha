@@ -10,7 +10,7 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 
 import { createTheme, ThemeProvider } from '@mui/material/styles';
-import { PaletteMode } from '@mui/material';
+import { Divider, PaletteMode } from '@mui/material';
 
 import ChevronLeftRoundedIcon from '@mui/icons-material/ChevronLeftRounded';
 import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded';
@@ -24,22 +24,12 @@ import axios from 'axios';
 
 const steps = ['Shipping address', 'Payment details', 'Review your order', "hello"];
 
-export default function Dashboard() {
-  const [mode, setMode] = React.useState<PaletteMode>('light');
+interface DashboardProps {
+  mode: PaletteMode;
+}
+
+export default function Dashboard({mode}: DashboardProps) {
   const checkoutTheme = createTheme(getCheckoutTheme(mode));
-  const [activeStep, setActiveStep] = React.useState(0);
-
-  const toggleColorMode = () => {
-    setMode((prev) => (prev === 'dark' ? 'light' : 'dark'));
-  };
-
-  const handleNext = () => {
-    setActiveStep(activeStep + 1);
-  };
-
-  const handleBack = () => {
-    setActiveStep(activeStep - 1);
-  };
 
   const BACKEND_URI = import.meta.env.VITE_BACKEND_URI || "http://127.0.0.1:5000"
 
@@ -292,17 +282,7 @@ export default function Dashboard() {
             gap: { xs: 4, md: 8 },
           }}
         >
-          <Box
-            sx={{
-              display: 'flex',
-              justifyContent: 'flex-end',
-              alignItems: 'center',
-              width: '100%',
-              maxWidth: { sm: '100%', md: '100%' },
-            }}
-          >
-            <ToggleColorMode mode={mode} toggleColorMode={toggleColorMode} />
-          </Box>
+          <Divider/>
 
           <Card
             sx={{
@@ -324,7 +304,7 @@ export default function Dashboard() {
                   Selected ontology
                 </Typography>
                 <Typography variant="body1">
-                  {activeStep >= 2 ? '$144.97' : '$134.98'}
+                  {ontologyList}
                 </Typography>
               </div>
               <DashboardControllerMobile

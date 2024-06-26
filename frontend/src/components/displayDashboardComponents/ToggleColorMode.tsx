@@ -17,6 +17,7 @@ function ToggleColorMode({ mode, toggleColorMode }: ToggleColorModeProps) {
       onClick={toggleColorMode}
       color="primary"
       aria-label="Theme toggle button"
+      sx={{marginRight: '10px'}}
     >
       {mode === 'dark' ? (
         <WbSunnyRoundedIcon fontSize="small" />

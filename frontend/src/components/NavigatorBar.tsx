@@ -1,12 +1,19 @@
 import React, { useState } from 'react';
-import { AppBar as MuiAppBar, Toolbar, IconButton, Tabs, Tab, TextField, Popover, List, ListItem, ListItemText, Box, AppBar } from '@mui/material';
+import { AppBar as MuiAppBar, Toolbar, IconButton, Tabs, Tab, TextField, Popover, List, ListItem, ListItemText, Box, AppBar, PaletteMode } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import MenuIcon from '@mui/icons-material/Menu';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import { useLocation, useNavigate } from 'react-router-dom';
+import ToggleColorMode from './displayDashboardComponents/ToggleColorMode';
+
+interface NavigatorBarProps {
+  mode: PaletteMode
+  toggleColorMode: () => void;
+}
+
 
 // Functional component for the AppBar
-const NavigatorBar = () => {
+const NavigatorBar = ({mode, toggleColorMode}: NavigatorBarProps) => {
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -92,15 +99,15 @@ const NavigatorBar = () => {
         </Tabs>
 
         {/* Secret Key text fields */}
-        <TextField
+        {/* <TextField
           variant="outlined"
           size="small"
           placeholder="Secret Key"
           sx={{ marginRight: 2, backgroundColor: 'white' }}
-        />
+        /> */}
 
         {/* Notification button */}
-        <IconButton color="inherit" onClick={handleNotificationClick} sx={{marginRight: '36px'}}>
+        <IconButton onClick={handleNotificationClick} sx={{marginRight: '10px'}}>
           <NotificationsIcon />
         </IconButton>
         <Popover
@@ -125,6 +132,8 @@ const NavigatorBar = () => {
             ))}
           </List>
         </Popover>
+
+        <ToggleColorMode mode={mode} toggleColorMode={toggleColorMode} />
       </Toolbar>
     </AppBar>
   );

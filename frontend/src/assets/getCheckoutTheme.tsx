@@ -558,7 +558,7 @@ export default function getCheckoutTheme(mode: PaletteMode): ThemeOptions {
               '& .MuiOutlinedInput-root': {
                 boxSizing: 'border-box',
                 minWidth: 280,
-                minHeight: 40,
+                minHeight: 50,
                 height: '100%',
                 borderRadius: '10px',
                 transition: 'border-color 120ms ease-in',
