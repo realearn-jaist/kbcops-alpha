@@ -2,35 +2,26 @@ import * as React from 'react';
 
 import CssBaseline from '@mui/material/CssBaseline';
 import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import Grid from '@mui/material/Grid';
-import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 
 import { createTheme, ThemeProvider } from '@mui/material/styles';
-import { Divider, PaletteMode } from '@mui/material';
+import { Divider, PaletteMode, Theme } from '@mui/material';
 
-import ChevronLeftRoundedIcon from '@mui/icons-material/ChevronLeftRounded';
-import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded';
 
 import DisplayDashboard from '../components/DisplayDashboard';
 import getCheckoutTheme from '../assets/getCheckoutTheme';
 import DashboardController from '../components/dashboardSidebarComponents/DashboardController';
 import DashboardControllerMobile from '../components/dashboardSidebarComponents/DashboardControllerMobile';
-import ToggleColorMode from '../components/displayDashboardComponents/ToggleColorMode';
 import axios from 'axios';
 
-const steps = ['Shipping address', 'Payment details', 'Review your order', "hello"];
-
 interface DashboardProps {
-  mode: PaletteMode;
+  theme: Theme;
 }
 
-export default function Dashboard({mode}: DashboardProps) {
-  const checkoutTheme = createTheme(getCheckoutTheme(mode));
-
+export default function Dashboard({theme}: DashboardProps) {
   const BACKEND_URI = import.meta.env.VITE_BACKEND_URI || "http://127.0.0.1:5000"
 
   // State variables
@@ -117,7 +108,7 @@ export default function Dashboard({mode}: DashboardProps) {
     formData.append('owl_file', file);
     formData.append('ontology_name', fileId);
 
-    axios.post(`${BACKEND_URI}/upload`, formData, {
+    axios.post(`${BACKEND_URI}/api/upload`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' }
     })
       .then((response) => {
@@ -131,7 +122,7 @@ export default function Dashboard({mode}: DashboardProps) {
 
   // Extract ontology data
   const extractOntology = (ontology_name: string) => {
-    axios.get(`${BACKEND_URI}/extract/${ontology_name}`)
+    axios.get(`${BACKEND_URI}/api/extract/${ontology_name}`)
       .then((response) => {
         console.log("Extract successful:", response.data);
         getOntologyList();
@@ -145,7 +136,7 @@ export default function Dashboard({mode}: DashboardProps) {
 
   // Fetch ontology statistics
   const getOntologyStat = (ontology_name: string) => {
-    axios.get(`${BACKEND_URI}/ontology/${ontology_name}`)
+    axios.get(`${BACKEND_URI}/api/ontology/${ontology_name}`)
       .then((response) => {
         console.log("Get stat successful:", response.data);
         setDisplayOntoName(ontology_name);
@@ -158,7 +149,7 @@ export default function Dashboard({mode}: DashboardProps) {
 
   // Fetch the ontology list
   const getOntologyList = () => {
-    axios.get(`${BACKEND_URI}/ontology`)
+    axios.get(`${BACKEND_URI}/api/ontology`)
       .then((response) => {
         console.log("Load successful:", response.data);
         setOntologyList(response.data.onto_list);
@@ -170,7 +161,7 @@ export default function Dashboard({mode}: DashboardProps) {
 
   // Train the embedder
   const trainEmbedder = (ontology_name: string, algorithm: string, classifier: string) => {
-    axios.get(`${BACKEND_URI}/embed/${ontology_name}?algo=${algorithm}`)
+    axios.get(`${BACKEND_URI}/api/embed/${ontology_name}?algo=${algorithm}`)
       .then((response) => {
         console.log("Embed successful:", response.data);
         evaluateEmbedder(ontology_name, algorithm, classifier)
@@ -182,7 +173,7 @@ export default function Dashboard({mode}: DashboardProps) {
 
   // Evaluate the embedder
   const evaluateEmbedder = (ontology_name: string, algorithm: string, classifier: string) => {
-    axios.get(`${BACKEND_URI}/evaluate/${ontology_name}/${algorithm}/${classifier}`)
+    axios.get(`${BACKEND_URI}/api/evaluate/${ontology_name}/${algorithm}/${classifier}`)
       .then((response) => {
         console.log("Evaluate successful:", response.data);
         getOntologyStat(ontology_name);
@@ -205,7 +196,7 @@ export default function Dashboard({mode}: DashboardProps) {
     setDisplayAlgo(algorithm);
     setDisplayClassifier(classifier)
 
-    axios.get(`${BACKEND_URI}/evaluate/${ontology_name}/${algorithm}/${classifier}/stat`)
+    axios.get(`${BACKEND_URI}/api/evaluate/${ontology_name}/${algorithm}/${classifier}/stat`)
       .then((response) => {
         console.log("Get evaluate stat successful:", response.data);
         setDisplayEvalMetric(response.data.performance);
@@ -221,7 +212,7 @@ export default function Dashboard({mode}: DashboardProps) {
   };
 
   return (
-    <ThemeProvider theme={checkoutTheme}>
+    <ThemeProvider theme={theme}>
       <CssBaseline />
       <Grid container sx={{ height: `${containerHeight}px` }}>
         <Grid

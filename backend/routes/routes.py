@@ -2,7 +2,7 @@ import time
 from models.evaluator_model import read_evaluate, read_garbage_metrics
 from controllers.evaluator_controller import predict_func
 from controllers.embed_controller import embed_func
-from flask import jsonify, request, Blueprint  # type: ignore
+from flask import current_app, jsonify, make_response, request, Blueprint, send_file  # type: ignore
 from controllers.ontology_controller import (
     get_onto_stat,
     get_all_ontology,
@@ -10,6 +10,8 @@ from controllers.ontology_controller import (
     extract_data,
 )
 from models.graph_model import load_graph
+from models.ontology_model import get_path_ontology_directory
+from utils.directory_utils import explore_directory, zip_files
 from utils.json_handler import convert_float32_to_float
 
 
@@ -137,3 +139,26 @@ def get_evaluate_stat(ontology, algorithm, classifier):
         result["garbage"] = []
         result["images"] = []
         return jsonify(result), 500
+
+@ontology_blueprint.route("/explore", methods=["GET"])
+def explore_directory_endpoint():
+    directory_path = current_app.config["STORAGE_FOLDER"]
+    try:
+        directory_structure = explore_directory(directory_path)
+        return jsonify({"message": "Get files information successfully", "ontology": directory_structure}), 200
+    except Exception as e:
+        return jsonify({"message": "Get files information failed", "ontology": {}}), 500
+    
+@ontology_blueprint.route('/explore/<ontology_name>', methods=['GET'])
+def load_files(ontology_name):
+    path = get_path_ontology_directory(ontology_name)
+    
+    zip_hex = zip_files(path)
+    
+    # Prepare response headers
+    response = {
+        "message": "Zip file created successfully.",
+        "file": zip_hex  # Convert bytes to hex string for transmission
+    }
+
+    return jsonify(response), 200

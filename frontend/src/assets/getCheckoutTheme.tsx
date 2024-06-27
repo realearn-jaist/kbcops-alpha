@@ -215,6 +215,15 @@ export default function getCheckoutTheme(mode: PaletteMode): ThemeOptions {
   return {
     ...getDesignTokens(mode),
     components: {
+      MuiAppBar: {
+        styleOverrides: {
+          root: ({ theme }) => ({
+            ...(theme.palette.mode === 'light' && {
+              backgroundColor: gray[50],
+            }),
+          }),
+        },
+      },
       MuiSelect: {
         styleOverrides: {
           root: {

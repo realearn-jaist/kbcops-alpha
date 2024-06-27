@@ -188,7 +188,7 @@ def create_graph(ontology_name, algorithm, classifier):
     individuals = load_individuals(ontology_name)
     individuals_count = len(individuals)
 
-    classes = [line.strip() for line in load_classes(ontology_name)]
+    classes = load_classes(ontology_name)
 
     # check onto type
     # consider as a ABox iff individuals_count is excess 10 percent of classes amount

@@ -13,7 +13,7 @@ def create_app():
     STORAGE_FOLDER = "storage"
     app.config["STORAGE_FOLDER"] = STORAGE_FOLDER
 
-    app.register_blueprint(ontology_blueprint, url_prefix="/")
+    app.register_blueprint(ontology_blueprint, url_prefix="/api")
 
     @app.route("/")
     def serve():

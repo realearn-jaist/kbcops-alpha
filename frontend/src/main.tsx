@@ -4,8 +4,10 @@ import './index.css';
 import Dashboard from './views/Dashboard.tsx';
 import NavigatorBar from './components/NavigatorBar.tsx';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { PaletteMode } from '@mui/material';
-import DownloadFile from './views/DownloadFile.tsx';
+import { PaletteMode, createTheme } from '@mui/material';
+import SignIn from './views/SignIn.tsx';
+import getCheckoutTheme from './assets/getCheckoutTheme.tsx';
+import FileManager from './views/FileManager.tsx';
 
 const NotFound = () => {
   return <h2>Page Not Found</h2>;
@@ -13,6 +15,7 @@ const NotFound = () => {
 
 const App = () => {
   const [mode, setMode] = React.useState<PaletteMode>('light');
+  const checkoutTheme = createTheme(getCheckoutTheme(mode));
 
   const toggleColorMode = () => {
     setMode((prev: PaletteMode) => (prev === 'dark' ? 'light' : 'dark'));
@@ -20,11 +23,12 @@ const App = () => {
 
   return (
     <BrowserRouter>
-      <NavigatorBar mode={mode} toggleColorMode={toggleColorMode} />
+      <NavigatorBar mode={mode} toggleColorMode={toggleColorMode} theme={checkoutTheme}/>
       <Routes>
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
-        <Route path="file" element={<NotFound />} />
-        <Route path="dashboard" element={<Dashboard mode={mode} />} />
+        <Route path="file" element={<FileManager theme={checkoutTheme}/>} />
+        <Route path="login" element={<SignIn theme={checkoutTheme}/>} />
+        <Route path="dashboard" element={<Dashboard theme={checkoutTheme} />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>
