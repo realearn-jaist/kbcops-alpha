@@ -4,6 +4,7 @@ from flask_cors import CORS
 from flask_jwt_extended import JWTManager
 from routes.routes import ontology_blueprint
 from routes.auth_routes import auth_blueprint, initialize_default_user
+from dotenv import load_dotenv
 import os
 
 
@@ -13,7 +14,8 @@ def create_app():
     CORS(app)
     
     # Configure JWT settings
-    app.config["JWT_SECRET_KEY"] = "your_secret_key"  # Change this to a secure key
+    load_dotenv()
+    app.config["JWT_SECRET_KEY"] = os.getenv('JWT_SECRET_KEY')  # Change this to a secure key
     jwt = JWTManager(app)
 
     STORAGE_FOLDER = "storage"
