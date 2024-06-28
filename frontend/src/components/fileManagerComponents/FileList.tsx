@@ -1,5 +1,21 @@
 import React, { useState } from 'react';
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Box, Button, Collapse, IconButton, Card, CardContent, Grid, Typography } from '@mui/material';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  Box,
+  Button,
+  Collapse,
+  IconButton,
+  Card,
+  CardContent,
+  Grid,
+  Typography
+} from '@mui/material';
 import { ExpandLess, ExpandMore, Delete } from '@mui/icons-material';
 
 interface ProcessFile {
@@ -24,6 +40,7 @@ interface Algorithm {
 interface DataItem {
   created_at: string;
   name: string;
+  alias: string; // Added alias field
   algorithm: Algorithm[];
   process_files: ProcessFile[];
 }
@@ -48,6 +65,8 @@ export default function FileList({ data, handleDownload, handleDelete, isAuthent
         <TableHead>
           <TableRow>
             <TableCell>Ontology</TableCell>
+            <TableCell>Owner</TableCell>
+            <TableCell>Created At</TableCell> {/* Added Created At column */}
             <TableCell>Download</TableCell>
             {isAuthenticated && <TableCell>Delete</TableCell>}
           </TableRow>
@@ -65,6 +84,16 @@ export default function FileList({ data, handleDownload, handleDelete, isAuthent
                       {openRows[item.name] ? <ExpandLess /> : <ExpandMore />}
                     </IconButton>
                   </Box>
+                </TableCell>
+                <TableCell>
+                  <Typography variant="body1">
+                    {item.alias}
+                  </Typography>
+                </TableCell>
+                <TableCell>
+                  <Typography variant="body1">
+                    {item.created_at}
+                  </Typography>
                 </TableCell>
                 <TableCell style={{ whiteSpace: 'nowrap' }}>
                   <Button
@@ -93,7 +122,7 @@ export default function FileList({ data, handleDownload, handleDelete, isAuthent
                 )}
               </TableRow>
               <TableRow>
-                <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={isAuthenticated ? 3 : 2}>
+                <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={isAuthenticated ? 5 : 4}>
                   <Collapse in={openRows[item.name]} timeout="auto" unmountOnExit>
                     <Box margin={1}>
                       {item.algorithm.length > 0 ? (
@@ -134,4 +163,4 @@ export default function FileList({ data, handleDownload, handleDelete, isAuthent
       </Table>
     </TableContainer>
   );
-};
+}

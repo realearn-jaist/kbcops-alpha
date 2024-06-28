@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import FileList from '../components/fileManagerComponents/FileList';
-import { Box, Button, Container, CssBaseline, Grid, Theme, ThemeProvider, Typography, styled } from '@mui/material';
+import { Box, Button, CssBaseline, Grid, Theme, ThemeProvider, Typography, styled } from '@mui/material';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
@@ -32,6 +32,7 @@ interface Algorithm {
 interface DataItem {
   created_at: string;
   name: string;
+  alias: string;
   algorithm: Algorithm[];
   process_files: ProcessFile[];
 }
@@ -69,7 +70,7 @@ export default function FileManager({ theme, isAuthenticated, handleSignOut }: F
     axios.get<{ message: string, file: string }>(`${BACKEND_URI}/api/explore/` + ontologyName)
       .then((response) => {
         if (response.data.file) {
-          console.error("Get file successful:", response.data);
+          console.log("Get file successful:", response.data);
 
           const byteArray = hexToByteArray(response.data.file);
           const blob = new Blob([byteArray], { type: 'application/zip' });
@@ -125,7 +126,6 @@ export default function FileManager({ theme, isAuthenticated, handleSignOut }: F
                 <Button variant="contained" color="primary" onClick={handleSignOut}>
                   Sign Out
                 </Button>
-                {/* Add any other authenticated buttons or components here */}
               </>
             )}
           </Box>

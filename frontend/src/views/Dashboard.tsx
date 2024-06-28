@@ -25,6 +25,7 @@ export default function Dashboard({theme}: DashboardProps) {
   const BACKEND_URI = import.meta.env.VITE_BACKEND_URI || "http://127.0.0.1:5000"
 
   // State variables
+  const [alias, setAlias] = React.useState<string>("")
   const [selectedFiles, setSelectedFiles] = React.useState<File[]>([]);
   const [fileId, setFileId] = React.useState("");
   const [ontologyList, setOntologyList] = React.useState<string[]>([]);
@@ -107,6 +108,7 @@ export default function Dashboard({theme}: DashboardProps) {
     const formData = new FormData();
     formData.append('owl_file', file);
     formData.append('ontology_name', fileId);
+    formData.append('alias', alias);
 
     axios.post(`${BACKEND_URI}/api/upload`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' }
@@ -244,6 +246,7 @@ export default function Dashboard({theme}: DashboardProps) {
             }}
           >
             <DashboardController
+              setAlias={setAlias}
               selectedFiles={selectedFiles}
               fileId={fileId}
               setFileId={setFileId}

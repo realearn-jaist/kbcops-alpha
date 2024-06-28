@@ -14,7 +14,7 @@ from controllers.ontology_controller import (
     extract_data,
 )
 from models.graph_model import load_graph
-from models.ontology_model import get_path_ontology_directory
+from models.ontology_model import get_path_ontology_directory, remove_row_ownership_csv, write_to_ownership_csv
 from utils.directory_utils import explore_directory, remove_dir, zip_files
 from utils.json_handler import convert_float32_to_float
 
@@ -31,6 +31,7 @@ def upload():
 
     file = request.files["owl_file"]
     ontology_name = request.form.get("ontology_name")
+    alias = request.form.get("alias")
 
     if file.filename == "":
         return jsonify({"message": "No selected file"}), 400
@@ -40,6 +41,7 @@ def upload():
 
     ontology_name = upload_ontology(file, ontology_name)
     if ontology_name:
+        write_to_ownership_csv(alias, ontology_name)
         return (
             jsonify({"message": "File uploaded successfully", "ontology_name": ontology_name}),
             200,
@@ -62,6 +64,7 @@ def extract(ontology):
     if data:
         return jsonify({"message": "Extraction successfully", "onto_data": data}), 200
     else:
+        remove_row_ownership_csv(ontology)
         remove_dir(get_path_ontology_directory(ontology))
         return jsonify({"message": "Extraction failed"}), 500
 
@@ -183,6 +186,7 @@ def delete_file(ontology_name):
         path = get_path_ontology_directory(ontology_name)
         
         if remove_dir(path):
+            remove_row_ownership_csv(ontology_name)
             return jsonify({"message": "File deleted successfully"}), 200
         else:
             return jsonify({"message": "File not found"}), 404

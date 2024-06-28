@@ -1,9 +1,10 @@
 import React from 'react';
-import { TextField, Button, Box } from '@mui/material';
+import { TextField, Button, Box, Typography } from '@mui/material';
 import { UploadFile } from '@mui/icons-material';
 import FileUpload from './FileUpload';
 
 interface FileUploadSectionProps {
+  setAlias: (alias: string) => void;
   selectedFiles: File[];
   fileId: string;
   setFileId: (id: string) => void;
@@ -12,6 +13,7 @@ interface FileUploadSectionProps {
 }
 
 const FileUploadSection: React.FC<FileUploadSectionProps> = ({
+  setAlias,
   selectedFiles,
   fileId,
   setFileId,
@@ -20,6 +22,20 @@ const FileUploadSection: React.FC<FileUploadSectionProps> = ({
 }) => {
   return (
     <>
+      {/* Title */}
+      <Typography variant='h6' sx={{ paddingLeft: '10px' }}>
+        Uploading
+      </Typography>
+      
+      {/* TextField for ontology name */}
+      <TextField
+        sx={{ margin: '10px' }}
+        required
+        id="owner_alias"
+        label="Owner's Alias"
+        onChange={(e) => setAlias(e.target.value)} // Update fileId state on change
+      />
+
       {/* File upload component */}
       <FileUpload onFilesSelected={handleFilesSelected} />
 

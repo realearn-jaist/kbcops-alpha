@@ -6,6 +6,7 @@ import EmbeddingForm from './EmbeddingForm';
 import FileUploadSection from './FileUploadSection';
 
 interface DrawerProps {
+  setAlias: (alias: string) => void;
   selectedFiles: File[];
   fileId: string;
   setFileId: (id: string) => void;
@@ -17,6 +18,7 @@ interface DrawerProps {
 }
 
 export default function DashboardController({
+  setAlias,
   selectedFiles,
   fileId,
   setFileId,
@@ -62,6 +64,7 @@ export default function DashboardController({
     <React.Fragment>
       {/* File upload section */}
       <FileUploadSection
+        setAlias={setAlias}
         selectedFiles={selectedFiles}
         fileId={fileId}
         setFileId={setFileId}

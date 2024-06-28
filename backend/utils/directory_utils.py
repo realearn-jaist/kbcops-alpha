@@ -1,9 +1,26 @@
+import csv
 import io
 import os
 import shutil
 from datetime import datetime
 import zipfile
+from flask import current_app
 import numpy as np
+
+def get_ontology_alias_mapping():
+    directory_path = current_app.config["STORAGE_FOLDER"]
+    csv_file = os.path.join(directory_path, "ownership.csv")
+    
+    ontology_alias_map = {}
+    
+    # Read alias mapping from ownership.csv
+    if os.path.exists(csv_file):
+        with open(csv_file, mode='r', newline='') as file:
+            reader = csv.DictReader(file)
+            for row in reader:
+                ontology_alias_map[row['ontology_name']] = row['alias']
+    
+    return ontology_alias_map
 
 def get_file_info(path):
     """Return a dictionary with the file name and creation time."""
@@ -15,12 +32,14 @@ def get_file_info(path):
 def explore_directory(directory):
     """Recursively explore the directory and return a structured JSON."""
     ontology_list = []
+    ontology_alias_map = get_ontology_alias_mapping()
     
     for ontology_name in os.listdir(directory):
         ontology_path = os.path.join(directory, ontology_name)
         if os.path.isdir(ontology_path):
             ontology_info = {
                 "name": ontology_name,
+                "alias": ontology_alias_map.get(ontology_name, ""),  # Get alias if exists
                 "created_at": datetime.fromtimestamp(os.path.getctime(ontology_path)).isoformat(),
                 "process_files": [],
                 "algorithm": []
