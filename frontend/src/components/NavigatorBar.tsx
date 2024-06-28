@@ -1,20 +1,24 @@
 import React, { useState } from 'react';
-import { AppBar as MuiAppBar, Toolbar, IconButton, Tabs, Tab, TextField, Popover, List, ListItem, ListItemText, Box, AppBar, PaletteMode, Theme, ThemeProvider } from '@mui/material';
-import { styled } from '@mui/material/styles';
-import MenuIcon from '@mui/icons-material/Menu';
+import { Toolbar, IconButton, Tabs, Tab, Popover, List, ListItem, ListItemText, AppBar, PaletteMode, Theme, ThemeProvider } from '@mui/material';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import { useLocation, useNavigate } from 'react-router-dom';
 import ToggleColorMode from './displayDashboardComponents/ToggleColorMode';
+import { Info, CheckCircle, Error } from '@mui/icons-material';
 
-interface NavigatorBarProps {
-  mode: PaletteMode
-  toggleColorMode: () => void;
-  theme: Theme
+interface Notification {
+  message: string;
+  type: string;
 }
 
+interface NavigatorBarProps {
+  mode: PaletteMode;
+  toggleColorMode: () => void;
+  theme: Theme;
+  notiList: Notification[];
+}
 
 // Functional component for the AppBar
-const NavigatorBar = ({ mode, toggleColorMode, theme }: NavigatorBarProps) => {
+const NavigatorBar = ({ mode, toggleColorMode, theme, notiList }: NavigatorBarProps) => {
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -44,19 +48,23 @@ const NavigatorBar = ({ mode, toggleColorMode, theme }: NavigatorBarProps) => {
   const openPopover = Boolean(anchorEl);
   const popoverId = openPopover ? 'notification-popover' : undefined;
 
-  // Dummy notifications data
-  const notifications = [
-    "Notification 1",
-    "Notification 2",
-    "Notification 3"
-  ];
+  const getIcon = (type: string) => {
+    switch (type) {
+      case 'info':
+        return <Info />;
+      case 'success':
+        return <CheckCircle />;
+      case 'error':
+        return <Error />;
+      default:
+        return null;
+    }
+  };
 
   return (
     <ThemeProvider theme={theme}>
       <AppBar position="fixed" sx={{ boxShadow: 'true' }}>
         <Toolbar sx={{ minHeight: 48, padding: '0 !important', paddingRight: 1, height: "100%" }}>
-          {/* Menu button to toggle the drawer */}
-
           {/* Navigation tabs */}
           <Tabs
             value={currentPath}
@@ -100,18 +108,12 @@ const NavigatorBar = ({ mode, toggleColorMode, theme }: NavigatorBarProps) => {
             ))}
           </Tabs>
 
-          {/* Secret Key text fields */}
-          {/* <TextField
-          variant="outlined"
-          size="small"
-          placeholder="Secret Key"
-          sx={{ marginRight: 2, backgroundColor: 'white' }}
-        /> */}
-
           {/* Notification button */}
           <IconButton onClick={handleNotificationClick} sx={{ marginRight: '10px' }}>
             <NotificationsIcon />
           </IconButton>
+
+          {/* Notification Popover */}
           <Popover
             id={popoverId}
             open={openPopover}
@@ -127,19 +129,26 @@ const NavigatorBar = ({ mode, toggleColorMode, theme }: NavigatorBarProps) => {
             }}
           >
             <List>
-              {notifications.map((notification, index) => (
+              {notiList.map((notification, index) => (
                 <ListItem key={index}>
-                  <ListItemText primary={notification} />
+                  {/* Render icon based on notification type */}
+                  {getIcon(notification.type)}
+                  <ListItemText sx={{marginLeft: 1}}
+                    primary={notification.message}
+                    primaryTypographyProps={{
+                      color: notification.type === 'error' ? 'error' : 'primary',
+                    }}
+                  />
                 </ListItem>
               ))}
             </List>
           </Popover>
 
+          {/* Toggle color mode button */}
           <ToggleColorMode mode={mode} toggleColorMode={toggleColorMode} />
         </Toolbar>
       </AppBar>
     </ThemeProvider>
-
   );
 };
 

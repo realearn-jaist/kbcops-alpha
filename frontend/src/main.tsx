@@ -14,10 +14,15 @@ const NotFound = () => {
   return <h2>Page Not Found</h2>;
 };
 
+interface Notification {
+  message: string;
+  type: string;
+}
+
 const App = () => {
   const [mode, setMode] = React.useState<PaletteMode>('light');
   const [isAuthenticated, setIsAuthenticated] = React.useState(false);
-  const [notiList, setNotiList] = React.useState<string[]>([])
+  const [notiList, setNotiList] = React.useState<Notification[]>([])
   const checkoutTheme = createTheme(getCheckoutTheme(mode));
 
   const toggleColorMode = () => {
@@ -43,7 +48,7 @@ const App = () => {
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
         <Route path="/file" element={
           <>
-            <NavigatorBar mode={mode} toggleColorMode={toggleColorMode} theme={checkoutTheme} />
+            <NavigatorBar mode={mode} toggleColorMode={toggleColorMode} theme={checkoutTheme} notiList={notiList}/>
             <FileManager theme={checkoutTheme} isAuthenticated={isAuthenticated} handleSignOut={handleSignOut} />
           </>
         }
@@ -57,7 +62,7 @@ const App = () => {
           )} />
         <Route path="/dashboard" element={
           <>
-            <NavigatorBar mode={mode} toggleColorMode={toggleColorMode} theme={checkoutTheme} />
+            <NavigatorBar mode={mode} toggleColorMode={toggleColorMode} theme={checkoutTheme} notiList={notiList}/>
             <Dashboard theme={checkoutTheme} setNotiList={setNotiList}/>
           </>
         }

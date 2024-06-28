@@ -7,25 +7,31 @@ import CardContent from '@mui/material/CardContent';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 
-import { createTheme, ThemeProvider } from '@mui/material/styles';
-import { Divider, PaletteMode, Theme } from '@mui/material';
-
+import { ThemeProvider } from '@mui/material/styles';
+import { Divider, Theme } from '@mui/material';
 
 import DisplayDashboard from '../components/DisplayDashboard';
-import getCheckoutTheme from '../assets/getCheckoutTheme';
 import DashboardController from '../components/dashboardSidebarComponents/DashboardController';
 import DashboardControllerMobile from '../components/dashboardSidebarComponents/DashboardControllerMobile';
 import axios from 'axios';
 
-interface DashboardProps {
-  theme: Theme;
+
+interface Notification {
+  message: string;
+  type: string;
 }
 
-export default function Dashboard({theme}: DashboardProps) {
-  const BACKEND_URI = import.meta.env.VITE_BACKEND_URI || "http://127.0.0.1:5000"
+interface DashboardProps {
+  theme: Theme;
+  setNotiList: React.Dispatch<React.SetStateAction<Notification[]>>;
+}
+
+
+export default function Dashboard({theme, setNotiList}: DashboardProps) {
+  const BACKEND_URI = import.meta.env.VITE_BACKEND_URI || "http://127.0.0.1:5000";
 
   // State variables
-  const [alias, setAlias] = React.useState<string>("")
+  const [alias, setAlias] = React.useState<string>("");
   const [selectedFiles, setSelectedFiles] = React.useState<File[]>([]);
   const [fileId, setFileId] = React.useState("");
   const [ontologyList, setOntologyList] = React.useState<string[]>([]);
@@ -37,7 +43,7 @@ export default function Dashboard({theme}: DashboardProps) {
     no_annotation: number;
   }>({ no_class: 0, no_individual: 0, no_axiom: 0, no_annotation: 0 });
   const [displayAlgo, setDisplayAlgo] = React.useState<string>("<Embedding Algorithm>");
-  const [displayClassifier, setDisplayClassifier] = React.useState<string>("<classifier>")
+  const [displayClassifier, setDisplayClassifier] = React.useState<string>("<classifier>");
   const [displayEvalMetric, setDisplayEvalMetric] = React.useState<{
     mrr: number,
     hit_at_1: number,
@@ -110,29 +116,37 @@ export default function Dashboard({theme}: DashboardProps) {
     formData.append('ontology_name', fileId);
     formData.append('alias', alias);
 
+    setNotiList((prevNotiList) => [...prevNotiList, { message: "upload: " + fileId, type: "info"}]);
+
     axios.post(`${BACKEND_URI}/api/upload`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' }
     })
       .then((response) => {
         console.log("Upload successful:", response.data);
+        setNotiList((prevNotiList) => [...prevNotiList, { message: response.data.message, type: "success"}]);
         extractOntology(response.data.ontology_name);
       })
       .catch((error) => {
         console.error("Upload failed:", error);
+        setNotiList((prevNotiList) => [...prevNotiList, {message: error.response.data.message, type: "error"}]);
       });
   };
 
   // Extract ontology data
   const extractOntology = (ontology_name: string) => {
+    setNotiList((prevNotiList) => [...prevNotiList, { message: "extract: " + ontology_name, type: "info"}]);
+
     axios.get(`${BACKEND_URI}/api/extract/${ontology_name}`)
       .then((response) => {
         console.log("Extract successful:", response.data);
+        setNotiList((prevNotiList) => [...prevNotiList, { message: response.data.message, type: "success"}]);
         getOntologyList();
         setDisplayOntoName(ontology_name);
         setDisplayOntoData(response.data.onto_data);
       })
       .catch((error) => {
         console.error("Extract failed:", error);
+        setNotiList((prevNotiList) => [...prevNotiList, {message: error.response.data.message, type: "error"}]);
       });
   };
 
@@ -163,21 +177,28 @@ export default function Dashboard({theme}: DashboardProps) {
 
   // Train the embedder
   const trainEmbedder = (ontology_name: string, algorithm: string, classifier: string) => {
+    setNotiList((prevNotiList) => [...prevNotiList, { message: "train embedder: " + ontology_name + " with " + algorithm, type: "info"}]);
+
     axios.get(`${BACKEND_URI}/api/embed/${ontology_name}?algo=${algorithm}`)
       .then((response) => {
         console.log("Embed successful:", response.data);
-        evaluateEmbedder(ontology_name, algorithm, classifier)
+        setNotiList((prevNotiList) => [...prevNotiList, { message: response.data.message, type: "success"}]);
+        evaluateEmbedder(ontology_name, algorithm, classifier);
       })
       .catch((error) => {
         console.error("Embed failed:", error);
+        setNotiList((prevNotiList) => [...prevNotiList, {message: error.response.data.message, type: "error"}]);
       });
   };
 
   // Evaluate the embedder
   const evaluateEmbedder = (ontology_name: string, algorithm: string, classifier: string) => {
+    setNotiList((prevNotiList) => [...prevNotiList, { message: "evaluate embedder: " + ontology_name + " with " + algorithm + " on " + classifier, type: "info"}]);
+
     axios.get(`${BACKEND_URI}/api/evaluate/${ontology_name}/${algorithm}/${classifier}`)
       .then((response) => {
         console.log("Evaluate successful:", response.data);
+        setNotiList((prevNotiList) => [...prevNotiList, { message: response.data.message, type: "success"}]);
         getOntologyStat(ontology_name);
         setDisplayAlgo(algorithm);
         setDisplayClassifier(classifier);
@@ -187,16 +208,20 @@ export default function Dashboard({theme}: DashboardProps) {
       })
       .catch((error) => {
         console.error("Evaluate failed:", error);
+        setNotiList((prevNotiList) => [...prevNotiList, {message: error.response.data.message, type: "error"}]);
       });
   };
 
   // Fetch evaluation statistics
   const getEvaluate = (ontology_name: string, algorithm: string, classifier: string) => {
-    if (ontology_name === "" || algorithm === "" || classifier === "") return;
-
+    
+    if (ontology_name === "") return;
+    
     getOntologyStat(ontology_name);
     setDisplayAlgo(algorithm);
-    setDisplayClassifier(classifier)
+    setDisplayClassifier(classifier);
+
+    if (algorithm === "" || classifier === "") return;
 
     axios.get(`${BACKEND_URI}/api/evaluate/${ontology_name}/${algorithm}/${classifier}/stat`)
       .then((response) => {
