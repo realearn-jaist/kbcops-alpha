@@ -17,10 +17,14 @@ def isModelExist(ontology_name, algorithm):
     Returns:
         bool: True if the model exists, False otherwise
     """
-    path = os.path.join(get_path_ontology_directory(ontology_name), algorithm, "model")
+    path = os.path.join(get_path_model_directory(ontology_name, algorithm), "model")
 
     return os.path.exists(path)
 
+def get_path_model_directory(ontology_name, algorithm):
+    path = os.path.join(get_path_ontology_directory(ontology_name), algorithm)
+    
+    return path
 
 def save_model(ontology_name, algorithm, model):
     """Save the model to the directory

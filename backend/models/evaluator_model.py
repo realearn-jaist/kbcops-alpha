@@ -4,6 +4,7 @@ import os
 
 import pandas as pd
 
+from models.embed_model import get_path_model_directory
 from models.ontology_model import get_path_ontology_directory
 
 
@@ -24,6 +25,10 @@ def write_evaluate(ontology_name, algorithm, classifier, data):
     with open(file_path, "w") as json_file:
         json.dump(data, json_file, indent=4)
 
+def get_path_classifier_directory(ontology_name, algorithm, classifier):
+    path = os.path.join(get_path_model_directory(ontology_name, algorithm), classifier)
+    
+    return path
 
 def read_evaluate(ontology_name, algorithm, classifier):
     """Reads the evaluation data from a json file
