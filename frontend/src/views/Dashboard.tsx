@@ -134,6 +134,20 @@ export default function Dashboard({theme}: DashboardProps) {
       });
   };
 
+  // handle upload failed
+  const handleUploadFailed = (ontology_name: string) => {
+    axios.get(`${BACKEND_URI}/api/extract/${ontology_name}`)
+      .then((response) => {
+        console.log("Extract successful:", response.data);
+        getOntologyList();
+        setDisplayOntoName(ontology_name);
+        setDisplayOntoData(response.data.onto_data);
+      })
+      .catch((error) => {
+        console.error("Extract failed:", error);
+      });
+  };
+
   // Fetch ontology statistics
   const getOntologyStat = (ontology_name: string) => {
     axios.get(`${BACKEND_URI}/api/ontology/${ontology_name}`)

@@ -83,3 +83,10 @@ def zip_files(directory):
     zip_buffer.seek(0)
 
     return zip_buffer.read().hex()
+
+def remove_dir(directory):
+    if os.path.exists(directory):
+        shutil.rmtree(directory)
+        return directory
+    else:
+        return None

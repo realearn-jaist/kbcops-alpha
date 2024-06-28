@@ -1,8 +1,11 @@
 import time
+from flask import Blueprint, request, jsonify
+from flask_jwt_extended import jwt_required
+from flask import current_app, jsonify, request, Blueprint  # type: ignore
+
 from models.evaluator_model import read_evaluate, read_garbage_metrics
 from controllers.evaluator_controller import predict_func
 from controllers.embed_controller import embed_func
-from flask import current_app, jsonify, make_response, request, Blueprint, send_file  # type: ignore
 from controllers.ontology_controller import (
     get_onto_stat,
     get_all_ontology,
@@ -11,7 +14,7 @@ from controllers.ontology_controller import (
 )
 from models.graph_model import load_graph
 from models.ontology_model import get_path_ontology_directory
-from utils.directory_utils import explore_directory, zip_files
+from utils.directory_utils import explore_directory, remove_dir, zip_files
 from utils.json_handler import convert_float32_to_float
 
 
@@ -162,3 +165,18 @@ def load_files(ontology_name):
     }
 
     return jsonify(response), 200
+
+@ontology_blueprint.route("/explore/<ontology_name>", methods=["DELETE"])
+@jwt_required()
+def delete_file(ontology_name):
+    try:
+        # Assuming get_path_ontology_directory gets the full path to the ontology directory
+        path = get_path_ontology_directory(ontology_name)
+        
+        if remove_dir(path):
+            return jsonify({"message": "File deleted successfully"}), 200
+        else:
+            return jsonify({"message": "File not found"}), 404
+    except Exception as e:
+        return jsonify({"message": "File deletion failed", "error": str(e)}), 500
+    

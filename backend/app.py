@@ -1,7 +1,9 @@
 from utils.file_handler import replace_or_create_folder
 from flask import Flask, send_from_directory
 from flask_cors import CORS
+from flask_jwt_extended import JWTManager
 from routes.routes import ontology_blueprint
+from routes.auth_routes import auth_blueprint
 import os
 
 
@@ -9,11 +11,16 @@ def create_app():
     """function to create the Flask app and register the blueprints"""
     app = Flask(__name__, static_folder="../frontend/dist")
     CORS(app)
+    
+    # Configure JWT settings
+    app.config["JWT_SECRET_KEY"] = "your_secret_key"  # Change this to a secure key
+    jwt = JWTManager(app)
 
     STORAGE_FOLDER = "storage"
     app.config["STORAGE_FOLDER"] = STORAGE_FOLDER
 
     app.register_blueprint(ontology_blueprint, url_prefix="/api")
+    app.register_blueprint(auth_blueprint, url_prefix='/api/auth')
 
     @app.route("/")
     def serve():

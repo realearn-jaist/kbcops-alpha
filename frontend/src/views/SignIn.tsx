@@ -1,3 +1,4 @@
+// src/components/SignIn.tsx
 import * as React from 'react';
 import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
@@ -11,10 +12,9 @@ import Box from '@mui/material/Box';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
-import { createTheme, ThemeProvider } from '@mui/material/styles';
-import { Link as RouterLink } from 'react-router-dom';
-import { PaletteMode, Theme } from '@mui/material';
-import getCheckoutTheme from '../assets/getCheckoutTheme';
+import { createTheme, ThemeProvider, Theme } from '@mui/material/styles';
+import { Link as RouterLink, useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 function Copyright(props: any) {
   return (
@@ -29,20 +29,30 @@ function Copyright(props: any) {
   );
 }
 
-// TODO remove, this demo shouldn't need to reset the theme.
 interface SignInProps {
   theme: Theme;
+  setIsAuthenticated: (isAuthenticated: boolean) => void;
 }
 
-export default function SignIn({theme}: SignInProps) {
+export default function SignIn({ theme, setIsAuthenticated }: SignInProps) {
+  const navigate = useNavigate();
+  const BACKEND_URI = import.meta.env.VITE_BACKEND_URI || "http://127.0.0.1:5000";
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
-    console.log({
-      email: data.get('email'),
-      password: data.get('password'),
-    });
+    const email = data.get('email');
+    const password = data.get('password');
+
+    axios.post(`${BACKEND_URI}/api/auth/signin`, { email, password })
+      .then(response => {
+        localStorage.setItem('token', response.data.token);
+        setIsAuthenticated(true);
+        navigate('/');
+      })
+      .catch(error => {
+        console.error("Sign-in failed:", error);
+      });
   };
 
   return (

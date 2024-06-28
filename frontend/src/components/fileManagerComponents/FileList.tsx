@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Box, Button, Collapse, IconButton, Card, CardContent, Grid, Typography } from '@mui/material';
-import { ExpandLess, ExpandMore } from '@mui/icons-material';
-import axios from 'axios';
+import { ExpandLess, ExpandMore, Delete } from '@mui/icons-material';
 
 interface ProcessFile {
   created_at: string;
@@ -29,18 +28,14 @@ interface DataItem {
   process_files: ProcessFile[];
 }
 
-interface Filters {
-  ontology_name: string;
-  algorithm: string;
-  classifier: string;
-}
-
 interface FileListProps {
   data: DataItem[];
   handleDownload: (ontologyName: string) => void;
+  handleDelete: (ontologyName: string) => void;
+  isAuthenticated: boolean;
 }
 
-export default function FileList({ data, handleDownload }: FileListProps) {
+export default function FileList({ data, handleDownload, handleDelete, isAuthenticated }: FileListProps) {
   const [openRows, setOpenRows] = useState<{ [key: string]: boolean }>({});
 
   const handleRowClick = (ontologyName: string) => {
@@ -48,13 +43,13 @@ export default function FileList({ data, handleDownload }: FileListProps) {
   };
 
   return (
-
     <TableContainer component={Paper}>
       <Table>
         <TableHead>
           <TableRow>
             <TableCell>Ontology</TableCell>
             <TableCell>Download</TableCell>
+            {isAuthenticated && <TableCell>Delete</TableCell>}
           </TableRow>
         </TableHead>
         <TableBody>
@@ -70,7 +65,6 @@ export default function FileList({ data, handleDownload }: FileListProps) {
                       {openRows[item.name] ? <ExpandLess /> : <ExpandMore />}
                     </IconButton>
                   </Box>
-
                 </TableCell>
                 <TableCell style={{ whiteSpace: 'nowrap' }}>
                   <Button
@@ -84,9 +78,22 @@ export default function FileList({ data, handleDownload }: FileListProps) {
                     Download
                   </Button>
                 </TableCell>
+                {isAuthenticated && (
+                  <TableCell style={{ whiteSpace: 'nowrap' }}>
+                    <IconButton
+                      color="secondary"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDelete(item.name);
+                      }}
+                    >
+                      <Delete />
+                    </IconButton>
+                  </TableCell>
+                )}
               </TableRow>
               <TableRow>
-                <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={2}>
+                <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={isAuthenticated ? 3 : 2}>
                   <Collapse in={openRows[item.name]} timeout="auto" unmountOnExit>
                     <Box margin={1}>
                       {item.algorithm.length > 0 ? (
