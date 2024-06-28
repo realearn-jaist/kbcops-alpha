@@ -122,11 +122,15 @@ export default function FileManager({ theme, isAuthenticated, handleSignOut }: F
                 Sign In
               </Button>
             ) : (
-              <>
-                <Button variant="contained" color="primary" onClick={handleSignOut}>
+              <Box display={"flex"}>
+                <Button variant="contained" color="secondary" onClick={() => navigate('/edit')}>
+                  Edit Profile
+                </Button>
+                <Button variant="contained" color="primary" onClick={handleSignOut} sx={{marginLeft: "10px"}}>
                   Sign Out
                 </Button>
-              </>
+                
+              </Box>
             )}
           </Box>
         </SectionGrid>

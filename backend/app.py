@@ -3,7 +3,7 @@ from flask import Flask, send_from_directory
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager
 from routes.routes import ontology_blueprint
-from routes.auth_routes import auth_blueprint
+from routes.auth_routes import auth_blueprint, initialize_default_user
 import os
 
 
@@ -31,9 +31,11 @@ def create_app():
     def static_proxy(path):
         """function to serve the static files from the frontend folder"""
         return send_from_directory(app.static_folder, path)
+    
+    # Initialize default user
+    initialize_default_user(app.config["STORAGE_FOLDER"])
 
     return app
-
 
 if __name__ == "__main__":
     """main function to run the Flask app"""

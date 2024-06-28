@@ -8,6 +8,7 @@ import FileManager from './views/FileManager';
 import Dashboard from './views/Dashboard';
 import NavigatorBar from './components/NavigatorBar';
 import getCheckoutTheme from './assets/getCheckoutTheme';
+import EditProfile from './views/EditProfile';
 
 const NotFound = () => {
   return <h2>Page Not Found</h2>;
@@ -16,6 +17,7 @@ const NotFound = () => {
 const App = () => {
   const [mode, setMode] = React.useState<PaletteMode>('light');
   const [isAuthenticated, setIsAuthenticated] = React.useState(false);
+  const [notiList, setNotiList] = React.useState<string[]>([])
   const checkoutTheme = createTheme(getCheckoutTheme(mode));
 
   const toggleColorMode = () => {
@@ -40,19 +42,25 @@ const App = () => {
       <Routes>
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
         <Route path="/file" element={
-            <>
-              <NavigatorBar mode={mode} toggleColorMode={toggleColorMode} theme={checkoutTheme} />
-              <FileManager theme={checkoutTheme} isAuthenticated={isAuthenticated} handleSignOut={handleSignOut} />
-            </>
-          }
+          <>
+            <NavigatorBar mode={mode} toggleColorMode={toggleColorMode} theme={checkoutTheme} />
+            <FileManager theme={checkoutTheme} isAuthenticated={isAuthenticated} handleSignOut={handleSignOut} />
+          </>
+        }
         />
         <Route path="/login" element={<SignIn theme={checkoutTheme} setIsAuthenticated={setIsAuthenticated} />} />
+        <Route path="/edit" element={
+          isAuthenticated ? (
+            <EditProfile theme={checkoutTheme} />
+          ) : (
+            <Navigate to="/login" replace />
+          )} />
         <Route path="/dashboard" element={
-            <>
-              <NavigatorBar mode={mode} toggleColorMode={toggleColorMode} theme={checkoutTheme} />
-              <Dashboard theme={checkoutTheme} />
-            </>
-          }
+          <>
+            <NavigatorBar mode={mode} toggleColorMode={toggleColorMode} theme={checkoutTheme} />
+            <Dashboard theme={checkoutTheme} setNotiList={setNotiList}/>
+          </>
+        }
         />
         <Route path="*" element={<NotFound />} />
       </Routes>

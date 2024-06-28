@@ -3,8 +3,6 @@ import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import CssBaseline from '@mui/material/CssBaseline';
 import TextField from '@mui/material/TextField';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Checkbox from '@mui/material/Checkbox';
 import Link from '@mui/material/Link';
 import Grid from '@mui/material/Grid';
 import Box from '@mui/material/Box';
@@ -15,49 +13,58 @@ import { createTheme, ThemeProvider, Theme } from '@mui/material/styles';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
-function Copyright(props: any) {
-  return (
-    <Typography variant="body2" color="text.secondary" align="center" {...props}>
-      {'Copyright © '}
-      <Link color="inherit" href="#">
-        Your Website
-      </Link>{' '}
-      {new Date().getFullYear()}
-      {'.'}
-    </Typography>
-  );
-}
-
-interface SignInProps {
-  theme: Theme;
-  setIsAuthenticated: (isAuthenticated: boolean) => void;
-}
-
-export default function SignIn({ theme, setIsAuthenticated }: SignInProps) {
+export default function EditProfile({ theme }: { theme: Theme }) {
   const navigate = useNavigate();
   const BACKEND_URI = import.meta.env.VITE_BACKEND_URI || "http://127.0.0.1:5000";
   const [error, setError] = React.useState<string>('');
+  const [username, setUsername] = React.useState<string>(''); // State to hold username
+
+  React.useEffect(() => {
+    // Fetch the current username when component mounts
+    axios.get(`${BACKEND_URI}/api/auth/username`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}` // Include JWT token for authentication
+      }
+    })
+      .then(response => {
+        setUsername(response.data.username); // Set the username in state
+      })
+      .catch(error => {
+        console.error('Failed to fetch username:', error);
+        // Handle error if needed
+      });
+  }, []); // Empty dependency array ensures this effect runs only once on mount
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    const token = localStorage.getItem('token');
     const data = new FormData(event.currentTarget);
     const username = data.get('username');
     const password = data.get('password');
+    const newPassword = data.get('newPassword');
 
-    axios.post(`${BACKEND_URI}/api/auth/signin`, { username, password })
+    axios.post(`${BACKEND_URI}/api/auth/update`, { username, password, newPassword }, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
       .then(response => {
-        localStorage.setItem('token', response.data.token);
-        setIsAuthenticated(true);
-        navigate('/');
+        console.log("Change credentials successfully:", response.data);
+        // Handle success if needed
+        navigate('/'); // Navigate to home or appropriate page after changing credentials
       })
       .catch(error => {
-        console.error("Sign-in failed:", error);
+        console.error("Change credentials failed:", error);
         if (error.response && error.response.status === 401) {
           setError('Invalid credentials');
         } else {
-          setError('Failed to sign in. Please try again.');
+          setError('Failed to change credentials. Please try again.');
         }
       });
+  };
+
+  const handleUsernameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setUsername(event.target.value); // Update username state on input change
   };
 
   return (
@@ -76,7 +83,7 @@ export default function SignIn({ theme, setIsAuthenticated }: SignInProps) {
             <LockOutlinedIcon />
           </Avatar>
           <Typography component="h1" variant="h5">
-            Sign in
+            Change Username & Password
           </Typography>
           {error && (
             <Typography variant="body2" color="error" align="center" sx={{ mt: 1 }}>
@@ -89,19 +96,31 @@ export default function SignIn({ theme, setIsAuthenticated }: SignInProps) {
               required
               fullWidth
               id="username"
-              label="Username"
+              label="Current Username"
               name="username"
               autoFocus
+              value={username} // Bind username state to input value
+              onChange={handleUsernameChange} // Handle input change
             />
             <TextField
               margin="normal"
               required
               fullWidth
               name="password"
-              label="Password"
+              label="Current Password"
               type="password"
               id="password"
               autoComplete="current-password"
+            />
+            <TextField
+              margin="normal"
+              required
+              fullWidth
+              name="newPassword"
+              label="New Password"
+              type="password"
+              id="newPassword"
+              autoComplete="new-password"
             />
 
             <Button
@@ -110,11 +129,10 @@ export default function SignIn({ theme, setIsAuthenticated }: SignInProps) {
               variant="contained"
               sx={{ mt: 3, mb: 2 }}
             >
-              Sign In
+              Change Credentials
             </Button>
           </Box>
         </Box>
-        <Copyright sx={{ mt: 8, mb: 4 }} />
       </Container>
     </ThemeProvider>
   );
