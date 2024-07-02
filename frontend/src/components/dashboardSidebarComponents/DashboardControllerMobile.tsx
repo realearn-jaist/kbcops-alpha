@@ -11,6 +11,7 @@ import ExpandMoreRoundedIcon from '@mui/icons-material/ExpandMoreRounded';
 import DashboardController from './DashboardController';
 
 interface DrawerProps {
+  setAlias: (alias: string) => void;
   selectedFiles: File[];
   fileId: string;
   setFileId: (id: string) => void;
@@ -22,6 +23,7 @@ interface DrawerProps {
 }
 
 export default function DashboardControllerMobile({
+  setAlias,
   selectedFiles,
   fileId,
   setFileId,
@@ -46,6 +48,7 @@ export default function DashboardControllerMobile({
         <CloseIcon />
       </IconButton>
       <DashboardController
+        setAlias={setAlias}
         selectedFiles={selectedFiles}
         fileId={fileId}
         setFileId={setFileId}

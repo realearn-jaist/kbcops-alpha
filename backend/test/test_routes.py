@@ -4,7 +4,7 @@ from io import BytesIO
 from unittest.mock import patch
 
 sys.path.append("../backend")
-from app import create_app
+from main import create_app
 
 
 class TestRoutes(unittest.TestCase):

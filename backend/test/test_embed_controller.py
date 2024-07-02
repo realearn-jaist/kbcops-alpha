@@ -4,7 +4,7 @@ from configparser import ConfigParser
 from unittest.mock import MagicMock, patch
 
 sys.path.append("../backend")
-from app import create_app
+from main import create_app
 from controllers.embed_controller import opa2vec_or_onto2vec, owl2vec_star, rdf2vec
 
 

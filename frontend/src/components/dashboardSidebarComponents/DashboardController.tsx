@@ -1,7 +1,6 @@
 import * as React from 'react';
 
 import { Divider, SelectChangeEvent } from '@mui/material';
-import ClassifierSection from './ClassifierSection';
 import EmbeddingForm from './EmbeddingForm';
 import FileUploadSection from './FileUploadSection';
 

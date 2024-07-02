@@ -4,7 +4,7 @@ import unittest
 from unittest.mock import MagicMock, patch
 
 sys.path.append("../backend")
-from app import create_app
+from main import create_app
 from models.ontology_model import (
     get_path_ontology,
     get_path_ontology_directory,

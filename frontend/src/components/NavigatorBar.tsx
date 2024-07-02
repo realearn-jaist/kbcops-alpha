@@ -30,7 +30,7 @@ const NavigatorBar = ({ mode, toggleColorMode, theme, notiList }: NavigatorBarPr
 
   const currentPath = location.pathname;
 
-  const handleTabChange = (event: React.SyntheticEvent, newValue: string) => {
+  const handleTabChange = (_event: React.SyntheticEvent, newValue: string) => {
     navigate(newValue);
   };
 

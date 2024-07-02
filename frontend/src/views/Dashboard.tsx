@@ -327,6 +327,7 @@ export default function Dashboard({theme, setNotiList}: DashboardProps) {
                 </Typography>
               </div>
               <DashboardControllerMobile
+                setAlias={setAlias}
                 selectedFiles={selectedFiles}
                 fileId={fileId}
                 setFileId={setFileId}

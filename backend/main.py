@@ -39,7 +39,8 @@ def create_app():
 
     return app
 
+app = create_app()
+
 if __name__ == "__main__":
     """main function to run the Flask app"""
-    app = create_app()
     app.run(debug=True)
