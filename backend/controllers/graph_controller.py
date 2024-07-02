@@ -167,7 +167,7 @@ def graph_maker(
                 x, y, label, horizontalalignment="center", verticalalignment="center"
             )
 
-        plt.savefig(f"{fig_directory}\graph_{i}.png", format="PNG")
+        plt.savefig(f"{fig_directory}/graph_{i}.png", format="PNG")
 
 
 def create_graph(ontology_name, algorithm, classifier):
