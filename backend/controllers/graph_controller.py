@@ -199,7 +199,10 @@ def create_graph(ontology_name, algorithm, classifier):
     onto = get_ontology(onto_file_path).load()
 
     # get prefix and its splitter
-    tmp_class_ind = individuals[0]
+    if onto_type == "ABox":
+        tmp_class_ind = individuals[0]
+    else:
+        tmp_class_ind = classes[0]
 
     entity_prefix = get_prefix(tmp_class_ind)
 
