@@ -94,7 +94,7 @@ class TestGraphModule(unittest.TestCase):
             "controllers.graph_controller.get_ontology", return_value=mock_ontology
         ):
             gm.graph_maker(
-                "TBox",
+                "tbox",
                 mock_ontology,
                 entity_prefix,
                 class_individual_list,
@@ -189,7 +189,7 @@ class TestGraphModule(unittest.TestCase):
         mock_read_garbage_metrics_pd.assert_called_once_with(id, algo)
         mock_extract_garbage_value.assert_called_once_with("mock_garbage_metrics_data")
         mock_graph_maker.assert_called_once_with(
-            "ABox",
+            "abox",
             "mock_ontology_data",  # Ensure the ontology data matches
             "http://example.com#",
             ["Ind1", "Ind2"],

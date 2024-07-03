@@ -5,7 +5,7 @@ import math
 
 from tqdm import tqdm
 
-from models.extract_model import load_multi_input_files
+from models.extract_model import coverage_class, load_multi_input_files
 from controllers.graph_controller import create_graph
 from models.evaluator_model import write_garbage_metrics, write_evaluate
 from models.ontology_model import get_path_ontology_directory
@@ -224,13 +224,11 @@ def predict_func(ontology_name: str, algorithm: str, classifier: str, ):
     files_list = ["classes", "individuals"]
     files = load_multi_input_files(ontology_name, files_list)
 
-    # load individuals
-    individuals_count = len(files['individuals'])
-
     # load classes file
     print(f"load {ontology_name} classes")
     
-    onto_type = "abox" if individuals_count > int(0.1 * len(files['classes'])) else "tbox"
+    coverage_class_percentage = coverage_class(ontology_name)
+    onto_type = "abox" if coverage_class_percentage > 10 else "tbox"
 
     # embed class with model
     print(f"embedding {ontology_name} classes")
@@ -253,7 +251,7 @@ def predict_func(ontology_name: str, algorithm: str, classifier: str, ):
     # split value in file
     train_x_list, train_y_list = list(), list()
     for s in train_samples:
-        # when it come to ABox sub will consider as a individual and sup consider as a class
+        # when it come to abox sub will consider as a individual and sup consider as a class
         sub, sup, label = s[0], s[1], s[2]
         sub_v = None
         if onto_type == "tbox":

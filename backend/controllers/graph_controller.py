@@ -6,7 +6,7 @@ from models.graph_model import load_graph
 from utils.file_handler import replace_or_create_folder
 from models.evaluator_model import read_garbage_metrics_pd
 from models.ontology_model import get_path_ontology, get_path_ontology_directory
-from models.extract_model import load_classes, load_individuals
+from models.extract_model import coverage_class, load_classes, load_individuals
 from owlready2 import *
 
 ## Refactor code from https://github.com/realearn-jaist/kbc-ops/blob/main/app.py  ###########
@@ -93,7 +93,7 @@ def graph_maker(
     """Create a graph for each individual in the individual list
 
     Args:
-        onto_type (str): The type of ontology "ABox" or "TBox"
+        onto_type (str): The type of ontology "abox" or "tbox"
         onto_file (owlready2.namespace.Ontology): The ontology file
         entity_prefix (str): The prefix of the entity
         individual_list (list): The list of individuals
@@ -111,7 +111,7 @@ def graph_maker(
 
         relations = list()
 
-        if onto_type == "TBox":
+        if onto_type == "tbox":
             relations = find_parents_with_relations(entity, entity_split)
         else:
             subs = sorted(list(subs), key=lambda sub: len(list(sub.INDIRECT_is_a)))
@@ -179,29 +179,27 @@ def create_graph(ontology_name, algorithm, classifier):
     Returns:
         list: The list of graph fig
     """
-    # load individuals for checking whether it Tbox or not, and finding its prefix.
+    # load individuals for checking whether it tbox or not, and finding its prefix.
     fig_directory = os.path.join(
         get_path_ontology_directory(ontology_name), algorithm, classifier, "graph_fig"
     )  # where graph fig is save
     replace_or_create_folder(fig_directory)
 
-    individuals = load_individuals(ontology_name)
-    individuals_count = len(individuals)
-
-    classes = load_classes(ontology_name)
-
     # check onto type
-    # consider as a ABox iff individuals_count is excess 10 percent of classes amount
-    onto_type = "ABox" if individuals_count > int(0.1 * len(classes)) else "TBox"
+    # consider as a abox if coverage class percentage is excess 10
+    coverage_class_percentage = coverage_class(ontology_name)
+    onto_type = "abox" if coverage_class_percentage > 10 else "tbox"
 
     # load ontology
     onto_file_path = get_path_ontology(ontology_name)
     onto = get_ontology(onto_file_path).load()
 
     # get prefix and its splitter
-    if onto_type == "ABox":
+    if onto_type == "abox":
+        individuals = load_individuals(ontology_name)
         tmp_class_ind = individuals[0]
     else:
+        classes = load_classes(ontology_name)
         tmp_class_ind = classes[0]
 
     entity_prefix = get_prefix(tmp_class_ind)

@@ -71,7 +71,7 @@ class TestInclusionEvaluator(unittest.TestCase):
         }
         self.ontology = "example_ontology"
         self.algorithm = "example_algorithm"
-        self.onto_type = "ABox"
+        self.onto_type = "abox"
 
     @patch("controllers.evaluator_controller.write_evaluate", return_value=None)
     @patch("controllers.evaluator_controller.write_garbage_metrics", return_value=[])

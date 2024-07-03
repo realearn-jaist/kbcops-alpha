@@ -159,7 +159,7 @@ def extract_data(ontology_name: str):
     individuals_count = len(files['individuals'])
 
     # check onto type
-    # consider as a ABox iff individuals_count is excess 10 percent of classes amount
+    # consider as a abox iff individuals_count is excess 10 percent of classes amount
     onto_type = "abox" if individuals_count > int(0.1 * len(files['classes'])) else "tbox"
     if onto_type == "abox":
         train_test_val_gen_abox(onto, ontology_name)
@@ -201,12 +201,12 @@ def get_all_superclasses(cls, cache: dict):
 
 
 def abox_infer(onto: Ontology):
-    """Infer the classes of the individuals in the ABox
+    """Infer the classes of the individuals in the abox
 
     Args:
         onto (Ontology): The ontology to infer the classes from
     Returns:
-        list: The list of inferred classes of the individuals in the ABox
+        list: The list of inferred classes of the individuals in the abox
     """
     superclass_cache = defaultdict(list)
     results = []
@@ -226,12 +226,12 @@ def abox_infer(onto: Ontology):
 
 
 def tbox_infer(onto: Ontology):
-    """Infer the classes of the classes in the TBox
+    """Infer the classes of the classes in the tbox
 
     Args:
         onto (Ontology): The ontology to infer the classes from
     Returns:
-        list: The list of inferred classes of the classes in the TBox
+        list: The list of inferred classes of the classes in the tbox
     """
     superclass_cache = defaultdict(list)
     results = []
@@ -349,7 +349,7 @@ def read_infer_classes(file):
 
 
 def generate_negative_samples_abox(onto : Ontology, num_samples : int, infer_classes_path, label : int):
-    """Generates negative samples for the ABox and returns them as a list.
+    """Generates negative samples for the abox and returns them as a list.
 
     Args:
         onto (Ontology): The ontology to generate the negative samples from
@@ -405,7 +405,7 @@ def generate_negative_samples_abox(onto : Ontology, num_samples : int, infer_cla
 
 
 def generate_negative_samples_tbox(onto : Ontology, num_samples : int, infer_classes_list : list, label : int):
-    """Generates negative samples for the TBox and returns them as a list.
+    """Generates negative samples for the tbox and returns them as a list.
 
     Args:
         onto (Ontology): The ontology to generate the negative samples from
@@ -457,7 +457,7 @@ def generate_negative_samples_tbox(onto : Ontology, num_samples : int, infer_cla
 
 
 def train_test_val_gen_abox(onto : Ontology, ontology_name : str):
-    """Main function for generating training, test, and validation sets for the ABox.
+    """Main function for generating training, test, and validation sets for the abox.
 
     Args:
         onto (Ontology): The ontology to generate the training, test, and validation sets from
@@ -499,7 +499,7 @@ def train_test_val_gen_abox(onto : Ontology, ontology_name : str):
 
 
 def train_test_val_gen_tbox(onto, ontology_name):
-    """Main function for generating training, test, and validation sets for the TBox.
+    """Main function for generating training, test, and validation sets for the tbox.
 
     Args:
         onto (Ontology): The ontology to generate the training, test, and validation sets from

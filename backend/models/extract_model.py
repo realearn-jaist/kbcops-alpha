@@ -1,6 +1,7 @@
 import os
+import owlready2
 
-from models.ontology_model import get_path_ontology_directory  # type: ignore
+from models.ontology_model import get_path_ontology, get_path_ontology_directory  # type: ignore
 
 
 def save_axioms(ontology_name, axioms):
@@ -210,3 +211,25 @@ def load_infer(ontology_name):
 
     with open(path, "r", encoding="utf-8") as f:
         return f.readlines()
+    
+def coverage_class(ontology_name):
+    
+    path = get_path_ontology(ontology_name)
+    onto = owlready2.get_ontology(path).load()
+    coverage_class = set()
+
+    # Iterate through all individuals and add their classes to the set
+    for individual in onto.individuals():
+        for cls in individual.is_a:
+            if isinstance(cls, owlready2.ThingClass):
+                coverage_class.add(cls)
+
+    # Count the unique classes
+    unique_class_count = len(coverage_class)
+    total_classes = len(list(onto.classes()))
+
+    if unique_class_count > 0:
+        coverage_percentage = (unique_class_count / total_classes) * 100
+    else:
+        coverage_percentage = 0
+    return coverage_percentage
