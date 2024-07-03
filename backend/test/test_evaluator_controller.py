@@ -69,6 +69,7 @@ class TestInclusionEvaluator(unittest.TestCase):
             "individual3": ["class3", "class4"],
             "individual4": ["class4"],
         }
+        self.classifier = "example_classifier"
         self.ontology = "example_ontology"
         self.algorithm = "example_algorithm"
         self.onto_type = "abox"
@@ -97,6 +98,7 @@ class TestInclusionEvaluator(unittest.TestCase):
             self.ontology,
             self.algorithm,
             self.onto_type,
+            self.classifier,
         )
 
         class SimpleMockModel:

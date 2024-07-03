@@ -134,7 +134,10 @@ def embed_route(ontology):
 
         print(result, f"{algorithm}")
         logger.info("Embed successful for {}".format([ontology, algorithm]))
-        return jsonify({"message": result, "onto_id": ontology, "algo": algorithm}), 200
+        return (
+            jsonify({"message": result, "ontology_name": ontology, "algo": algorithm}),
+            200,
+        )
     except:
         logger.error("Embed failed for {}".format([ontology, algorithm]))
         remove_dir(get_path_model_directory(ontology, algorithm))

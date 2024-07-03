@@ -28,10 +28,10 @@ class TestFileOperations(unittest.TestCase):
         mock_get_path.return_value = "\\fake\\path"
         data = {"key": "value"}
 
-        write_evaluate("ontology", "algorithm", data)
+        write_evaluate("ontology", "algorithm", "classifier", data)
 
         mock_open.assert_called_once_with(
-            "\\fake\\path\\algorithm\\performance.json", "w"
+            "\\fake\\path\\algorithm\\classifier\\performance.json", "w"
         )
         calls = [
             call("{"),
@@ -57,10 +57,10 @@ class TestFileOperations(unittest.TestCase):
         """
         mock_get_path.return_value = "\\fake\\path"
 
-        result = read_evaluate("ontology", "algorithm")
+        result = read_evaluate("ontology", "algorithm", "classifier")
 
         mock_open.assert_called_once_with(
-            "\\fake\\path\\algorithm\\performance.json", "r"
+            "\\fake\\path\\algorithm\\classifier\\performance.json", "r"
         )
         self.assertEqual(result, {"key": "value"})
 
@@ -94,10 +94,10 @@ class TestFileOperations(unittest.TestCase):
         mock_writer_instance = MagicMock()
         mock_csv_dictwriter.return_value = mock_writer_instance
 
-        write_garbage_metrics("ontology", "algorithm", data)
+        write_garbage_metrics("ontology", "algorithm", "classifier", data)
 
         mock_open.assert_called_once_with(
-            "\\fake\\path\\algorithm\\garbage.csv", "w", newline=""
+            "\\fake\\path\\algorithm\\classifier\\garbage.csv", "w", newline=""
         )
         mock_writer_instance.writeheader.assert_called_once()
         mock_writer_instance.writerows.assert_called_once_with(data)
@@ -119,10 +119,10 @@ class TestFileOperations(unittest.TestCase):
         """
         mock_get_path.return_value = "\\fake\\path"
 
-        result = read_garbage_metrics("ontology", "algorithm")
+        result = read_garbage_metrics("ontology", "algorithm", "classifier")
 
         mock_open.assert_called_once_with(
-            "\\fake\\path\\algorithm\\garbage.csv", mode="r", newline=""
+            "\\fake\\path\\algorithm\\classifier\\garbage.csv", mode="r", newline=""
         )
         self.assertEqual(
             result,

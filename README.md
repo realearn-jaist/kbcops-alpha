@@ -135,6 +135,38 @@ wrapt==1.16.0
 zipp==3.19.2
 ```
 
+## Hyperparameter for Classifier Model
+
+### Random Forest
+
+- `n_estimators`: 200
+
+### Multi-Layer Perceptron (MLP)
+
+- `max_iter`: 1000
+- `hidden_layer_sizes`: 200
+
+### Logistic Regression
+
+- `random_state`: 0
+
+### Support Vector Machine (SVM)
+
+- `probability`: True
+
+### Linear SVC
+
+- `lin_clf` : svm.LinearSVC()
+
+### Decision Tree
+
+- `random_state`: 0
+
+### Stochastic Gradient Descent (SGD) with Logistic Loss
+
+- `loss`: 'log'
+- `StandardScaler`: Default parameters
+
 ## How to Run
 
 1. Clone the repository:
