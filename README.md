@@ -208,6 +208,282 @@ zipp==3.19.2
    make clean html
    ```
 
+## How to Deploy on Server
+
+This guide will walk you through deploying our project on an EC2 instance.
+
+### Prerequisites
+
+- An AWS account with access to EC2.
+- Basic knowledge of Linux command line.
+
+### Steps
+
+1. **Create an EC2 Instance**
+
+   - Launch an EC2 instance.
+   - Choose `c5.xlarge` as the instance type.
+   - Select a Linux operating system (e.g., Amazon Linux 2).
+   - Connect to instance
+
+2. **Clone the Repository**
+
+   ```bash
+   git clone https://github.com/realearn-jaist/kbcops-alpha.git
+   cd kbcops-alpha
+   ```
+
+3. **Set Up a Virtual Environment**
+
+   - Install `venv` (if not already installed).
+
+   ```bash
+   sudo yum update
+   sudo yum install python3-venv
+   ```
+
+   - Install python version 3.8.10 (you can use any method to perform this)
+
+   **(This is example code for download it from source)**
+
+   ```bash
+   sudo yum update -y
+   sudo yum groupinstall -y "Development Tools"
+   sudo yum install -y openssl-devel bzip2-devel libffi-devel zlib-devel wget
+   wget https://www.python.org/ftp/python/3.8.10/Python-3.8.10.tgz
+   tar -xf Python-3.8.10.tgz
+   cd Python-3.8.10
+   ./configure --enable-optimizations
+   make -j $(nproc)
+   sudo make altinstall
+
+   python3.8 --version
+   ```
+
+   - Create a virtual environment and activate it.
+
+   ```bash
+   python3.8 -m venv venv
+   source venv/bin/activate
+   ```
+
+4. **Install Required Libraries**
+
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+5. **Install npm**
+
+   - Install `node.js` and `npm` (if not already installed).
+
+   ```bash
+   curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
+
+   nvm install 22
+
+   node -v # should print `v22.3.0`
+
+   npm -v # should print `10.8.1`
+   ```
+
+   Reference : https://nodejs.org/en/download/package-manager
+
+6. **Build the Frontend**
+
+   ```bash
+   cd frontend
+   npm install
+   npm run build
+   cd ..
+   ```
+
+7. **Configure Nginx**
+
+   - Install `nginx` (if not already installed).
+
+   Certainly! Here's the revised set of steps in markdown language, including the configuration for Nginx to serve a React frontend and a Flask backend.
+
+### Step 7: Configure Nginx
+
+- Install `nginx` (if not already installed).
+
+  ```bash
+  sudo yum install nginx
+  ```
+
+- Configure the Nginx files for React and Flask.
+
+  Edit the main Nginx configuration file:
+
+  ```bash
+  sudo nano /etc/nginx/nginx.conf
+  ```
+
+  Update the server section:
+
+  ```nginx
+  server {
+      listen       80;
+      listen       [::]:80;
+      server_name  #your_ec2_ip_or_DNS;
+      root         /home/ec2-user/kbcops-alpha/frontend/dist; # build folder from frontend
+      index        index.html;
+
+      # Load configuration files for the default server block.
+      include /etc/nginx/default.d/*.conf;
+
+      error_page 404 /404.html;
+      location = /404.html {
+      }
+
+      error_page 500 502 503 504 /50x.html;
+      location = /50x.html {
+      }
+  }
+  ```
+
+  Create and edit the Flask application Nginx configuration:
+
+  ```bash
+  sudo nano /etc/nginx/conf.d/flask_app.conf
+  ```
+
+  Add the following configuration:
+
+  ```nginx
+  server {
+      listen 80;
+      server_name #your_ec2_ip_or_DNS;
+
+      location / {
+         proxy_pass http://127.0.0.1:5000;  # Assuming Flask runs on port 5000
+         proxy_set_header Host $host;
+         proxy_set_header X-Real-IP $remote_addr;
+         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+         proxy_set_header X-Forwarded-Proto $scheme;
+      }
+
+      location /static {
+         alias /home/ec2-user/kbcops-alpha/frontend/dist;  # Adjust to your React app's static folder
+         expires 1d;  # Cache static files for 1 day
+      }
+  }
+  ```
+
+  Save the configuration files and exit the editor.
+
+8. **Start Nginx and Run the Application**
+
+   ```bash
+   sudo systemctl start nginx
+   cd backend
+   python3 app.py
+   ```
+
+   **Note** : After modifying the Nginx configuration files, it's important to check the syntax and then reload the Nginx service to apply the changes.
+
+- Check the Nginx configuration for syntax errors:
+
+  ```bash
+  sudo nginx -t
+  ```
+
+  If the configuration is correct, you should see a message like this:
+
+  ```
+  nginx: the configuration file /etc/nginx/nginx.conf syntax is ok
+  nginx: configuration file /etc/nginx/nginx.conf test is successful
+  ```
+
+- Reload the Nginx service to apply the changes:
+
+  ```bash
+  sudo systemctl reload nginx
+  ```
+
+9. **(Optional): Automate Startup for make ec2 run automatically at start**
+
+Reference : https://aws.plainenglish.io/configuring-a-python-environment-to-automatically-run-on-ec2-instance-startup-956fb18c575a
+
+- Create a `startup.sh` script to automate the startup process (in /home/ec2-user).
+
+```bash
+sudo nano startup.sh
+```
+
+- put this command
+
+```bash
+#!/bin/bash
+
+cd /home/ec2-user/kbcops-alpha/
+source venv/bin/activate
+cd backend/
+
+sudo systemctl start nginx # run nginx
+python3 app.py # run our flask
+
+# Check if the "Shutdown" tag is set to "True" to determine whether to shut down the instance
+Shutdown="$(aws ec2 describe-tags --region "ap-southeast-2" --filters "Name=resource-id,Values=your_instance_id" "Name=key,Values=Shutdown" --query 'Tags[*].Value' --output text)"
+if [ $Shutdown == "True" ]
+then
+   sudo shutdown now -h
+fi
+
+```
+
+- Make the script executable.
+
+```bash
+sudo chmod +x /home/ec2-user/startup.sh
+```
+
+- Open the /etc/rc.d/rc.local file to configure the system's startup script
+
+```bash
+sudo nano /etc/rc.d/rc.local
+```
+
+- Copy and paste the following content into the /etc/rc.d/rc.local file:
+
+```bash
+#!/bin/bash
+
+exec 1>/tmp/rc.local.log 2>&1
+set -x
+touch /var/lock/subsys/local
+sh /home/ec2-user/startup.sh
+
+exit 0
+```
+
+- Make the /etc/rc.local file executable:
+
+```bash
+sudo chmod +x /etc/rc.d/rc.local
+```
+
+- Create the log file /tmp/rc.local.log:
+
+```bash
+sudo touch /tmp/rc.local.log
+```
+
+- restart the instance to test:
+
+```bash
+sudo reboot
+```
+
+- Check the log generated by the startup script to ensure everything works as expected:
+
+```bash
+cat /tmp/rc.local.log
+```
+
+Follow these steps to successfully deploy the project on your server. If you encounter any issues, please refer to the documentation or seek assistance.
+
 ## Fixes Applied to Owl2vec\* Library
 
 1. **Update in `embed.py`**:
