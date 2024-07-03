@@ -31,6 +31,7 @@ export default function EditProfile({ theme }: { theme: Theme }) {
         console.error('Failed to fetch username:', error);
         // Handle error if needed
       });
+      
   }, []); // Empty dependency array ensures this effect runs only once on mount
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {

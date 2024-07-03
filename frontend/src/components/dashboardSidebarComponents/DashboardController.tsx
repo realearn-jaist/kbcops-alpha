@@ -13,6 +13,7 @@ interface DrawerProps {
   ontologyList: string[];
   handleFilesSelected: (files: File[]) => void;
   trainEmbedder: (onto_id: string, algo: string, classifier: string) => void;
+  getOntologyStat: (onto_id: string) => void;
   getEvaluate: (onto_id: string, algo: string, classifier: string) => void;
 }
 
@@ -25,6 +26,7 @@ export default function DashboardController({
   ontologyList,
   handleFilesSelected,
   trainEmbedder,
+  getOntologyStat,
   getEvaluate,
 }: DrawerProps) {
   // State variables for selected ontology, algorithm, classifier, completionType
@@ -36,7 +38,8 @@ export default function DashboardController({
   const handleOntologyChange = (event: SelectChangeEvent<string>) => {
     const newOntology = event.target.value as string;
     setSelectedOntology(newOntology);
-    getEvaluate(newOntology, selectedAlgorithm, selectedClassifier); // Evaluate with the new ontology
+    getOntologyStat(newOntology);
+    getEvaluate(newOntology, selectedAlgorithm, selectedClassifier); // Evaluate with the new algorithm
   };
 
   // Handler for changing the selected algorithm

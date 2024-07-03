@@ -19,6 +19,7 @@ interface DrawerProps {
   ontologyList: string[];
   handleFilesSelected: (files: File[]) => void;
   trainEmbedder: (onto_id: string, algo: string, classifier: string) => void;
+  getOntologyStat: (onto_id: string) => void;
   getEvaluate: (onto_id: string, algo: string, classifier: string) => void;
 }
 
@@ -31,6 +32,7 @@ export default function DashboardControllerMobile({
   ontologyList,
   handleFilesSelected,
   trainEmbedder,
+  getOntologyStat,
   getEvaluate,
 }: DrawerProps) {
   const [open, setOpen] = React.useState(false);
@@ -56,6 +58,7 @@ export default function DashboardControllerMobile({
         ontologyList={ontologyList}
         handleFilesSelected={handleFilesSelected}
         trainEmbedder={trainEmbedder}
+        getOntologyStat={getOntologyStat}
         getEvaluate={getEvaluate}
       />
     </Box >

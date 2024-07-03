@@ -127,7 +127,6 @@ def graph_maker(
         sync_reasoner(onto_file)
         for i, v in enumerate(class_individual_list):
             entity_uri = entity_prefix + v
-            print("entity_uri", entity_uri)
             entity = onto_file.search(iri=entity_uri)[0]
             subs = entity.INDIRECT_is_a
 
@@ -135,7 +134,6 @@ def graph_maker(
 
             if onto_type == "tbox":
                 relations = find_parents_with_relations(entity, entity_split)
-                print("relations", relations)
             else:
                 subs = sorted(list(subs), key=lambda sub: len(list(sub.INDIRECT_is_a)))
                 subs = [
@@ -155,7 +153,7 @@ def graph_maker(
                 G.add_edge(source, target, label=relation)
                 G.add_nodes_from([source, target])
 
-            # G.add_edge(class_individual_list[i], predict_list[i], label="predict")
+            G.add_edge(class_individual_list[i], predict_list[i], label="predict")
 
             node_colors = [
                 (
@@ -173,7 +171,7 @@ def graph_maker(
             ]
 
             # Draw the graph
-            plt.figure(figsize=(20, len(relations) * 8))
+            plt.figure(figsize=(15, len(relations) * 3))
             pos = nx.nx_pydot.graphviz_layout(G, prog="dot")
             nx.draw(
                 G,
@@ -236,11 +234,8 @@ def create_graph(ontology_name, algorithm, classifier):
             tmp_class_ind = classes[0]
 
         entity_prefix = get_prefix(tmp_class_ind)
-        print("entity_prefix", entity_prefix)
         entity = onto.search(iri=tmp_class_ind)[0]
-        print("entity", entity)
         entity_split = str(entity).rsplit(".")[0] + "."
-        print("entity_split", entity_split)
 
         # Read garbage metrics file
         garbage_file = read_garbage_metrics_pd(ontology_name, algorithm, classifier)

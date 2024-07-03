@@ -43,7 +43,7 @@ export default function Dashboard({theme, setNotiList}: DashboardProps) {
     no_annotation: number;
   }>({ no_class: 0, no_individual: 0, no_axiom: 0, no_annotation: 0 });
   const [displayAlgo, setDisplayAlgo] = React.useState<string>("<Embedding Algorithm>");
-  const [displayClassifier, setDisplayClassifier] = React.useState<string>("<classifier>");
+  const [displayClassifier, setDisplayClassifier] = React.useState<string>("<Classifier>");
   const [displayEvalMetric, setDisplayEvalMetric] = React.useState<{
     mrr: number,
     hit_at_1: number,
@@ -141,6 +141,9 @@ export default function Dashboard({theme, setNotiList}: DashboardProps) {
         console.log("Extract successful:", response.data);
         setNotiList((prevNotiList) => [...prevNotiList, { message: response.data.message, type: "success"}]);
         getOntologyList();
+        
+        clearDisplay();
+
         setDisplayOntoName(ontology_name);
         setDisplayOntoData(response.data.onto_data);
       })
@@ -149,6 +152,16 @@ export default function Dashboard({theme, setNotiList}: DashboardProps) {
         setNotiList((prevNotiList) => [...prevNotiList, {message: error.response.data.message, type: "error"}]);
       });
   };
+
+  const clearDisplay = () => {
+    setDisplayOntoName("<Ontology>");
+    setDisplayOntoData({ no_class: 0, no_individual: 0, no_axiom: 0, no_annotation: 0 });
+    setDisplayAlgo("<Embedding Algorithm>");
+    setDisplayClassifier("<Classifier>");
+    setDisplayEvalMetric({ mrr: 0, hit_at_1: 0, hit_at_5: 0, hit_at_10: 0, garbage: 0, total: 0, average_garbage_Rank: 0, average_Rank: 0 });
+    setDisplayGarbageMetric([]);
+    setDisplayGarbageImage([]);
+  }
 
   // Fetch ontology statistics
   const getOntologyStat = (ontology_name: string) => {
@@ -215,13 +228,10 @@ export default function Dashboard({theme, setNotiList}: DashboardProps) {
   // Fetch evaluation statistics
   const getEvaluate = (ontology_name: string, algorithm: string, classifier: string) => {
     
-    if (ontology_name === "") return;
+    if (algorithm === "" || classifier === "") return;
     
-    getOntologyStat(ontology_name);
     setDisplayAlgo(algorithm);
     setDisplayClassifier(classifier);
-
-    if (algorithm === "" || classifier === "") return;
 
     axios.get(`${BACKEND_URI}/api/evaluate/${ontology_name}/${algorithm}/${classifier}/stat`)
       .then((response) => {
@@ -279,6 +289,7 @@ export default function Dashboard({theme, setNotiList}: DashboardProps) {
               ontologyList={ontologyList}
               handleFilesSelected={handleFilesSelected}
               trainEmbedder={trainEmbedder}
+              getOntologyStat={getOntologyStat}
               getEvaluate={getEvaluate}
             />
           </Box>
@@ -335,6 +346,7 @@ export default function Dashboard({theme, setNotiList}: DashboardProps) {
                 ontologyList={ontologyList}
                 handleFilesSelected={handleFilesSelected}
                 trainEmbedder={trainEmbedder}
+                getOntologyStat={getOntologyStat}
                 getEvaluate={getEvaluate} />
             </CardContent>
           </Card>
