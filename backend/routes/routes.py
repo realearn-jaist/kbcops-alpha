@@ -1,14 +1,9 @@
 import time
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, current_app
 from flask_jwt_extended import jwt_required
-from flask import current_app, jsonify, request, Blueprint  # type: ignore
-
-from models.embed_model import get_path_model_directory
-from models.evaluator_model import (
-    get_path_classifier_directory,
-    read_evaluate,
-    read_garbage_metrics,
-)
+from utils.directory_utils import explore_directory, get_path, remove_dir, zip_files
+from utils.json_handler import convert_float32_to_float
+from utils.exceptions import handle_exception
 from controllers.evaluator_controller import predict_func
 from controllers.embed_controller import embed_func
 from controllers.ontology_controller import (
@@ -17,15 +12,10 @@ from controllers.ontology_controller import (
     upload_ontology,
     extract_data,
 )
+from models.evaluator_model import read_evaluate, read_garbage_metrics
 from models.graph_model import load_graph
-from models.ontology_model import (
-    get_path_ontology_directory,
-    remove_row_ownership_csv,
-    write_to_ownership_csv,
-)
+from models.ontology_model import remove_row_ownership_csv, write_to_ownership_csv
 from models.log_model import configure_logging
-from utils.directory_utils import explore_directory, remove_dir, zip_files
-from utils.json_handler import convert_float32_to_float
 
 # create a blueprint for the ontology routes
 ontology_blueprint = Blueprint("ontology", __name__)
@@ -35,95 +25,110 @@ logger = configure_logging()
 @ontology_blueprint.route("/upload", methods=["POST"])
 def upload():
     """Uploads an ontology file to the server and saves it in the storage folder"""
-    if "owl_file" not in request.files:
-        return jsonify({"message": "No file part"}), 400
+    try:
+        if "owl_file" not in request.files:
+            return jsonify({"message": "No file part"}), 400
 
-    file = request.files["owl_file"]
-    ontology_name = request.form.get("ontology_name")
-    alias = request.form.get("alias")
+        file = request.files["owl_file"]
+        ontology_name = request.form.get("ontology_name")
+        alias = request.form.get("alias")
 
-    if file.filename == "":
-        return jsonify({"message": "No selected file"}), 400
+        if file.filename == "":
+            return jsonify({"message": "No selected file"}), 400
 
-    if not ontology_name:
-        return jsonify({"message": "No ontology name provided"}), 400
+        if not ontology_name:
+            return jsonify({"message": "No ontology name provided"}), 400
 
-    ontology_name = upload_ontology(file, ontology_name)
-    if ontology_name:
-        write_to_ownership_csv(alias, ontology_name)
-        logger.info(
-            "File upload successful : {}".format(
-                [ontology_name, "with alias name :", alias]
+        ontology_name = upload_ontology(file, ontology_name)
+        if ontology_name:
+            write_to_ownership_csv(alias, ontology_name)
+            logger.info(
+                "File upload successful : {}".format(
+                    [ontology_name, "with alias name :", alias]
+                )
             )
-        )
-        return (
-            jsonify(
-                {
-                    "message": "File uploaded successfully",
-                    "ontology_name": ontology_name,
-                }
-            ),
-            200,
-        )
-    else:
-        logger.error(
-            "File upload failed : {}".format(
-                [ontology_name, "with alias name :", alias]
+            return (
+                jsonify({"message": "File uploaded successfully", "ontology_name": ontology_name}),
+                200,
             )
-        )
-        remove_dir(get_path_ontology_directory(ontology_name))
-        return jsonify({"message": "File upload failed"}), 500
+        else:
+            logger.error(
+                "File upload failed : {}".format(
+                    [ontology_name, "with alias name :", alias]
+                )
+            )
+            remove_dir(get_path(ontology_name))
+            return jsonify({"message": "File upload failed"}), 500
+
+    except Exception as e:
+        exception = handle_exception(e)
+        return jsonify({"message": exception["message"]}), exception["error_code"]
 
 
 @ontology_blueprint.route("/extract/<ontology>", methods=["GET"])
 def extract(ontology):
     """Extracts the data from the ontology file and returns it as a JSON object"""
-    start_time = time.time()
-    data = extract_data(ontology)
-    print(
-        "---------------> time usage for extract {}: {} <---------------".format(
-            ontology, time.time() - start_time
+    try:
+        start_time = time.time()
+        data = extract_data(ontology)
+        print(
+            "---------------> time usage for extract {}: {} <---------------".format(
+                ontology, time.time() - start_time
+            )
         )
-    )
-    if data:
-        logger.info("Extraction successful : {}".format([ontology]))
-        return jsonify({"message": "Extraction successfully", "onto_data": data}), 200
-    else:
-        logger.error("Extraction failed : {}".format([ontology]))
-        remove_row_ownership_csv(ontology)
-        remove_dir(get_path_ontology_directory(ontology))
-        return jsonify({"message": "Extraction failed"}), 500
+        if data:
+            logger.info("Extraction successful : {}".format([ontology]))
+            return jsonify({"message": "Extraction successfully", "onto_data": data}), 200
+        else:
+            logger.error("Extraction failed : {}".format([ontology]))
+            remove_row_ownership_csv(ontology)
+            remove_dir(get_path(ontology))
+            return jsonify({"message": "Extraction failed"}), 500
+
+    except Exception as e:
+        exception = handle_exception(e)
+        return jsonify({"message": exception["message"]}), exception["error_code"]
 
 
 @ontology_blueprint.route("/ontology", methods=["GET"])
 def list_ontologies():
     """Lists all the ontologies that have been uploaded to the server"""
-    ontologies = get_all_ontology()
-    logger.info("Ontologies listed successfully : {}".format(ontologies))
-    return (
-        jsonify({"message": "Ontologies listed successfully", "onto_list": ontologies}),
-        200,
-    )
+    try:
+        ontologies = get_all_ontology()
+        logger.info("Ontologies listed successfully : {}".format(ontologies))
+        return (
+            jsonify({"message": "Ontologies listed successfully", "onto_list": ontologies}),
+            200,
+        )
+
+    except Exception as e:
+        exception = handle_exception(e)
+        return jsonify({"message": exception["message"]}), exception["error_code"]
 
 
 @ontology_blueprint.route("/ontology/<ontology>", methods=["GET"])
 def get_ontology_stat(ontology):
     """Returns the statistics of the ontology file as a JSON object"""
-    data = get_onto_stat(ontology)
-    logger.info("Ontology Stats loaded successfully : {}".format([ontology]))
-    return (
-        jsonify({"message": "load Ontologies Stats successfully", "onto_data": data}),
-        200,
-    )
+    try:
+        data = get_onto_stat(ontology)
+        logger.info("Ontology Stats loaded successfully : {}".format([ontology]))
+        return (
+            jsonify({"message": "load Ontologies Stats successfully", "onto_data": data}),
+            200,
+        )
+
+    except Exception as e:
+        exception = handle_exception(e)
+        return jsonify({"message": exception["message"]}), exception["error_code"]
 
 
 @ontology_blueprint.route("/embed/<ontology>", methods=["GET"])
 def embed_route(ontology):
     """Generates the embeddings for the ontology file using the specified algorithm"""
-    algorithm = request.args.get("algo")
-    print(f"Ontology: {ontology}, Algorithm: {algorithm}")
     try:
-        # if not then call the embed_func to generate the model
+        algorithm = request.args.get("algo")
+        print(f"Ontology: {ontology}, Algorithm: {algorithm}")
+
         start_time = time.time()
         result = embed_func(ontology_name=ontology, algorithm=algorithm)
         print(
@@ -135,10 +140,12 @@ def embed_route(ontology):
         print(result, f"{algorithm}")
         logger.info("Embed successful for {}".format([ontology, algorithm]))
         return jsonify({"message": result, "onto_id": ontology, "algo": algorithm}), 200
-    except:
+
+    except Exception as e:
         logger.error("Embed failed for {}".format([ontology, algorithm]))
-        remove_dir(get_path_model_directory(ontology, algorithm))
-        return jsonify({"message": "embed failed"}), 500
+        remove_dir(get_path(ontology, algorithm))
+        exception = handle_exception(e)
+        return jsonify({"message": exception["message"]}), exception["error_code"]
 
 
 @ontology_blueprint.route(
@@ -161,10 +168,13 @@ def predict_route(ontology, algorithm, classifier):
             "Evaluate successful for {}".format([ontology, algorithm, classifier])
         )
         return jsonify(result), 200
-    except:
+
+    except Exception as e:
+        exception = handle_exception(e)
         logger.error("Evaluate failed for {}".format([ontology, algorithm, classifier]))
-        remove_dir(get_path_classifier_directory(ontology, algorithm, classifier))
-        return jsonify({"message": "evaluate failed"}), 500
+        remove_dir(get_path(ontology, algorithm, classifier))
+        return jsonify({"message": exception["message"]}), exception["error_code"]
+
 
 
 @ontology_blueprint.route(
@@ -172,9 +182,8 @@ def predict_route(ontology, algorithm, classifier):
 )
 def get_evaluate_stat(ontology, algorithm, classifier):
     """Returns the evaluation statistics of the ontology file for the specified algorithm"""
-    result = dict()
-
     try:
+        result = dict()
         result["message"] = "load evaluate successful!"
         result["performance"] = read_evaluate(ontology, algorithm, classifier)
         result["garbage"] = read_garbage_metrics(ontology, algorithm, classifier)
@@ -185,13 +194,14 @@ def get_evaluate_stat(ontology, algorithm, classifier):
             )
         )
         return jsonify(result), 200
-    except:
+
+    except Exception as e:
         logger.error(
             "Load Evaluate Stats failed for {}".format(
                 [ontology, algorithm, classifier]
             )
         )
-        result["message"] = "load evaluate not successful!"
+        result["message"] = exception["message"]
         result["performance"] = {
             "mrr": 0,
             "hit_at_1": 0,
@@ -204,13 +214,16 @@ def get_evaluate_stat(ontology, algorithm, classifier):
         }
         result["garbage"] = []
         result["images"] = []
-        return jsonify(result), 500
+        exception = handle_exception(e)
+        return jsonify(result), exception["error_code"]
+
 
 
 @ontology_blueprint.route("/explore", methods=["GET"])
 def explore_directory_endpoint():
-    directory_path = current_app.config["STORAGE_FOLDER"]
+    """Explores the directory and returns its structure as a JSON object"""
     try:
+        directory_path = current_app.config["STORAGE_FOLDER"]
         directory_structure = explore_directory(directory_path)
         logger.info(
             "Get files information successfully : {}".format(
@@ -227,32 +240,37 @@ def explore_directory_endpoint():
             200,
         )
     except Exception as e:
+        exception = handle_exception(e)
         logger.error("Get files information failed : {}".format(str(e)))
-        return jsonify({"message": "Get files information failed", "ontology": {}}), 500
+        return jsonify({"message": exception["message"]}), exception["error_code"]
 
 
-@ontology_blueprint.route("/explore/<ontology_name>", methods=["GET"])
+@ontology_blueprint.route('/explore/<ontology_name>', methods=['GET'])
 def load_files(ontology_name):
-    path = get_path_ontology_directory(ontology_name)
+    """Loads files related to a specific ontology and returns a zip file"""
+    try:
+        path = get_path(ontology_name)
+        zip_hex = zip_files(path)
+        
+        response = {
+            "message": "Zip file created successfully.",
+            "file": zip_hex  # Convert bytes to hex string for transmission
+        }
+        return jsonify(response), 200
+    
+    except Exception as e:
+        exception = handle_exception(e)
+        return jsonify({"message": exception["message"]}), exception["error_code"]
 
-    zip_hex = zip_files(path)
-
-    # Prepare response headers
-    response = {
-        "message": "Zip file created successfully.",
-        "file": zip_hex,  # Convert bytes to hex string for transmission
-    }
-    logger.info("Zip file created successfully : {}".format([ontology_name]))
-    return jsonify(response), 200
 
 
 @ontology_blueprint.route("/explore/<ontology_name>", methods=["DELETE"])
 @jwt_required()
 def delete_file(ontology_name):
+    """Deletes a file and its related data from the server"""
     try:
-        # Assuming get_path_ontology_directory gets the full path to the ontology directory
-        path = get_path_ontology_directory(ontology_name)
-
+        path = get_path(ontology_name)
+        
         if remove_dir(path):
             remove_row_ownership_csv(ontology_name)
             logger.info("File deleted successfully {}".format([ontology_name]))
@@ -260,6 +278,8 @@ def delete_file(ontology_name):
         else:
             logger.info("File not found {}".format([ontology_name]))
             return jsonify({"message": "File not found"}), 404
+    
     except Exception as e:
+        exception = handle_exception(e)
         logger.error("File deletion failed {}".format([ontology_name]))
-        return jsonify({"message": "File deletion failed", "error": str(e)}), 500
+        return jsonify({"message": exception["message"]}), exception["error_code"]
