@@ -124,7 +124,7 @@ def graph_maker(
         None
     """
     try:
-
+        sync_reasoner(onto_file)
         for i, v in enumerate(class_individual_list):
             entity_uri = entity_prefix + v
             print("entity_uri", entity_uri)
@@ -135,6 +135,7 @@ def graph_maker(
 
             if onto_type == "tbox":
                 relations = find_parents_with_relations(entity, entity_split)
+                print("relations", relations)
             else:
                 subs = sorted(list(subs), key=lambda sub: len(list(sub.INDIRECT_is_a)))
                 subs = [
