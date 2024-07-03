@@ -44,9 +44,9 @@ def opa2vec_or_onto2vec(ontology_name, config_file, algorithm):
 
         # check opa2vec or onto2vec
         if algorithm == "opa2vec":
-            lines = files['axioms'] + files['annotations'] + files['uri_labels']
+            lines = files["axioms"] + files["annotations"] + files["uri_labels"]
         else:
-            lines = files['axioms']
+            lines = files["axioms"]
 
         sentences = [
             [item.strip().lower() for item in line.strip().split()] for line in lines
@@ -63,7 +63,9 @@ def opa2vec_or_onto2vec(ontology_name, config_file, algorithm):
             workers=multiprocessing.cpu_count(),
         )
 
-        embeddings_value = retrieval_embed_opa2vec_onto2vec(w2v_model, files['classes'] + files['individuals'])
+        embeddings_value = retrieval_embed_opa2vec_onto2vec(
+            w2v_model, files["classes"] + files["individuals"]
+        )
 
         save_model(ontology_name, algorithm, w2v_model)
         save_embedding(ontology_name, algorithm, embeddings_value)
@@ -71,7 +73,9 @@ def opa2vec_or_onto2vec(ontology_name, config_file, algorithm):
         return f"{algorithm} embedded success!!"
 
     except FileNotFoundError as e:
-        raise FileException(f"File not found error in opa2vec_or_onto2vec: {str(e)}", 404)
+        raise FileException(
+            f"File not found error in opa2vec_or_onto2vec: {str(e)}", 404
+        )
 
     except Exception as e:
         raise ModelException(f"Internal server error in opa2vec_or_onto2vec: {str(e)}")
@@ -87,7 +91,7 @@ def owl2vec_star(ontology_name, config_file, algorithm):
     Returns:
         str: The result of the embedding process
     """
-    
+
     try:
         config = configparser.ConfigParser()
         config.read(config_file)
@@ -96,14 +100,14 @@ def owl2vec_star(ontology_name, config_file, algorithm):
         files_list = ["axioms", "classes", "individuals", "uri_labels", "annotations"]
         files = load_multi_input_files(ontology_name, files_list)
 
-        entities = files['classes'] + files['individuals']
+        entities = files["classes"] + files["individuals"]
 
         uri_label, annotations = dict(), list()
 
-        for line in files['uri_labels']:
+        for line in files["uri_labels"]:
             tmp = line.strip().split()
             uri_label[tmp[0]] = pre_process_words(tmp[1:])
-        for line in files['annotations']:
+        for line in files["annotations"]:
             tmp = line.strip().split()
             annotations.append(tmp)
 
@@ -115,15 +119,17 @@ def owl2vec_star(ontology_name, config_file, algorithm):
         ):
             print("\nGenerate URI document ...")
             walks_ = get_rdf2vec_walks(
-                onto_file=get_path(ontology_name, ontology_name + '.txt'),
+                onto_file=get_path(ontology_name, ontology_name + ".owl"),
                 walker_type=config["DOCUMENT_OWL2VECSTAR"]["walker"],
                 walk_depth=int(config["DOCUMENT_OWL2VECSTAR"]["walk_depth"]),
                 classes=entities,
             )
-            print("Extracted %d walks for %d seed entities" % (len(walks_), len(entities)))
+            print(
+                "Extracted %d walks for %d seed entities" % (len(walks_), len(entities))
+            )
             walk_sentences += [list(map(str, x)) for x in walks_]
 
-            for line in files['axioms']:
+            for line in files["axioms"]:
                 axiom_sentence = [item for item in line.strip().split()]
                 axiom_sentences.append(axiom_sentence)
             print("Extracted %d axiom sentences" % len(axiom_sentences))
@@ -176,7 +182,9 @@ def owl2vec_star(ontology_name, config_file, algorithm):
                     for index in range(len(sentence)):
                         mix_sentence = list()
                         for i, item in enumerate(sentence):
-                            mix_sentence += [item] if i == index else label_item(item=item)
+                            mix_sentence += (
+                                [item] if i == index else label_item(item=item)
+                            )
                         Mix_Doc.append(mix_sentence)
                 elif config["DOCUMENT_OWL2VECSTAR"]["Mix_Type"] == "random":
                     random_index = random.randint(0, len(sentence) - 1)
@@ -210,7 +218,9 @@ def owl2vec_star(ontology_name, config_file, algorithm):
             seed=int(config["MODEL_OWL2VECSTAR"]["seed"]),
         )
 
-        embeddings = retrieval_embed_owl2vec(model_, files['classes'] + files['individuals'])
+        embeddings = retrieval_embed_owl2vec(
+            model_, files["classes"] + files["individuals"]
+        )
 
         save_model(ontology_name, algorithm, model_)
         save_embedding(ontology_name, algorithm, embeddings)
@@ -241,14 +251,14 @@ def rdf2vec(ontology_name, config_file, algorithm):
         files_list = ["classes", "individuals"]
         files = load_multi_input_files(ontology_name, files_list)
 
-        entities = files['classes'] + files['individuals']
+        entities = files["classes"] + files["individuals"]
 
         embeddings, model_rdf2vec = get_rdf2vec_embed(
-            onto_file=get_path(ontology_name, ontology_name + '.txt'),
+            onto_file=get_path(ontology_name, ontology_name + ".owl"),
             walker_type=config["MODEL_RDF2VEC"]["walker"],
             walk_depth=int(config["MODEL_RDF2VEC"]["walk_depth"]),
             embed_size=int(config["BASIC"]["embed_size"]),
-            classes=entities
+            classes=entities,
         )
 
         save_model(ontology_name, algorithm, model_rdf2vec)
@@ -358,4 +368,6 @@ def retrieval_embed_opa2vec_onto2vec(model: gensim.models.Word2Vec, instances):
         return feature_vectors
 
     except Exception as e:
-        raise ModelException(f"Error in retrieval_embed_opa2vec_onto2vec: {str(e)}") from e
+        raise ModelException(
+            f"Error in retrieval_embed_opa2vec_onto2vec: {str(e)}"
+        ) from e

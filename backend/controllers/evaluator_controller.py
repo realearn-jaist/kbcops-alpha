@@ -1,17 +1,20 @@
 import numpy as np
 import random
-import os
 import math
 
 from tqdm import tqdm
 
-from models.extract_model import load_multi_input_files, load_train_test_validation, coverage_class
+from models.extract_model import (
+    load_multi_input_files,
+    load_train_test_validation,
+    coverage_class,
+)
 from controllers.graph_controller import create_graph
 from models.evaluator_model import write_garbage_metrics, write_evaluate
 from models.embed_model import load_embedding_value
 from owl2vec_star.Evaluator import Evaluator
 from utils.directory_utils import get_path, replace_or_create_folder
-from utils.exceptions import EvaluationException, FileException, FileNotFoundException, InternalServerErrorException, InvalidInputException, ValueException
+from utils.exceptions import EvaluationException, FileException
 
 
 ## Refactor code from https://github.com/realearn-jaist/kbc-ops/tree/main/extraction  ##
@@ -31,9 +34,13 @@ def get_subfix(value: str):
         subfix = value.rsplit(delimiter, 1)[-1]
         return subfix
     except IndexError as e:
-        raise EvaluationException(f"Invalid input format in get_subfix function: {str(e)}")
+        raise EvaluationException(
+            f"Invalid input format in get_subfix function: {str(e)}"
+        )
     except Exception as e:
-        raise EvaluationException(f"Internal server error in get_subfix function: {str(e)}")
+        raise EvaluationException(
+            f"Internal server error in get_subfix function: {str(e)}"
+        )
 
 
 class InclusionEvaluator(Evaluator):
@@ -161,7 +168,9 @@ class InclusionEvaluator(Evaluator):
 
             data = sorted([x for x in data], key=lambda x: x["Dif"], reverse=True)
             garbage_data = data[:5] if len(data) >= 5 else data
-            write_garbage_metrics(self.ontology, self.algorithm, self.classifier, garbage_data)
+            write_garbage_metrics(
+                self.ontology, self.algorithm, self.classifier, garbage_data
+            )
 
             eva_n = len(eva_samples)
             e_MRR, hits1, hits5, hits10 = (
@@ -182,12 +191,11 @@ class InclusionEvaluator(Evaluator):
                 % (nife_MRR, nifhits1, nifhits5, nifhits10)
             )
             avgRank = math.ceil(avgRank / total_predict)
-            
-            if(DLcount > 0):
-                avgDLRank = math.ceil(avgDLRank / DLcount)
-            
-            print(f"""count:{DLcount}, DL:{avgDLRank}, ground:{avgRank}\n""")
 
+            if DLcount > 0:
+                avgDLRank = math.ceil(avgDLRank / DLcount)
+
+            print(f"""count:{DLcount}, DL:{avgDLRank}, ground:{avgRank}\n""")
 
             performance_data = {
                 "mrr": e_MRR,
@@ -195,12 +203,14 @@ class InclusionEvaluator(Evaluator):
                 "hit_at_5": hits5,
                 "hit_at_10": hits10,
                 "garbage": DLcount,
-                'total' : total_predict,
-                'average_garbage_Rank' : avgDLRank,
-                'average_Rank' : avgRank
+                "total": total_predict,
+                "average_garbage_Rank": avgDLRank,
+                "average_Rank": avgRank,
             }
 
-            write_evaluate(self.ontology, self.algorithm, self.classifier, performance_data)
+            write_evaluate(
+                self.ontology, self.algorithm, self.classifier, performance_data
+            )
 
             self.result = {
                 "message": "evaluate successful!",
@@ -214,15 +224,24 @@ class InclusionEvaluator(Evaluator):
                 performance_data.get("hit_at_5"),
                 performance_data.get("hit_at_10"),
             )
-            
+
         except IndexError as e:
-            raise EvaluationException(f"Index error occurred during evaluation: {str(e)}")
+            raise EvaluationException(
+                f"Index error occurred during evaluation: {str(e)}"
+            )
         except ValueError as e:
-            raise EvaluationException(f"Value error occurred during evaluation: {str(e)}")
+            raise EvaluationException(
+                f"Value error occurred during evaluation: {str(e)}"
+            )
         except Exception as e:
             raise EvaluationException(f"Evaluation failed: {str(e)}")
 
-def predict_func(ontology_name: str, algorithm: str, classifier: str, ):
+
+def predict_func(
+    ontology_name: str,
+    algorithm: str,
+    classifier: str,
+):
     """Predict the ontology with the algorithm
 
     Args:
@@ -233,20 +252,23 @@ def predict_func(ontology_name: str, algorithm: str, classifier: str, ):
     """
     try:
         # retrieve file
-        files_list = ["classes", "inferred_ancestors"]
+        files_list = ["classes", "individuals", "inferred_ancestors"]
         files = load_multi_input_files(ontology_name, files_list)
 
         # load classes file
         print(f"load {ontology_name} classes")
-        
+
         coverage_class_percentage = coverage_class(ontology_name)
         onto_type = "abox" if coverage_class_percentage > 10 else "tbox"
 
         # Embed classes with model
+        print(f"load embedded vector of {ontology_name} classes")
         classes_e, individuals_e = load_embedding_value(ontology_name, algorithm)
 
         # Load train/test/validation files
-        train_samples, valid_samples, test_samples = load_train_test_validation(ontology_name)
+        train_samples, valid_samples, test_samples = load_train_test_validation(
+            ontology_name
+        )
         random.shuffle(train_samples)
 
         # split value in file
@@ -256,10 +278,10 @@ def predict_func(ontology_name: str, algorithm: str, classifier: str, ):
             sub, sup, label = s[0], s[1], s[2]
             sub_v = None
             if onto_type == "tbox":
-                sub_v = classes_e[files['classes'].index(sub)]
+                sub_v = classes_e[files["classes"].index(sub)]
             else:
-                sub_v = individuals_e[files['individuals'].index(sub)]
-            sup_v = classes_e[files['classes'].index(sup)]
+                sub_v = individuals_e[files["individuals"].index(sub)]
+            sup_v = classes_e[files["classes"].index(sup)]
             if not (np.all(sub_v == 0) or np.all(sup_v == 0)):
                 train_x_list.append(np.concatenate((sub_v, sup_v)))
                 train_y_list.append(int(label))
@@ -271,7 +293,9 @@ def predict_func(ontology_name: str, algorithm: str, classifier: str, ):
         for line in files["inferred_ancestors"]:
             all_infer_classes = line.split(",")
             cls = all_infer_classes[0]
-            inferred_ancestors[cls] = all_infer_classes if onto_type == "tbox" else all_infer_classes[1:]
+            inferred_ancestors[cls] = (
+                all_infer_classes if onto_type == "tbox" else all_infer_classes[1:]
+            )
 
         # Evaluate
         evaluate = InclusionEvaluator(
@@ -279,9 +303,9 @@ def predict_func(ontology_name: str, algorithm: str, classifier: str, ):
             test_samples,
             train_X,
             train_y,
-            files['classes'],
+            files["classes"],
             classes_e,
-            files['individuals'],
+            files["individuals"],
             individuals_e,
             inferred_ancestors,
             ontology_name,

@@ -96,6 +96,7 @@ def save_annotations(ontology_name, annotations, projection):
     except Exception as e:
         raise FileException(f"Error saving annotations: {str(e)}")
 
+
 def load_multi_input_files(ontology_name, files_list):
     """Load multiple input files
 
@@ -113,7 +114,7 @@ def load_multi_input_files(ontology_name, files_list):
         return files_dict
     except Exception as e:
         raise FileException(f"Error loading multiple input files: {str(e)}")
-     
+
 
 def load_input_file(ontology_name, input_file):
     """Load single the input file
@@ -125,10 +126,10 @@ def load_input_file(ontology_name, input_file):
         list: The list of axioms loaded from the file
     """
     try:
-        path = get_path(ontology_name, input_file + '.txt')
+        path = get_path(ontology_name, input_file + ".txt")
         if not os.path.exists(path):
             raise FileException(f"Input file not found: {input_file}")
-        return [line.strip() for line in open(path, 'r', encoding='utf-8').readlines()]
+        return [line.strip() for line in open(path, "r", encoding="utf-8").readlines()]
     except FileException as e:
         raise e
     except Exception as e:
@@ -169,17 +170,22 @@ def load_train_test_validation(ontology_name, type=0):
         valid_path = os.path.join(file_path, "valid.csv")
         test_path = os.path.join(file_path, "test.csv")
 
-        train_samples = [line.strip().split(",") for line in open(train_path).readlines()]
-        valid_samples = [line.strip().split(",") for line in open(valid_path).readlines()]
+        train_samples = [
+            line.strip().split(",") for line in open(train_path).readlines()
+        ]
+        valid_samples = [
+            line.strip().split(",") for line in open(valid_path).readlines()
+        ]
         test_samples = [line.strip().split(",") for line in open(test_path).readlines()]
 
         return train_samples, valid_samples, test_samples
     except Exception as e:
         raise FileException(f"Error loading train/test/validation files: {str(e)}")
 
+
 def coverage_class(ontology_name):
-    
-    path = get_path(ontology_name)
+
+    path = get_path(ontology_name, ontology_name + ".owl")
     onto = owlready2.get_ontology(path).load()
     coverage_class = set()
 

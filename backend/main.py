@@ -1,6 +1,5 @@
 import datetime
 from logging.handlers import TimedRotatingFileHandler
-from utils.file_handler import replace_or_create_folder
 from flask import Flask, send_from_directory
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager

@@ -214,6 +214,7 @@ def get_evaluate_stat(ontology, algorithm, classifier):
                 [ontology, algorithm, classifier]
             )
         )
+        exception = handle_exception(e)
         result["message"] = exception["message"]
         result["performance"] = {
             "mrr": 0,
@@ -227,7 +228,6 @@ def get_evaluate_stat(ontology, algorithm, classifier):
         }
         result["garbage"] = []
         result["images"] = []
-        exception = handle_exception(e)
         return jsonify(result), exception["error_code"]
 
 

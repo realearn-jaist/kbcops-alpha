@@ -23,6 +23,7 @@ from owl2vec_star.Label import pre_process_words
 from utils.directory_utils import get_path
 from utils.exceptions import ExtractionException, FileException, OntologyException
 
+
 def upload_ontology(file, ontology_name: str):
     """Upload ontology file to the server and save it to the database
 
@@ -32,22 +33,17 @@ def upload_ontology(file, ontology_name: str):
     Returns:
         ontology_name (str): The name of the ontology
     """
-    try:
-        if ontology_name.endswith(".owl"):
-            ontology_name = ontology_name[:-4]
+    if ontology_name.endswith(".owl"):
+        ontology_name = ontology_name[:-4]
 
-        filename = ontology_name + ".owl"
+    filename = ontology_name + ".owl"
 
-        path = save_ontology(file, ontology_name, filename)
+    path = save_ontology(file, ontology_name, filename)
 
-        if not path:
-            raise OntologyException("Failed to save ontology file")
+    if not path:
+        raise OntologyException("Failed to save ontology file")
 
-        return ontology_name
-
-    except Exception as e:
-        raise OntologyException(str(e))
-
+    return ontology_name
 
 
 def get_all_ontology():
@@ -72,10 +68,10 @@ def get_onto_stat(ontology_name: str):
     files = load_multi_input_files(ontology_name, files_list)
 
     return {
-        "no_class": len(files['classes']),
-        "no_individual": len(files['individuals']),
-        "no_axiom": len(files['axioms']),
-        "no_annotation": len(files['uri_labels'] + files['annotations']),
+        "no_class": len(files["classes"]),
+        "no_individual": len(files["individuals"]),
+        "no_axiom": len(files["axioms"]),
+        "no_annotation": len(files["uri_labels"] + files["annotations"]),
     }
 
 
@@ -96,7 +92,7 @@ def extract_data(ontology_name: str):
         dict: The statistics of the ontology
     """
     try:
-        onto_file_path = get_path(ontology_name, ontology_name + '.txt')
+        onto_file_path = get_path(ontology_name, ontology_name + ".owl")
 
         # extract axiom, entity, annotation
         projection = OntologyProjection(
@@ -149,12 +145,14 @@ def extract_data(ontology_name: str):
         annotations = save_annotations(ontology_name, annotations, projection)
 
         # extract axiom, entity, annotation
-        onto = get_ontology(get_path(ontology_name, ontology_name + '.txt')).load()
+        onto = get_ontology(get_path(ontology_name, ontology_name + ".owl")).load()
 
         print("start run sync reasoner")
         start_time = time.time()
         sync_reasoner()
-        print(f"sync reasoner time usage for {ontology_name}:", time.time() - start_time)
+        print(
+            f"sync reasoner time usage for {ontology_name}:", time.time() - start_time
+        )
 
         tbox_results = tbox_infer(onto)
         abox_results = abox_infer(onto)
@@ -164,19 +162,21 @@ def extract_data(ontology_name: str):
         files_list = ["classes", "individuals"]
         files = load_multi_input_files(ontology_name, files_list)
 
-        individuals_count = len(files['individuals'])
+        individuals_count = len(files["individuals"])
 
         # check ontology type
         # consider as an ABox if individuals_count exceeds 10 percent of classes amount
-        onto_type = "abox" if individuals_count > int(0.1 * len(files['classes'])) else "tbox"
+        onto_type = (
+            "abox" if individuals_count > int(0.1 * len(files["classes"])) else "tbox"
+        )
         if onto_type == "abox":
             train_test_val_gen_abox(onto, ontology_name)
         else:
             train_test_val_gen_tbox(onto, ontology_name)
 
         return {
-            "no_class": len(files['classes']),
-            "no_individual": len(files['individuals']),
+            "no_class": len(files["classes"]),
+            "no_individual": len(files["individuals"]),
             "no_axiom": len(axioms),
             "no_annotation": len(annotations),
         }
@@ -332,7 +332,9 @@ def train_test_val(class_or_individuals: list):
         raise ExtractionException(f"Unexpected error in train_test_val: {e}")
 
 
-def write_positive_samples_to_csv(csv_path: str, classes_or_individuals: list, ontology_name: str):
+def write_positive_samples_to_csv(
+    csv_path: str, classes_or_individuals: list, ontology_name: str
+):
     """Writes the positive samples to a CSV file.
 
     Args:
@@ -344,7 +346,7 @@ def write_positive_samples_to_csv(csv_path: str, classes_or_individuals: list, o
     """
     try:
         root = get_path(ontology_name)
-        
+
         # Check if csv_path is writable
         if not os.access(os.path.dirname(csv_path), os.W_OK):
             raise FileException(f"Cannot write to {csv_path}. Permission denied.")
@@ -356,7 +358,9 @@ def write_positive_samples_to_csv(csv_path: str, classes_or_individuals: list, o
                 ground_truth_list = [
                     gt.iri for gt in ind_ground_truth if hasattr(gt, "iri")
                 ]
-                if csv_path == os.path.join(root, "train-infer-1.csv") or csv_path == os.path.join(root, "train-infer-0.csv"):
+                if csv_path == os.path.join(
+                    root, "train-infer-1.csv"
+                ) or csv_path == os.path.join(root, "train-infer-0.csv"):
                     for gt in ground_truth_list:
                         f.write(f"{ind_uri},{gt},1\n")
                 else:
@@ -370,7 +374,7 @@ def write_positive_samples_to_csv(csv_path: str, classes_or_individuals: list, o
         raise ExtractionException(f"Unexpected error: {e}")
 
 
-def write_negative_samples_to_csv(csv_path : str, negative_samples : list):
+def write_negative_samples_to_csv(csv_path: str, negative_samples: list):
     """Writes the negative samples to a CSV file.
 
     Args:
@@ -413,12 +417,16 @@ def read_infer_classes(file):
     except IOError as e:
         raise IOError(f"Error reading file 'inferred_ancestors.txt': {e}")
     except IndexError as e:
-        raise ValueError(f"Error parsing line in file 'inferred_ancestors.txt': {e}. Check file format.")
+        raise ValueError(
+            f"Error parsing line in file 'inferred_ancestors.txt': {e}. Check file format."
+        )
     except Exception as e:
         raise Exception(f"Unexpected error reading file 'inferred_ancestors.txt': {e}")
 
 
-def generate_negative_samples_abox(onto : Ontology, num_samples : int, infer_classes_path, label : int):
+def generate_negative_samples_abox(
+    onto: Ontology, num_samples: int, infer_classes_path, label: int
+):
     """Generates negative samples for the abox and returns them as a list.
 
     Args:
@@ -445,18 +453,25 @@ def generate_negative_samples_abox(onto : Ontology, num_samples : int, infer_cla
             num_random_class_samples += num_samples
             num_samples *= 2
 
-        with tqdm(total=num_random_class_samples, desc="Generating random class samples") as pbar1:
+        with tqdm(
+            total=num_random_class_samples, desc="Generating random class samples"
+        ) as pbar1:
             while len(negative_samples) < num_random_class_samples:
                 ind = random.choice(all_individuals)
                 all_classes = list(onto.classes())
                 negative_class = random.choice(all_classes)
                 ind_classes_is_a = [cls.iri for cls in ind.is_a if hasattr(cls, "iri")]
 
-                if negative_class.iri not in ind_classes_is_a and negative_class.iri not in infer_classes.get(ind.iri, []):
+                if (
+                    negative_class.iri not in ind_classes_is_a
+                    and negative_class.iri not in infer_classes.get(ind.iri, [])
+                ):
                     negative_samples.append((ind, negative_class.iri, 0))
                     pbar1.update(1)
 
-        with tqdm(total=num_inferred_class_samples, desc="Generating inferred class samples") as pbar2:
+        with tqdm(
+            total=num_inferred_class_samples, desc="Generating inferred class samples"
+        ) as pbar2:
             while len(negative_samples) < num_samples:
                 ind = random.choice(all_individuals)
                 all_classes = list(onto.classes())
@@ -475,7 +490,7 @@ def generate_negative_samples_abox(onto : Ontology, num_samples : int, infer_cla
         raise ExtractionException(f"Unexpected error: {e}")
 
 
-def generate_negative_samples_tbox(onto : Ontology, num_samples : int, infer_classes_list : list, label : int):
+def generate_negative_samples_tbox(onto, num_samples, infer_classes_list, label):
     """Generates negative samples for the tbox and returns them as a list.
 
     Args:
@@ -503,6 +518,7 @@ def generate_negative_samples_tbox(onto : Ontology, num_samples : int, infer_cla
         ) as pbar:
             while len(negative_samples) < num_random_class_samples:
                 cls = random.choice(all_classes)
+                all_classes = list(onto.classes())
                 negative_class = random.choice(all_classes)
                 cls_classes_is_a = [cls.iri for cls in cls.is_a if hasattr(cls, "iri")]
 
@@ -510,6 +526,7 @@ def generate_negative_samples_tbox(onto : Ontology, num_samples : int, infer_cla
                     negative_class.iri not in cls_classes_is_a
                     and negative_class.iri not in infer_classes[cls.iri]
                 ):
+
                     negative_samples.append((cls, negative_class.iri, 0))
                     pbar.update(1)
 
@@ -518,22 +535,24 @@ def generate_negative_samples_tbox(onto : Ontology, num_samples : int, infer_cla
         ) as pbar:
             while len(negative_samples) < num_samples:
                 cls = random.choice(all_classes)
+                all_classes = list(onto.classes())
                 if infer_classes[cls.iri] != []:
                     negative_class_iri = random.choice(infer_classes[cls.iri])
                     negative_samples.append((cls, negative_class_iri, label))
                     pbar.update(1)
-
         return negative_samples
 
     except FileNotFoundError as e:
         raise FileException(f"File not found error: {e.filename}", 404)
     except IOError as e:
-        raise FileException(f"File operation error: Could not read or write file {e.filename}", 500)
+        raise FileException(
+            f"File operation error: Could not read or write file {e.filename}", 500
+        )
     except Exception as e:
         raise ExtractionException(f"Unexpected error: {e}")
 
 
-def train_test_val_gen_abox(onto : Ontology, ontology_name : str):
+def train_test_val_gen_abox(onto: Ontology, ontology_name: str):
     """Main function for generating training, test, and validation sets for the abox.
 
     Args:
@@ -544,7 +563,9 @@ def train_test_val_gen_abox(onto : Ontology, ontology_name : str):
     """
     try:
         all_individuals = list(onto.individuals())
-        train_individuals, test_individuals, val_individuals = train_test_val(all_individuals)
+        train_individuals, test_individuals, val_individuals = train_test_val(
+            all_individuals
+        )
 
         root = get_path(ontology_name)
         train_csv_path_0 = os.path.join(root, "train-infer-1.csv")
@@ -554,22 +575,32 @@ def train_test_val_gen_abox(onto : Ontology, ontology_name : str):
         val_csv_path = os.path.join(root, "valid.csv")
 
         # Write positive samples to CSV files
-        write_positive_samples_to_csv(train_csv_path_0, train_individuals, ontology_name)
-        write_positive_samples_to_csv(train_csv_path_1, train_individuals, ontology_name)
+        write_positive_samples_to_csv(
+            train_csv_path_0, train_individuals, ontology_name
+        )
+        write_positive_samples_to_csv(
+            train_csv_path_1, train_individuals, ontology_name
+        )
         write_positive_samples_to_csv(test_csv_path, test_individuals, ontology_name)
         write_positive_samples_to_csv(val_csv_path, val_individuals, ontology_name)
 
         # Generate and write negative samples to CSV files for train sets
         start_time = time.time()
         negative_samples = generate_negative_samples_abox(
-            onto, len(train_individuals), load_input_file(ontology_name, "inferred_ancestors.txt"), 1
+            onto,
+            len(train_individuals),
+            load_input_file(ontology_name, "inferred_ancestors"),
+            1,
         )
         write_negative_samples_to_csv(train_csv_path_0, negative_samples)
         print("abox negative sample (-1) time usage:", time.time() - start_time)
 
         start_time = time.time()
         negative_samples = generate_negative_samples_abox(
-            onto, len(train_individuals), load_input_file(ontology_name, "inferred_ancestors.txt"), 0
+            onto,
+            len(train_individuals),
+            load_input_file(ontology_name, "inferred_ancestors"),
+            0,
         )
         write_negative_samples_to_csv(train_csv_path_1, negative_samples)
         print("abox negative sample (-0) time usage:", time.time() - start_time)
@@ -611,18 +642,22 @@ def train_test_val_gen_tbox(onto, ontology_name):
         write_positive_samples_to_csv(train_csv_path_1, train_classes, ontology_name)
         write_positive_samples_to_csv(test_csv_path, test_classes, ontology_name)
         write_positive_samples_to_csv(val_csv_path, val_classes, ontology_name)
-
         # Generate and write negative samples to CSV files for train sets
         start_time = time.time()
         negative_samples = generate_negative_samples_tbox(
-            onto, len(train_classes), load_input_file(ontology_name, "inferred_ancestors.txt"), 1
+            onto,
+            len(train_classes),
+            load_input_file(ontology_name, "inferred_ancestors"),
+            1,
         )
         write_negative_samples_to_csv(train_csv_path_0, negative_samples)
-        print("tbox negative sample (-1) time usage:", time.time() - start_time)
 
         start_time = time.time()
         negative_samples = generate_negative_samples_tbox(
-            onto, len(train_classes), load_input_file(ontology_name, "inferred_ancestors.txt"), 0
+            onto,
+            len(train_classes),
+            load_input_file(ontology_name, "inferred_ancestors"),
+            0,
         )
         write_negative_samples_to_csv(train_csv_path_1, negative_samples)
         print("tbox negative sample (-0) time usage:", time.time() - start_time)

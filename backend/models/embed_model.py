@@ -98,7 +98,7 @@ def load_embedding_value(ontology_name: str, algorithm: str):
         numpy.ndarray: The embedding saved
     """
     try:
-        no_class = len(load_multi_input_files(ontology_name, ["classes"]))
+        no_class = len(load_multi_input_files(ontology_name, ["classes"])["classes"])
         if not isModelExist(ontology_name, algorithm):
             return None
         path = get_path(ontology_name, algorithm, "embeddings.npy")

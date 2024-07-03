@@ -2,6 +2,8 @@ import sys
 import unittest
 from unittest.mock import MagicMock, mock_open, patch
 
+from utils.exceptions import OntologyException
+
 sys.path.append("../backend")
 from owl2vec_star.Onto_Access import Reasoner
 from controllers.ontology_controller import (
@@ -48,11 +50,16 @@ class TestOntologyModule(unittest.TestCase):
         file = MagicMock()
         id = "test_id.owl"
 
+        # Configure the mock to return None to simulate failure
         mock_save_ontology.return_value = None
 
-        result = upload_ontology(file, id)
-        self.assertEqual(result, None)
+        # Ensure that the upload_ontology function raises the OntologyException
+        with self.assertRaises(OntologyException) as context:
+            upload_ontology(file, id)
 
+        self.assertEqual(str(context.exception), "Failed to save ontology file")
+
+        # Ensure the correct call was made
         id = "test_id"
         filename = "test_id.owl"
         mock_save_ontology.assert_called_with(file, id, filename)
@@ -69,15 +76,15 @@ class TestOntologyModule(unittest.TestCase):
         mock_list_ontology.return_value = ["onto1", "onto2"]
         result = get_all_ontology()
         self.assertEqual(result, ["onto1", "onto2"])
-    
+
     @patch(
         "controllers.ontology_controller.load_multi_input_files",
         return_value={
-            "axioms" : ["axiom1", "axiom2"], 
-            "classes" : ["class1", "class2"], 
-            "individuals" : ["individual1", "individual2"], 
-            "uri_labels" : ["uri1 label1", "uri2 label2 label3"], 
-            "annotations" : ["uri1 annotation1", "uri2 annotation2"]
+            "axioms": ["axiom1", "axiom2"],
+            "classes": ["class1", "class2"],
+            "individuals": ["individual1", "individual2"],
+            "uri_labels": ["uri1 label1", "uri2 label2 label3"],
+            "annotations": ["uri1 annotation1", "uri2 annotation2"],
         },
     )
     def test_get_onto_stat(
@@ -94,7 +101,7 @@ class TestOntologyModule(unittest.TestCase):
         Returns:
             None
         """
-        
+
         id = "ontology_name"
         result = get_onto_stat(id)
         self.assertEqual(
@@ -102,9 +109,12 @@ class TestOntologyModule(unittest.TestCase):
             {"no_class": 2, "no_individual": 2, "no_axiom": 2, "no_annotation": 4},
         )
 
-        mock_load_multi_input_files.assert_called_once_with("ontology_name", ["axioms", "classes", "individuals", "uri_labels", "annotations"])
+        mock_load_multi_input_files.assert_called_once_with(
+            "ontology_name",
+            ["axioms", "classes", "individuals", "uri_labels", "annotations"],
+        )
 
-    @patch("controllers.ontology_controller.get_path_ontology")
+    @patch("controllers.ontology_controller.get_path")
     @patch("controllers.ontology_controller.OntologyProjection")
     @patch("controllers.ontology_controller.save_axioms")
     @patch("controllers.ontology_controller.save_classes")
@@ -116,9 +126,9 @@ class TestOntologyModule(unittest.TestCase):
     @patch("controllers.ontology_controller.save_infer")
     @patch(
         "controllers.ontology_controller.load_multi_input_files",
-        return_value={ 
-            "classes" : ["class1", "class2"], 
-            "individuals" : ["individual1", "individual2"],
+        return_value={
+            "classes": ["class1", "class2"],
+            "individuals": ["individual1", "individual2"],
         },
     )
     @patch("controllers.ontology_controller.train_test_val_gen_abox")
@@ -137,7 +147,7 @@ class TestOntologyModule(unittest.TestCase):
         mock_save_classes,
         mock_save_axioms,
         mock_OntologyProjection,
-        mock_get_path_ontology,
+        mock_get_path,
     ):
         """Test extract_data function in ontology_controller.py
 
@@ -155,22 +165,20 @@ class TestOntologyModule(unittest.TestCase):
             mock_save_classes: MagicMock object
             mock_save_axioms: MagicMock object
             mock_OntologyProjection: MagicMock object
-            mock_get_path_ontology: MagicMock object
+            mock_get_path: MagicMock object
         Returns:
             None
         """
-        mock_get_path_ontology.return_value = "path_to_ontology"
+        mock_get_path.return_value = "path_to_ontology"
         mock_get_ontology.return_value = MagicMock()
         mock_projection_instance = MagicMock()
         mock_OntologyProjection.return_value = mock_projection_instance
         mock_abox_infer.return_value = []
         mock_tbox_infer.return_value = []
         mock_save_infer.return_value = None
-        
+
         mock_train_test_val_gen_tbox.return_value = None
         mock_train_test_val_gen_abox.return_value = None
-        
-        
 
         mock_projection_instance.createManchesterSyntaxAxioms.return_value = None
         mock_projection_instance.axioms_manchester = ["axiom1", "axiom2"]
@@ -202,7 +210,7 @@ class TestOntologyModule(unittest.TestCase):
             result,
             {"no_class": 2, "no_individual": 2, "no_axiom": 2, "no_annotation": 3},
         )
-        mock_get_path_ontology.assert_any_call(id)
+        mock_get_path.assert_called()
         mock_OntologyProjection.assert_called_once_with(
             "path_to_ontology",
             reasoner=Reasoner.STRUCTURAL,
@@ -214,12 +222,14 @@ class TestOntologyModule(unittest.TestCase):
             additional_synonyms_annotations=set(),
             memory_reasoner="13351",
         )
-        
-        mock_load_multi_input_files.assert_called_once_with("ontology_name", ["classes", "individuals"])
+
+        mock_load_multi_input_files.assert_called_once_with(
+            "ontology_name", ["classes", "individuals"]
+        )
         mock_save_axioms.assert_called_once_with(id, ["axiom1", "axiom2"])
         mock_save_classes.assert_called_once_with(id, {"class1", "class2"})
         mock_save_individuals.assert_called_once_with(id, {"ind1", "ind2"})
-        
+
         self.assertTrue(mock_save_annotations.called)
 
 

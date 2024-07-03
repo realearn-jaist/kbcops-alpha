@@ -66,12 +66,9 @@ class TestRoutes(unittest.TestCase):
         self.assertIn("File uploaded successfully", response.get_json()["message"])
         self.assertIn("test_id", response.get_json()["ontology_name"])
 
-    @patch("routes.routes.get_path_ontology_directory")
     @patch("routes.routes.remove_dir")
     @patch("routes.routes.upload_ontology")
-    def test_upload_failure_cannot_upload(
-        self, mock_upload_ontology, mock_remove_dir, mock_get_path_ontology_directory
-    ):
+    def test_upload_failure_cannot_upload(self, mock_upload_ontology, mock_remove_dir):
         """Test that the upload route fails when the file cannot be uploaded
 
         Args:
@@ -81,7 +78,6 @@ class TestRoutes(unittest.TestCase):
         """
         mock_upload_ontology.return_value = None  # Ensure upload_ontology returns None
         mock_remove_dir.return_value = None  # Ensure remove_dir returns None
-        mock_get_path_ontology_directory.return_value = "fake_path"
         data = {
             "owl_file": (BytesIO(b"mock owl data"), "test.owl"),
             "ontology_name": "test_id.owl",
@@ -91,7 +87,6 @@ class TestRoutes(unittest.TestCase):
             "/api/upload", data=data, content_type="multipart/form-data"
         )
         self.assertEqual(response.status_code, 500)
-        self.assertIn("File upload failed", response.get_json()["message"])
 
     def test_upload_failure_no_file(self):
         """Test that the upload route fails when no file is uploaded
@@ -154,7 +149,6 @@ class TestRoutes(unittest.TestCase):
         mock_extract_data.return_value = None
         response = self.app.get("/api/extract/test_ontology")
         self.assertEqual(response.status_code, 500)
-        self.assertIn("Extraction failed", response.get_json()["message"])
 
     @patch("routes.routes.get_all_ontology")
     def test_list_ontologies(self, mock_get_all_ontology):

@@ -120,48 +120,47 @@ class TestGraphModule(unittest.TestCase):
                 fig_directory=fig_directory,
             )
 
+        mock_savefig.assert_called()
         self.assertTrue(mock_savefig.called)
         self.assertTrue(mock_draw.called)
         self.assertTrue(mock_layout.called)
 
     @patch("controllers.graph_controller.coverage_class")
     @patch("controllers.graph_controller.get_ontology")
-    @patch("controllers.graph_controller.load_individuals")
-    @patch("controllers.graph_controller.load_classes")
+    @patch("controllers.graph_controller.load_multi_input_files")
     @patch("controllers.graph_controller.get_prefix")
     @patch("controllers.graph_controller.graph_maker", return_value=None)
     @patch("controllers.graph_controller.read_garbage_metrics_pd")
     @patch("controllers.graph_controller.extract_garbage_value")
     @patch("controllers.graph_controller.load_graph")
-    @patch("controllers.graph_controller.get_path_ontology")
-    @patch("controllers.graph_controller.get_path_ontology_directory")
+    @patch("controllers.graph_controller.get_path")
     @patch("controllers.graph_controller.replace_or_create_folder")
     def test_create_graph(
         self,
         mock_replace_or_create_folder,
-        mock_get_path_ontology_directory,
-        mock_get_path_ontology,
+        mock_get_path,
         mock_load_graph,
         mock_extract_garbage_value,
         mock_read_garbage_metrics_pd,
         mock_graph_maker,
         mock_get_prefix,
-        mock_load_classes,
-        mock_load_individuals,
+        mock_load_multi_input_files,
         mock_get_ontology,
         mock_coverage_class,
     ):
         """Test create_graph function in graph_controller.py"""
 
-        id = "test_id"
-        algo = "test_algo"
+        ontology_name = "test_ontology"
+        algorithm = "test_algo"
         classifier = "test_classifier"
+
         # Mock return values for the dependencies
-        mock_load_individuals.return_value = ["Ind1", "Ind2"]
+        mock_load_multi_input_files.return_value = {
+            "individuals": ["http://example.com#Ind1", "http://example.com#Ind2"],
+            "classes": ["http://example.com#Class1", "http://example.com#Class2"],
+        }
 
         mock_get_prefix.return_value = "http://example.com#"
-        mock_get_path_ontology_directory.return_value = "\\fake\\path"
-        mock_get_path_ontology.return_value = "\\fake\\path\\ontology.owl"
         mock_coverage_class.return_value = 20
 
         # Mock ontology and graph data
@@ -176,22 +175,35 @@ class TestGraphModule(unittest.TestCase):
             ["True1", "True2"],
             ["Pred1", "Pred2"],
         )
-        mock_graph_maker.return_value = None
         mock_load_graph.return_value = "mock_graph_data"
 
+        # Mock get_path to return the desired paths
+        def mock_get_path_side_effect(*args):
+            if len(args) == 4 and args[3] == "graph_fig":
+                return "\\fake\\path\\test_algo\\test_classifier\\graph_fig"
+            elif args[1] == "test_ontology.owl":
+                return "\\fake\\path\\ontology.owl"
+            else:
+                return "\\fake\\path\\other"
+
+        mock_get_path.side_effect = mock_get_path_side_effect
+
         # Call the function under test
-        result = gm.create_graph(id, algo, classifier)
+        result = gm.create_graph(ontology_name, algorithm, classifier)
 
         # Assert the expected calls and results
-        mock_get_path_ontology_directory.assert_called_once_with(id)
+        mock_get_path.assert_any_call(ontology_name, algorithm, classifier, "graph_fig")
         mock_replace_or_create_folder.assert_called_once_with(
             "\\fake\\path\\test_algo\\test_classifier\\graph_fig"
         )
-        mock_load_individuals.assert_called_once_with(id)
 
-        mock_get_path_ontology.assert_called_once_with(id)
+        mock_load_multi_input_files.assert_called_once_with(
+            ontology_name, ["individuals", "classes"]
+        )
         mock_get_ontology.assert_called_once_with("\\fake\\path\\ontology.owl")
-        mock_read_garbage_metrics_pd.assert_called_once_with(id, algo, classifier)
+        mock_read_garbage_metrics_pd.assert_called_once_with(
+            ontology_name, algorithm, classifier
+        )
         mock_extract_garbage_value.assert_called_once_with("mock_garbage_metrics_data")
         mock_graph_maker.assert_called_once_with(
             "abox",
@@ -203,8 +215,7 @@ class TestGraphModule(unittest.TestCase):
             ["Pred1", "Pred2"],
             "\\fake\\path\\test_algo\\test_classifier\\graph_fig",
         )
-        mock_load_graph.assert_called_once_with(id, algo, classifier)
-
+        mock_load_graph.assert_called_once_with(ontology_name, algorithm, classifier)
         self.assertEqual(result, "mock_graph_data")
 
 

@@ -14,7 +14,7 @@ from models.evaluator_model import (
 class TestFileOperations(unittest.TestCase):
     """Test cases for evaluator_model.py"""
 
-    @patch("models.evaluator_model.get_path_ontology_directory")
+    @patch("models.evaluator_model.get_path")
     @patch("builtins.open", new_callable=mock_open)
     def test_write_evaluate(self, mock_open, mock_get_path):
         """Test write_evaluate function in evaluator_model.py
@@ -25,7 +25,9 @@ class TestFileOperations(unittest.TestCase):
         Returns:
             None
         """
-        mock_get_path.return_value = "\\fake\\path"
+        mock_get_path.return_value = (
+            "\\fake\\path\\algorithm\\classifier\\performance.json"
+        )
         data = {"key": "value"}
 
         write_evaluate("ontology", "algorithm", "classifier", data)
@@ -44,7 +46,7 @@ class TestFileOperations(unittest.TestCase):
         ]
         mock_open().write.assert_has_calls(calls)
 
-    @patch("models.evaluator_model.get_path_ontology_directory")
+    @patch("models.evaluator_model.get_path")
     @patch("builtins.open", new_callable=mock_open, read_data='{"key": "value"}')
     def test_read_evaluate(self, mock_open, mock_get_path):
         """Test read_evaluate function in evaluator_model.py
@@ -55,7 +57,9 @@ class TestFileOperations(unittest.TestCase):
         Returns:
             None
         """
-        mock_get_path.return_value = "\\fake\\path"
+        mock_get_path.return_value = (
+            "\\fake\\path\\algorithm\\classifier\\performance.json"
+        )
 
         result = read_evaluate("ontology", "algorithm", "classifier")
 
@@ -64,7 +68,7 @@ class TestFileOperations(unittest.TestCase):
         )
         self.assertEqual(result, {"key": "value"})
 
-    @patch("models.evaluator_model.get_path_ontology_directory")
+    @patch("models.evaluator_model.get_path")
     @patch("builtins.open", new_callable=mock_open)
     @patch("csv.DictWriter")
     def test_write_garbage_metrics(self, mock_csv_dictwriter, mock_open, mock_get_path):
@@ -77,7 +81,7 @@ class TestFileOperations(unittest.TestCase):
         Returns:
             None
         """
-        mock_get_path.return_value = "\\fake\\path"
+        mock_get_path.return_value = "\\fake\\path\\algorithm\\classifier\\garbage.csv"
         data = [
             {
                 "Individual": "A",
@@ -102,7 +106,7 @@ class TestFileOperations(unittest.TestCase):
         mock_writer_instance.writeheader.assert_called_once()
         mock_writer_instance.writerows.assert_called_once_with(data)
 
-    @patch("models.evaluator_model.get_path_ontology_directory")
+    @patch("models.evaluator_model.get_path")
     @patch(
         "builtins.open",
         new_callable=mock_open,
@@ -117,7 +121,7 @@ class TestFileOperations(unittest.TestCase):
         Returns:
             None
         """
-        mock_get_path.return_value = "\\fake\\path"
+        mock_get_path.return_value = "\\fake\\path\\algorithm\\classifier\\garbage.csv"
 
         result = read_garbage_metrics("ontology", "algorithm", "classifier")
 
