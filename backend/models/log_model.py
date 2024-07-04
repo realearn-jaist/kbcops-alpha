@@ -5,7 +5,13 @@ from logging.handlers import TimedRotatingFileHandler
 
 
 def configure_logging():
-    """Configure app logging."""
+    """Configure app logging.
+
+    Args:
+        None
+    Returns:
+        logger (logging.Logger): The logger object
+    """
     log_directory = "logs"
     if not os.path.exists(log_directory):
         os.makedirs(log_directory)

@@ -137,6 +137,8 @@ zipp==3.19.2
 
 ## Hyperparameter for Classifier Model
 
+**Note** : Train size = 70%, Test size = 20% and Validate size = 10%
+
 ### Random Forest
 
 - `n_estimators`: 200

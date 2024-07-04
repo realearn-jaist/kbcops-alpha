@@ -51,7 +51,7 @@ def find_parents_with_relations(cls, splitter, relation_list=None):
         relation_list (list, optional): The list of relations to append to. Defaults to None.
 
     Returns:
-        list: List of relations in the form of [child_class_name, "subclassOf", parent_class_name]
+        list: list of relations
     """
     if relation_list is None:
         relation_list = []
@@ -194,9 +194,9 @@ def graph_maker(
                 )
 
             plt.savefig(os.path.join(fig_directory, f"graph_{i}.png"), format="PNG")
-        
+
     except Exception as e:
-        
+
         raise GraphException(f"Error creating graph: {str(e)}")
 
 
@@ -204,8 +204,9 @@ def create_graph(ontology_name, algorithm, classifier):
     # ontology_name, algorithm
     """Create a graph for each class and individual in the ontology
     Args:
-        onto (str): The name of the ontology
-        algo (str): The name of the algorithm
+        ontology_name (str): The name of the ontology
+        algorithm (str): The name of the algorithm
+        classifier (str): The name of the classifier
     Returns:
         list: The list of graph fig
     """

@@ -70,6 +70,7 @@ class TestGraphModule(unittest.TestCase):
 
         Args:
             mock_savefig: MagicMock object
+            mock_find_parents_with_relations: MagicMock object
             mock_replace_or_create_folder: MagicMock object
             mock_draw: MagicMock object
             mock_layout: MagicMock object
@@ -148,7 +149,22 @@ class TestGraphModule(unittest.TestCase):
         mock_get_ontology,
         mock_coverage_class,
     ):
-        """Test create_graph function in graph_controller.py"""
+        """Test create_graph function in graph_controller.py
+
+        Args:
+            mock_replace_or_create_folder: MagicMock object
+            mock_get_path: MagicMock object
+            mock_load_graph: MagicMock object
+            mock_extract_garbage_value: MagicMock object
+            mock_read_garbage_metrics_pd: MagicMock object
+            mock_graph_maker: MagicMock object
+            mock_get_prefix: MagicMock object
+            mock_load_multi_input_files: MagicMock object
+            mock_get_ontology: MagicMock object
+            mock_coverage_class: MagicMock object
+        Returns:
+            None
+        """
 
         ontology_name = "test_ontology"
         algorithm = "test_algo"
