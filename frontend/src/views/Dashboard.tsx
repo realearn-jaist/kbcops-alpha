@@ -99,31 +99,31 @@ export default function Dashboard({theme, addNotification}: DashboardProps) {
 
 
   // Handle file upload
-  const handleUpload = () => {
+  const handleUpload = (selectedFile: File, ontology_name: string, alias: string) => {
     getOntologyList();
 
-    let ontology_name: string = fileId;
+    let onto_name: string = ontology_name;
     
-    if (ontology_name) {
+    if (onto_name) {
       //check if ontology_name ends with .owl then remove it
-      if (ontology_name.endsWith(".owl")) {
-        ontology_name = ontology_name.slice(0, -4);
+      if (onto_name.endsWith(".owl")) {
+        onto_name = onto_name.slice(0, -4);
       }
     }
     
-    // check ontology_name is in ontologyList or not
-    if (ontologyList.includes(ontology_name)) {
+    // check onto_name is in ontologyList or not
+    if (ontologyList.includes(onto_name)) {
       return;
     }
 
 
-    const file = selectedFiles[0];
+    const file = selectedFile;
     const formData = new FormData();
     formData.append('owl_file', file);
-    formData.append('ontology_name', fileId);
+    formData.append('ontology_name', onto_name);
     formData.append('alias', alias);
   
-    addNotification({ message: "upload: " + fileId, type: "waiting" });
+    addNotification({ message: "upload: " + onto_name, type: "waiting" });
   
     axios.post(`${BACKEND_URI}/api/upload`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' }
