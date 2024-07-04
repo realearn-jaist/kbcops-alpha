@@ -73,6 +73,13 @@ In backend/
 
 ![dowload](https://github.com/Chaphowasit/kbcops-alpha/assets/83391695/6866f028-0b25-4890-af9b-c961fb68f5d2)
 
+In the admin account, you can delete files. <br>
+where the default administrator account is <br>
+username: admin <br>
+password: password <br>
+
+![image](https://github.com/Chaphowasit/kbcops-alpha/assets/83391695/5c8c5bbd-a1a3-41a7-b472-8aa6a33cf318)
+
 ## Requirements
 
 To set up the KBCOps environment, ensure you have Python environment for version 3.8.10 or any compatible version installed. Then, install the following dependencies in **requirements.txt**:
@@ -203,7 +210,11 @@ zipp==3.19.2
    ```bash
    cd backend
    ```
-2. Start the backend server:
+2. Copy .env-example and edit with your config:
+   ```bash
+   cp .env-example .env
+   ```
+3. Start the backend server:
    ```bash
    python app.py
    ```
@@ -214,11 +225,15 @@ zipp==3.19.2
    ```bash
    cd frontend
    ```
-2. Install the dependencies (first time only):
+2. Copy .env-example and edit with your config:
+   ```bash
+   cp .env-example .env
+   ```
+3. Install the dependencies (first time only):
    ```bash
    npm install
    ```
-3. Start the frontend development server:
+4. Start the frontend development server:
    ```bash
    npm run dev
    ```
