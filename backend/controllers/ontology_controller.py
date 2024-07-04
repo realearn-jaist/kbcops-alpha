@@ -141,11 +141,13 @@ def extract_data(ontology_name: str):
         annotations = save_annotations(ontology_name, annotations, projection)
 
         # extract axiom, entity, annotation
-        onto = get_ontology(get_path(ontology_name, ontology_name + ".owl")).load()
+        world = World()
+        onto = world.get_ontology(
+            get_path(ontology_name, ontology_name + ".owl")
+        ).load()
 
         print("start run sync reasoner")
         start_time = time.time()
-
         sync_reasoner(onto)
         print(
             f"sync reasoner time usage for {ontology_name}:", time.time() - start_time

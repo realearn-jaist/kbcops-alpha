@@ -124,7 +124,6 @@ def graph_maker(
         None
     """
     try:
-        sync_reasoner(onto_file)
         for i, v in enumerate(class_individual_list):
             entity_uri = entity_prefix + v
             entity = onto_file.search(iri=entity_uri)[0]
@@ -221,9 +220,10 @@ def create_graph(ontology_name, algorithm, classifier):
         onto_type = "abox" if coverage_class_percentage > 10 else "tbox"
 
         # Load ontology file
+        world = World()
         onto_file_path = get_path(ontology_name, ontology_name + ".owl")
-        onto = get_ontology(onto_file_path).load()
-
+        onto = world.get_ontology(onto_file_path).load()
+        sync_reasoner(onto)
         input_files = ["individuals", "classes"]
         files = load_multi_input_files(ontology_name, input_files)
 
@@ -237,7 +237,7 @@ def create_graph(ontology_name, algorithm, classifier):
 
         entity_prefix = get_prefix(tmp_class_ind)
         entity = onto.search(iri=tmp_class_ind)[0]
-        entity_split = str(entity).rsplit(".")[0] + "."
+        entity_split = ".".join(str(entity).rsplit(".")[:-1]) + "."
 
         # Read garbage metrics file
         garbage_file = read_garbage_metrics_pd(ontology_name, algorithm, classifier)
