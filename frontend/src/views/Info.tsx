@@ -1,8 +1,5 @@
-import { useEffect, useState } from 'react';
-import { Box, Grid, Theme, ThemeProvider, Typography, styled } from '@mui/material';
+import { Box, Grid, Theme, ThemeProvider, styled } from '@mui/material';
 import { CssBaseline } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
 import ReactMarkdown from 'react-markdown';
 
 interface InfoProps {

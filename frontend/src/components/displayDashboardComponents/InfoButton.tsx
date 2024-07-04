@@ -1,5 +1,5 @@
 import React from 'react';
-import { IconButton, Tooltip, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Button, Grid, Paper, Box } from '@mui/material';
+import { IconButton, Tooltip, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Button, Paper, Box } from '@mui/material';
 import InfoIcon from '@mui/icons-material/Info';
 
 interface InfoButtonProps {

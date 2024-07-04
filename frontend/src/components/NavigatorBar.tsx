@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Toolbar, IconButton, Tabs, Tab, Popover, List, ListItem, ListItemText, AppBar, PaletteMode, Theme, ThemeProvider, Badge, Box, TextField } from '@mui/material';
+import { Toolbar, IconButton, Tabs, Tab, Popover, List, ListItem, ListItemText, AppBar, PaletteMode, Theme, ThemeProvider, Badge, TextField } from '@mui/material';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import { useLocation, useNavigate } from 'react-router-dom';
 import ToggleColorMode from './displayDashboardComponents/ToggleColorMode';
