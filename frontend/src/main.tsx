@@ -5,6 +5,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { PaletteMode, createTheme } from '@mui/material';
 import SignIn from './views/SignIn';
 import FileManager from './views/FileManager';
+import Info from './views/Info';
 import Dashboard from './views/Dashboard';
 import NavigatorBar from './components/NavigatorBar';
 import getCheckoutTheme from './assets/getCheckoutTheme';
@@ -42,14 +43,30 @@ const App = () => {
     setIsAuthenticated(false)
   };
 
+  const addNotification = (notification: Notification) => {
+    setNotiList((prevNotiList) => {
+      // Prepend the new notification and slice to keep the list at 5 items maximum
+      const updatedList = [notification, ...prevNotiList].slice(0, 5);
+      return updatedList;
+    });
+  };
+
+
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
         <Route path="/file" element={
           <>
-            <NavigatorBar mode={mode} toggleColorMode={toggleColorMode} theme={checkoutTheme} notiList={notiList}/>
+            <NavigatorBar mode={mode} toggleColorMode={toggleColorMode} theme={checkoutTheme} notiList={notiList} />
             <FileManager theme={checkoutTheme} isAuthenticated={isAuthenticated} handleSignOut={handleSignOut} />
+          </>
+        }
+        />
+        <Route path="/info" element={
+          <>
+            <NavigatorBar mode={mode} toggleColorMode={toggleColorMode} theme={checkoutTheme} notiList={notiList} />
+            <Info theme={checkoutTheme} isAuthenticated={isAuthenticated} handleSignOut={handleSignOut} />
           </>
         }
         />
@@ -62,8 +79,8 @@ const App = () => {
           )} />
         <Route path="/dashboard" element={
           <>
-            <NavigatorBar mode={mode} toggleColorMode={toggleColorMode} theme={checkoutTheme} notiList={notiList}/>
-            <Dashboard theme={checkoutTheme} setNotiList={setNotiList}/>
+            <NavigatorBar mode={mode} toggleColorMode={toggleColorMode} theme={checkoutTheme} notiList={notiList} />
+            <Dashboard theme={checkoutTheme} addNotification={addNotification} />
           </>
         }
         />

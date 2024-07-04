@@ -4,29 +4,38 @@ import { UploadFile } from '@mui/icons-material';
 import FileUpload from './FileUpload';
 
 interface FileUploadSectionProps {
-  setAlias: (alias: string) => void;
-  selectedFiles: File[];
-  fileId: string;
-  setFileId: (id: string) => void;
-  handleUpload: () => void;
-  handleFilesSelected: (files: File[]) => void;
+  handleUpload: (file: File, fileId: string, alias: string) => void;
 }
 
 const FileUploadSection: React.FC<FileUploadSectionProps> = ({
-  setAlias,
-  selectedFiles,
-  fileId,
-  setFileId,
   handleUpload,
-  handleFilesSelected,
 }) => {
+  const [alias, setAlias] = React.useState<string>("");
+  const [selectedFile, setSelectedFile] = React.useState<File>();
+  const [ontology_name, setOntologyName] = React.useState("");
+
+  // Handle file selection
+  const handleFilesSelected = (files: File[]) => {
+    setSelectedFile(files[0]);
+
+    if (files.length > 0) {
+      setOntologyName(files[0].name);
+    }
+  };
+
+  const clickUpload = () => {
+    if (selectedFile != undefined && alias != "" && ontology_name != "") {
+      handleUpload(selectedFile, ontology_name, alias);
+    }
+  }
+
   return (
     <>
       {/* Title */}
       <Typography variant='h6' sx={{ paddingLeft: '10px' }}>
         Uploading
       </Typography>
-      
+
       {/* TextField for ontology name */}
       <TextField
         sx={{ margin: '10px' }}
@@ -42,12 +51,12 @@ const FileUploadSection: React.FC<FileUploadSectionProps> = ({
       {/* TextField for ontology name */}
       <TextField
         sx={{ margin: '10px' }}
-        disabled={selectedFiles.length !== 1} // Disable if no file or more than one file is selected
+        disabled={selectedFile === undefined}
         required
         id="ontology_name"
         label="Ontology Name"
-        value={selectedFiles.length === 1 ? fileId : ''} // Show identifier only if one file is selected
-        onChange={(e) => setFileId(e.target.value)} // Update fileId state on change
+        value={selectedFile !== undefined ? ontology_name : ''} // Show identifier only if one file is selected
+        onChange={(e) => setOntologyName(e.target.value)} // Update fileId state on change
       />
 
       {/* Button to upload file */}
@@ -58,8 +67,8 @@ const FileUploadSection: React.FC<FileUploadSectionProps> = ({
         tabIndex={-1}
         startIcon={<UploadFile />}
         sx={{ margin: '10px', height: '50px' }}
-        disabled={selectedFiles.length !== 1} // Disable if no file or more than one file is selected
-        onClick={handleUpload} // Call handleUpload function on click
+        disabled={selectedFile === undefined || ontology_name === '' || alias === ''}
+        onClick={clickUpload}
       >
         Upload file
       </Button>

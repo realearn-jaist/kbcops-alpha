@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
-import { Toolbar, IconButton, Tabs, Tab, Popover, List, ListItem, ListItemText, AppBar, PaletteMode, Theme, ThemeProvider } from '@mui/material';
+import React, { useState, useEffect } from 'react';
+import { Toolbar, IconButton, Tabs, Tab, Popover, List, ListItem, ListItemText, AppBar, PaletteMode, Theme, ThemeProvider, Badge, Box, TextField } from '@mui/material';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import { useLocation, useNavigate } from 'react-router-dom';
 import ToggleColorMode from './displayDashboardComponents/ToggleColorMode';
-import { Info, CheckCircle, Error } from '@mui/icons-material';
+import { CheckCircle, Error, Pending } from '@mui/icons-material';
 
 interface Notification {
   message: string;
@@ -17,15 +17,14 @@ interface NavigatorBarProps {
   notiList: Notification[];
 }
 
-// Functional component for the AppBar
 const NavigatorBar = ({ mode, toggleColorMode, theme, notiList }: NavigatorBarProps) => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Define the paths for the tabs
   const pages = [
     { label: 'Dashboard', path: '/dashboard' },
-    { label: 'File', path: '/file' }
+    { label: 'File', path: '/file' },
+    { label: 'Information', path: '/info' }
   ];
 
   const currentPath = location.pathname;
@@ -34,11 +33,21 @@ const NavigatorBar = ({ mode, toggleColorMode, theme, notiList }: NavigatorBarPr
     navigate(newValue);
   };
 
-  // State for notification popover
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [hasNewNotifications, setHasNewNotifications] = useState<boolean>(false);
+
+  useEffect(() => {
+    setNotifications(notiList);
+    if (notiList.length > 0) {
+      setHasNewNotifications(true);
+    }
+  }, [notiList]);
 
   const handleNotificationClick = (event: React.MouseEvent<HTMLElement>) => {
+    if (notiList.length > 0)
     setAnchorEl(event.currentTarget);
+    setHasNewNotifications(false);
   };
 
   const handleNotificationClose = () => {
@@ -50,8 +59,8 @@ const NavigatorBar = ({ mode, toggleColorMode, theme, notiList }: NavigatorBarPr
 
   const getIcon = (type: string) => {
     switch (type) {
-      case 'info':
-        return <Info />;
+      case 'waiting':
+        return <Pending />;
       case 'success':
         return <CheckCircle />;
       case 'error':
@@ -61,11 +70,25 @@ const NavigatorBar = ({ mode, toggleColorMode, theme, notiList }: NavigatorBarPr
     }
   };
 
+  const getTextColor = (type: string) => {
+    switch (type) {
+      case 'waiting':
+        return 'darkgoldenrod';
+      case 'success':
+        return 'darkgreen';
+      case 'error':
+        return 'darkred';
+      default:
+        return 'primary';
+    }
+  };
+
+  const lastNotification = notifications.length > 0 ? notifications[0] : null;
+
   return (
     <ThemeProvider theme={theme}>
       <AppBar position="fixed" sx={{ boxShadow: 'true' }}>
         <Toolbar sx={{ minHeight: 48, padding: '0 !important', paddingRight: 1, height: "100%" }}>
-          {/* Navigation tabs */}
           <Tabs
             value={currentPath}
             onChange={handleTabChange}
@@ -79,22 +102,22 @@ const NavigatorBar = ({ mode, toggleColorMode, theme, notiList }: NavigatorBarPr
               },
               '& .MuiTab-root': {
                 minHeight: 48,
-                height: '100%', // Ensure the tab takes the full height
-                minWidth: 100, // Minimum width for tabs
-                color: 'grey', // Default text color
-                textTransform: 'none', // Prevent uppercase
-                padding: 0, // Remove padding from tabs
-                display: 'flex', // Use flex display
-                alignItems: 'center', // Center items vertically
+                height: '100%',
+                minWidth: 100,
+                color: 'grey',
+                textTransform: 'none',
+                padding: 0,
+                display: 'flex',
+                alignItems: 'center',
                 '&.Mui-selected': {
-                  color: 'white', // Selected tab text color
-                  backgroundColor: 'grey', // Selected tab background color
+                  color: 'black',
+                  backgroundColor: '#CEE5FD',
                 },
                 '&:hover': {
-                  backgroundColor: 'lightgrey', // Hover effect
+                  backgroundColor: 'lightgrey',
                 },
                 '&:not(:last-of-type)': {
-                  borderRight: '1px solid grey', // Separator line
+                  borderRight: '1px solid grey',
                 },
               },
             }}
@@ -108,12 +131,26 @@ const NavigatorBar = ({ mode, toggleColorMode, theme, notiList }: NavigatorBarPr
             ))}
           </Tabs>
 
-          {/* Notification button */}
+          {lastNotification && (
+            <TextField
+              variant="outlined"
+              size="small"
+              value={lastNotification.message}
+              InputProps={{
+                startAdornment: getIcon(lastNotification.type),
+                sx: { color: getTextColor(lastNotification.type) },
+                readOnly: true,
+              }}
+              sx={{ marginRight: 2 }}
+            />
+          )}
+
           <IconButton onClick={handleNotificationClick} sx={{ marginRight: '10px' }}>
-            <NotificationsIcon />
+            <Badge color="error" variant="dot" invisible={!hasNewNotifications}>
+              <NotificationsIcon />
+            </Badge>
           </IconButton>
 
-          {/* Notification Popover */}
           <Popover
             id={popoverId}
             open={openPopover}
@@ -129,14 +166,13 @@ const NavigatorBar = ({ mode, toggleColorMode, theme, notiList }: NavigatorBarPr
             }}
           >
             <List>
-              {notiList.map((notification, index) => (
+              {notifications.map((notification, index) => (
                 <ListItem key={index}>
-                  {/* Render icon based on notification type */}
                   {getIcon(notification.type)}
-                  <ListItemText sx={{marginLeft: 1}}
+                  <ListItemText sx={{ marginLeft: 1 }}
                     primary={notification.message}
                     primaryTypographyProps={{
-                      color: notification.type === 'error' ? 'error' : 'primary',
+                      sx: { color: getTextColor(notification.type) },
                     }}
                   />
                 </ListItem>
@@ -144,7 +180,6 @@ const NavigatorBar = ({ mode, toggleColorMode, theme, notiList }: NavigatorBarPr
             </List>
           </Popover>
 
-          {/* Toggle color mode button */}
           <ToggleColorMode mode={mode} toggleColorMode={toggleColorMode} />
         </Toolbar>
       </AppBar>

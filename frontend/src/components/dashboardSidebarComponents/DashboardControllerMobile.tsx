@@ -11,26 +11,16 @@ import ExpandMoreRoundedIcon from '@mui/icons-material/ExpandMoreRounded';
 import DashboardController from './DashboardController';
 
 interface DrawerProps {
-  setAlias: (alias: string) => void;
-  selectedFiles: File[];
-  fileId: string;
-  setFileId: (id: string) => void;
-  handleUpload: () => void;
+  handleUpload: (file: File, fileId: string, alias: string) => void;
   ontologyList: string[];
-  handleFilesSelected: (files: File[]) => void;
   trainEmbedder: (onto_id: string, algo: string, classifier: string) => void;
   getOntologyStat: (onto_id: string) => void;
   getEvaluate: (onto_id: string, algo: string, classifier: string) => void;
 }
 
 export default function DashboardControllerMobile({
-  setAlias,
-  selectedFiles,
-  fileId,
-  setFileId,
   handleUpload,
   ontologyList,
-  handleFilesSelected,
   trainEmbedder,
   getOntologyStat,
   getEvaluate,
@@ -50,13 +40,8 @@ export default function DashboardControllerMobile({
         <CloseIcon />
       </IconButton>
       <DashboardController
-        setAlias={setAlias}
-        selectedFiles={selectedFiles}
-        fileId={fileId}
-        setFileId={setFileId}
         handleUpload={handleUpload}
         ontologyList={ontologyList}
-        handleFilesSelected={handleFilesSelected}
         trainEmbedder={trainEmbedder}
         getOntologyStat={getOntologyStat}
         getEvaluate={getEvaluate}

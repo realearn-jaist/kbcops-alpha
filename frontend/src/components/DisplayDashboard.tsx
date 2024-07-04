@@ -6,6 +6,7 @@ import { Box, Divider, FormControl, InputLabel, MenuItem, Paper, Select, SelectC
 import StatCard from './displayDashboardComponents/StatCard';
 import Title from './displayDashboardComponents/Title';
 import GarbageMetrics from './displayDashboardComponents/GarbageMetrics';
+import InfoButton from './displayDashboardComponents/InfoButton';
 
 const SectionGrid = styled(Grid)(() => ({
   display: 'flex',
@@ -63,19 +64,44 @@ export default function DisplayDashboard({ ontology_name, onto_data, algo, class
 
   const [garbageIndex, setGarbageIndex] = React.useState<number>(0);
 
-  // Handler for changing the selected garbage metric
+  React.useEffect(() => {
+    // Check if garbageIndex is out of bounds
+    if (garbageIndex < 0 || garbageIndex >= garbage_image.length || garbageIndex >= garbage_metric.length) {
+      setGarbageIndex(0); // Reset to 0 or adjust as per your business logic
+    }
+  }, [garbage_image, garbage_metric]); // Run effect whenever garbage_image or garbage_metric changes
+
   const handleGarbageChange = (event: SelectChangeEvent<string>) => {
-    setGarbageIndex(parseInt(event.target.value, 10));
+    const newIndex = parseInt(event.target.value, 10); // Assuming event.target.value is the index selected
+
+    // Ensure the newIndex is within bounds of garbage_image and garbage_metric
+    if (newIndex >= 0 && newIndex < garbage_image.length && newIndex < garbage_metric.length) {
+      setGarbageIndex(newIndex);
+    } else {
+      setGarbageIndex(0); // If newIndex is out of bounds, reset to 0 or adjust as per your business logic
+    }
   };
 
   return (
     <Grid container spacing={3}>
       {/* Display ontology ID and TBox/ABox information */}
       <SectionGrid item xs={12}>
-        <Box sx={{ display: 'flex', alignItems: "center" }}>
+        <Box display={"flex"} justifyContent='space-between' alignContent={'center'} margin="20px 0px 0px 0px" >
           <Typography variant="h2" gutterBottom>
             {ontology_name}: {ontology_name !== "<Ontology>" ? (onto_data.no_individual > 0 ? "TBox & ABox" : "TBox") : "None"}
           </Typography>
+          <InfoButton
+            title="Ontology Data"
+            description={{
+              main_description: `The statistics value of '${ontology_name}' ontology`,
+              sub_description: {
+                Classes: `Number of classes: ${onto_data.no_class}`,
+                Individuals: `Number of individuals: ${onto_data.no_individual}`,
+                Axioms: `Number of axioms: ${onto_data.no_axiom}`,
+                Annotations: `Number of annotations: ${onto_data.no_annotation}`
+              }
+            }}
+          />
         </Box>
       </SectionGrid>
 
@@ -101,11 +127,29 @@ export default function DisplayDashboard({ ontology_name, onto_data, algo, class
 
       {/* Display algorithm name and classifier*/}
       <SectionGrid item xs={12}>
-        <Box sx={{ display: 'flex', alignItems: "center", margin: "20px 0px 0px 0px" }}>
+        <Box display={"flex"} justifyContent='space-between' alignContent={'center'} margin="20px 0px 0px 0px">
           <Typography variant="h2" gutterBottom>
             {algo}: {classifier}
           </Typography>
+          <InfoButton
+            title="Ontology Data"
+            description={{
+              main_description: `The statistics value of '${ontology_name}' ontology to be embedding with '${algo}', and evaluate the link prediction with '${classifier}'.`,
+              sub_description: {
+                "Total Test Sample": `Amount of test samples that randomly picked from the ontology (20% of ...): ${eval_metric.total}`,
+                "MRR": `Mean Reciprocal Rank (MRR): ${eval_metric.mrr.toFixed(2)}`,
+                "Hit@K=1": `Hit@K=1: ${(Math.round(eval_metric.hit_at_1 * 10000) / 100).toFixed(2)}%`,
+                "Hit@K=5": `Hit@K=5: ${(Math.round(eval_metric.hit_at_5 * 10000) / 100).toFixed(2)}%`,
+                "Hit@K=10": `Hit@K=10: ${(Math.round(eval_metric.hit_at_10 * 10000) / 100).toFixed(2)}%`,
+                "Garbage / Total": `The ratio of garbage that have found by test sample: ${eval_metric.total === 0 ? "None" : `${eval_metric.garbage}/${eval_metric.total}`}`,
+                "Percent": `The percentage of garbage that have found by test sample: ${eval_metric.total === 0 ? "None" : `${(Math.round(eval_metric.garbage / eval_metric.total * 10000) / 100).toFixed(2)}%`}`,
+                "Avg. Garbage Rank": `Average garbage rank: ${eval_metric.average_garbage_Rank}`,
+                "Avg. Ground Truth Rank": `Average ground truth rank: ${eval_metric.average_Rank}`
+              }
+            }}
+          />
         </Box>
+
       </SectionGrid>
 
       {/* Display evaluation metrics */}
@@ -120,7 +164,7 @@ export default function DisplayDashboard({ ontology_name, onto_data, algo, class
                 height: 150,
               }}
             >
-              <StatCard name={"Total Validate Sample"} data={eval_metric.total} type="int" />
+              <StatCard name={"Total Test Sample"} data={eval_metric.total} type="int" />
             </Paper>
           </Grid>
           <Grid item xs={12} md={6}>
@@ -266,18 +310,38 @@ export default function DisplayDashboard({ ontology_name, onto_data, algo, class
         </Grid>
       </SectionGrid>
 
+      {/* Display Garbage header*/}
+      <SectionGrid item xs={12}>
+        <Box display={"flex"} justifyContent='space-between' alignContent={'center'} margin="20px 0px 0px 0px">
+          <Typography variant="h2" gutterBottom>
+            Garbage
+          </Typography>
+          <InfoButton
+            title="Garbage Metrics"
+            description={{
+              main_description: "Select and view details of garbage metrics.",
+              sub_description: {
+                "Selected Garbage": garbage_metric.length > 0 ? (garbageIndex !== -1 ? garbage_metric[garbageIndex].Individual : "None selected") : "No garbage metrics available"
+              }
+            }}
+          />
+        </Box>
+      </SectionGrid>
+
       {/* Dropdown for selecting garbage metrics */}
       <SectionGrid item xs={12}>
-        <FormControl fullWidth sx={{ margin: "20px 0px 0px 0px" }}>
+        <FormControl fullWidth>
           <InputLabel id="select-garbage-label">Select Garbage</InputLabel>
           <Select
             labelId="select-garbage-label"
             id="select-garbage"
             label="Select Garbage"
+            value={garbageIndex === -1 ? "" : garbageIndex.toString()}
             onChange={handleGarbageChange}
+            disabled={garbage_image.length === 0 || garbage_metric.length === 0}
           >
             {garbage_metric.map((garbage, index) => (
-              <MenuItem key={index} value={index}>
+              <MenuItem key={index} value={index.toString()}>
                 {garbage.Individual}
               </MenuItem>
             ))}
@@ -285,26 +349,31 @@ export default function DisplayDashboard({ ontology_name, onto_data, algo, class
         </FormControl>
       </SectionGrid>
 
-      {/* Display selected garbage image */}
-      <SectionGrid item xs={12}>
-        <Paper
-          sx={{
-            p: 2,
-            display: 'flex',
-            flexDirection: 'column',
-          }}
-        >
-          <img
-            src={garbage_image.length > 0 ? `data:image/png;base64,${garbage_image[garbageIndex].image}` : "none"}
-            alt="displayed"
-            style={{ maxHeight: '100%', maxWidth: '100%' }}
-          />
-        </Paper>
-      </SectionGrid>
+      {/* Conditionally render sections below */}
+      {garbageIndex !== -1 && garbage_image.length > 0 && garbage_metric.length > 0 && (
+        <>
+          {/* Display selected garbage image */}
+          <SectionGrid item xs={12}>
+            <Paper
+              sx={{
+                p: 2,
+                display: 'flex',
+                flexDirection: 'column',
+              }}
+            >
+              <img
+                src={`data:image/png;base64,${garbage_image[garbageIndex].image}`}
+                alt="displayed"
+                style={{ maxHeight: '100%', maxWidth: '100%' }}
+              />
+            </Paper>
+          </SectionGrid>
 
-      <SectionGrid item xs={12}>
-        <GarbageMetrics garbage_metric={garbage_metric} garbageIndex={garbageIndex} />
-      </SectionGrid>
+          <SectionGrid item xs={12}>
+            <GarbageMetrics garbage_metric={garbage_metric} garbageIndex={garbageIndex} />
+          </SectionGrid>
+        </>
+      )}
     </Grid>
   );
 }

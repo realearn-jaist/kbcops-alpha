@@ -149,7 +149,8 @@ def extract_data(ontology_name: str):
 
         print("start run sync reasoner")
         start_time = time.time()
-        sync_reasoner()
+
+        sync_reasoner(onto)
         print(
             f"sync reasoner time usage for {ontology_name}:", time.time() - start_time
         )
@@ -182,9 +183,11 @@ def extract_data(ontology_name: str):
         }
 
     except FileNotFoundError as e:
+        
         raise FileException(f"File not found: {e}", 404)
 
     except Exception as e:
+        
         raise ExtractionException(f"Error extracting data: {e}")
 
 

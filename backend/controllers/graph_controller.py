@@ -194,8 +194,9 @@ def graph_maker(
                 )
 
             plt.savefig(os.path.join(fig_directory, f"graph_{i}.png"), format="PNG")
-
+        
     except Exception as e:
+        
         raise GraphException(f"Error creating graph: {str(e)}")
 
 

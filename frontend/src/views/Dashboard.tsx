@@ -23,17 +23,14 @@ interface Notification {
 
 interface DashboardProps {
   theme: Theme;
-  setNotiList: React.Dispatch<React.SetStateAction<Notification[]>>;
+  addNotification: (noti: Notification) => void;
 }
 
 
-export default function Dashboard({theme, setNotiList}: DashboardProps) {
+export default function Dashboard({theme, addNotification}: DashboardProps) {
   const BACKEND_URI = import.meta.env.VITE_BACKEND_URI || "http://127.0.0.1:5000";
 
   // State variables
-  const [alias, setAlias] = React.useState<string>("");
-  const [selectedFiles, setSelectedFiles] = React.useState<File[]>([]);
-  const [fileId, setFileId] = React.useState("");
   const [ontologyList, setOntologyList] = React.useState<string[]>([]);
   const [displayOntoName, setDisplayOntoName] = React.useState<string>("<Ontology>");
   const [displayOntoData, setDisplayOntoData] = React.useState<{
@@ -99,47 +96,39 @@ export default function Dashboard({theme, setNotiList}: DashboardProps) {
     };
   }, []);
 
-  // Handle file selection
-  const handleFilesSelected = (files: File[]) => {
-    setSelectedFiles(files);
 
-    if (files.length > 0) {
-      setFileId(files[0].name);
-    }
-  };
 
   // Handle file upload
-  const handleUpload = () => {
-    const file = selectedFiles[0];
+  const handleUpload = (file: File, fileId: string, alias: string) => {
     const formData = new FormData();
     formData.append('owl_file', file);
     formData.append('ontology_name', fileId);
     formData.append('alias', alias);
-
-    setNotiList((prevNotiList) => [...prevNotiList, { message: "upload: " + fileId, type: "info"}]);
-
+  
+    addNotification({ message: "upload: " + fileId, type: "waiting" });
+  
     axios.post(`${BACKEND_URI}/api/upload`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' }
     })
       .then((response) => {
         console.log("Upload successful:", response.data);
-        setNotiList((prevNotiList) => [...prevNotiList, { message: response.data.message, type: "success"}]);
+        addNotification({ message: response.data.message, type: "success" });
         extractOntology(response.data.ontology_name);
       })
       .catch((error) => {
         console.error("Upload failed:", error);
-        setNotiList((prevNotiList) => [...prevNotiList, {message: error.response.data.message, type: "error"}]);
+        addNotification({ message: error.response.data.message, type: "error" });
       });
   };
 
   // Extract ontology data
   const extractOntology = (ontology_name: string) => {
-    setNotiList((prevNotiList) => [...prevNotiList, { message: "extract: " + ontology_name, type: "info"}]);
+    addNotification({ message: "extract: " + ontology_name, type: "waiting"});
 
     axios.get(`${BACKEND_URI}/api/extract/${ontology_name}`)
       .then((response) => {
         console.log("Extract successful:", response.data);
-        setNotiList((prevNotiList) => [...prevNotiList, { message: response.data.message, type: "success"}]);
+        addNotification({ message: response.data.message, type: "success"});
         getOntologyList();
         
         clearDisplay();
@@ -149,7 +138,7 @@ export default function Dashboard({theme, setNotiList}: DashboardProps) {
       })
       .catch((error) => {
         console.error("Extract failed:", error);
-        setNotiList((prevNotiList) => [...prevNotiList, {message: error.response.data.message, type: "error"}]);
+        addNotification({message: error.response.data.message, type: "error"});
       });
   };
 
@@ -190,28 +179,28 @@ export default function Dashboard({theme, setNotiList}: DashboardProps) {
 
   // Train the embedder
   const trainEmbedder = (ontology_name: string, algorithm: string, classifier: string) => {
-    setNotiList((prevNotiList) => [...prevNotiList, { message: "train embedder: " + ontology_name + " with " + algorithm, type: "info"}]);
+    addNotification({ message: "train embedder: " + ontology_name + " with " + algorithm, type: "waiting"});
 
     axios.get(`${BACKEND_URI}/api/embed/${ontology_name}?algo=${algorithm}`)
       .then((response) => {
         console.log("Embed successful:", response.data);
-        setNotiList((prevNotiList) => [...prevNotiList, { message: response.data.message, type: "success"}]);
+        addNotification({ message: response.data.message, type: "success"});
         evaluateEmbedder(ontology_name, algorithm, classifier);
       })
       .catch((error) => {
         console.error("Embed failed:", error);
-        setNotiList((prevNotiList) => [...prevNotiList, {message: error.response.data.message, type: "error"}]);
+        addNotification({message: error.response.data.message, type: "error"});
       });
   };
 
   // Evaluate the embedder
   const evaluateEmbedder = (ontology_name: string, algorithm: string, classifier: string) => {
-    setNotiList((prevNotiList) => [...prevNotiList, { message: "evaluate embedder: " + ontology_name + " with " + algorithm + " on " + classifier, type: "info"}]);
+    addNotification({ message: "evaluate embedder: " + ontology_name + " with " + algorithm + " on " + classifier, type: "waiting"});
 
     axios.get(`${BACKEND_URI}/api/evaluate/${ontology_name}/${algorithm}/${classifier}`)
       .then((response) => {
         console.log("Evaluate successful:", response.data);
-        setNotiList((prevNotiList) => [...prevNotiList, { message: response.data.message, type: "success"}]);
+        addNotification({ message: response.data.message, type: "success"});
         getOntologyStat(ontology_name);
         setDisplayAlgo(algorithm);
         setDisplayClassifier(classifier);
@@ -221,7 +210,7 @@ export default function Dashboard({theme, setNotiList}: DashboardProps) {
       })
       .catch((error) => {
         console.error("Evaluate failed:", error);
-        setNotiList((prevNotiList) => [...prevNotiList, {message: error.response.data.message, type: "error"}]);
+        addNotification({message: error.response.data.message, type: "error"});
       });
   };
 
@@ -281,13 +270,8 @@ export default function Dashboard({theme, setNotiList}: DashboardProps) {
             }}
           >
             <DashboardController
-              setAlias={setAlias}
-              selectedFiles={selectedFiles}
-              fileId={fileId}
-              setFileId={setFileId}
               handleUpload={handleUpload}
               ontologyList={ontologyList}
-              handleFilesSelected={handleFilesSelected}
               trainEmbedder={trainEmbedder}
               getOntologyStat={getOntologyStat}
               getEvaluate={getEvaluate}
@@ -338,13 +322,8 @@ export default function Dashboard({theme, setNotiList}: DashboardProps) {
                 </Typography>
               </div>
               <DashboardControllerMobile
-                setAlias={setAlias}
-                selectedFiles={selectedFiles}
-                fileId={fileId}
-                setFileId={setFileId}
                 handleUpload={handleUpload}
                 ontologyList={ontologyList}
-                handleFilesSelected={handleFilesSelected}
                 trainEmbedder={trainEmbedder}
                 getOntologyStat={getOntologyStat}
                 getEvaluate={getEvaluate} />
