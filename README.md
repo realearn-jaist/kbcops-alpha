@@ -412,10 +412,10 @@ This guide will walk you through deploying our project on an EC2 instance.
    ```bash
    sudo systemctl start nginx
    cd backend
-   python3 app.py
+   gunicorn --bind 0.0.0.0:5000 --workers 4 --timeout 0 wsgi:app
    ```
 
-   **Note** : After modifying the Nginx configuration files, it's important to check the syntax and then reload the Nginx service to apply the changes.
+   **Note** : After modifying the Nginx configuration files, it's important to check the syntax and then reload the Nginx service to apply the changes. Setting the timeout to 0 results in an infinite timeout. In case you want the number of workers to be more or less, adjust the number as you want.
 
 - Check the Nginx configuration for syntax errors:
 
@@ -456,7 +456,7 @@ source venv/bin/activate
 cd backend/
 
 sudo systemctl start nginx # run nginx
-python3 app.py # run our flask
+gunicorn --bind 0.0.0.0:5000 --workers 4 --timeout 0 wsgi:app # run gunicorn
 
 # Check if the "Shutdown" tag is set to "True" to determine whether to shut down the instance
 Shutdown="$(aws ec2 describe-tags --region "ap-southeast-2" --filters "Name=resource-id,Values=your_instance_id" "Name=key,Values=Shutdown" --query 'Tags[*].Value' --output text)"
