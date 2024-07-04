@@ -145,14 +145,30 @@ export default function Dashboard({theme, addNotification}: DashboardProps) {
 
     axios.get(`${BACKEND_URI}/api/extract/${ontology_name}`)
       .then((response) => {
-        console.log("Extract successful:", response.data);
-        addNotification({ message: response.data.message, type: "success"});
-        getOntologyList();
+        axios.get(`${BACKEND_URI}/api/restart`)
+            .then((response) => {
+              console.log("Restart successful:", response.data);
+            })
+            .catch((error) => {
+              console.error("Restart failed:", error);
+            });
+        setTimeout(() => {
+          // Your code to handle the response after 5 seconds
+          console.log("Extract successful:", response.data);
+          addNotification({ message: response.data.message, type: "success"});
+          getOntologyList();
+          
+          clearDisplay();
+  
+          setDisplayOntoName(ontology_name);
+          setDisplayOntoData(response.data.onto_data);
+          
+          // Continue processing the response or updating UI, etc.
+        }, 5000); // 5000 milliseconds = 5 seconds
         
-        clearDisplay();
 
-        setDisplayOntoName(ontology_name);
-        setDisplayOntoData(response.data.onto_data);
+
+
       })
       .catch((error) => {
         console.error("Extract failed:", error);

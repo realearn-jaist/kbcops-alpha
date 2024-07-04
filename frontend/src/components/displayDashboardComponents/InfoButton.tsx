@@ -34,7 +34,9 @@ export default function InfoButton({ title, description }: InfoButtonProps) {
       <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
         <DialogTitle>{title}</DialogTitle>
         <DialogContent dividers style={{ minHeight: "80px"}}>
-          <DialogContentText>{description.main_description}</DialogContentText>
+          {description.main_description.split('\n').map((line, index) => (
+            <DialogContentText key={index}>{line}</DialogContentText>
+          ))}
         </DialogContent>
         <DialogContent dividers>
           {Object.entries(description.sub_description).map(([key, value]) => (
