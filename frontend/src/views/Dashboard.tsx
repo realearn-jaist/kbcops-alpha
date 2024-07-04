@@ -99,7 +99,25 @@ export default function Dashboard({theme, addNotification}: DashboardProps) {
 
 
   // Handle file upload
-  const handleUpload = (file: File, fileId: string, alias: string) => {
+  const handleUpload = () => {
+    getOntologyList();
+
+    let ontology_name: string = fileId;
+    
+    if (ontology_name) {
+      //check if ontology_name ends with .owl then remove it
+      if (ontology_name.endsWith(".owl")) {
+        ontology_name = ontology_name.slice(0, -4);
+      }
+    }
+    
+    // check ontology_name is in ontologyList or not
+    if (ontologyList.includes(ontology_name)) {
+      return;
+    }
+
+
+    const file = selectedFiles[0];
     const formData = new FormData();
     formData.append('owl_file', file);
     formData.append('ontology_name', fileId);
