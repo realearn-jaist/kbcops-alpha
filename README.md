@@ -60,7 +60,18 @@ In backend/
 
 ## Online Application
 
-Link :
+:point_right: [Link](http://52.65.181.24/) :point_left:
+
+## How to use application
+![image](https://github.com/Chaphowasit/kbcops-alpha/assets/83391695/00e92772-0cbb-4e8a-8314-3c7fe32d8814)
+
+![upload](https://github.com/Chaphowasit/kbcops-alpha/assets/83391695/2e340bdf-1f53-4040-b614-239d9361183e)
+
+![after_upload](https://github.com/Chaphowasit/kbcops-alpha/assets/83391695/ea73f743-501d-4142-a64d-44706263164c)
+
+![embedding and classify](https://github.com/Chaphowasit/kbcops-alpha/assets/83391695/9f05c136-e284-4e95-8fe1-3f0335537984)
+
+![dowload](https://github.com/Chaphowasit/kbcops-alpha/assets/83391695/6866f028-0b25-4890-af9b-c961fb68f5d2)
 
 ## Requirements
 
