@@ -673,7 +673,7 @@ Follow these steps to successfully deploy the project on your server. If you enc
         # self.graph = self.world.as_rdflib_graph()
    ```
 
-   Located in `kbcops-alpha/backend/owl2vec_star/RDF2Vec_Embed.py`.
+   Located in `kbcops-alpha/backend\owl2vec_star\Onto_Access.py`.
 
 ## Paper
 
