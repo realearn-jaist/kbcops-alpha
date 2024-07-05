@@ -2,6 +2,7 @@ import networkx as nx
 import pandas as pd
 import os
 import matplotlib.pyplot as plt
+import pydot
 from models.graph_model import load_graph
 from utils.directory_utils import get_path, replace_or_create_folder
 from models.evaluator_model import read_garbage_metrics_pd
@@ -109,28 +110,30 @@ def graph_maker(
     predict_list,
     fig_directory,
 ):
-    """Create a graph for each individual in the individual list
+    """Create a DOT file for each individual.
 
     Args:
-        onto_type (str): The type of ontology "abox" or "tbox"
-        onto_file (owlready2.namespace.Ontology): The ontology file
-        entity_prefix (str): The prefix of the entity
-        entity_split (str): The splitter for entity names
-        class_individual_list (list): The list of individuals
-        truth_list (list): The list of ground truth values
-        predict_list (list): The list of predicted values
-        fig_directory (str): The directory to save the graph figures
+        onto_type (str): The type of ontology "abox" or "tbox".
+        onto_file (owlready2.namespace.Ontology): The ontology file.
+        entity_prefix (str): The prefix of the entity.
+        entity_split (str): The splitter for entity names.
+        class_individual_list (list): The list of individuals.
+        truth_list (list): The list of ground truth values.
+        predict_list (list): The list of predicted values.
+        fig_directory (str): The directory to save the DOT files.
+
     Returns:
         None
     """
     try:
         sync_reasoner(onto_file)
+        
         for i, v in enumerate(class_individual_list):
             entity_uri = entity_prefix + v
             entity = onto_file.search(iri=entity_uri)[0]
             subs = entity.INDIRECT_is_a
 
-            relations = list()
+            relations = []
 
             if onto_type == "tbox":
                 relations = find_parents_with_relations(entity, entity_split)
@@ -147,16 +150,22 @@ def graph_maker(
             relations = [
                 relation for relation in relations if relation[0] != relation[2]
             ]
-            G = nx.DiGraph()
+
+            dot_string = "digraph G {\n"
+            
+            nodes = set()
             for rel in relations:
                 source, relation, target = rel
-                G.add_edge(source, target, label=relation)
-                G.add_nodes_from([source, target])
+                dot_string += f'  "{source}" -> "{target}" [label="{relation}"];\n'
+                nodes.add(source)
+                nodes.add(target)
+                
 
-            G.add_edge(class_individual_list[i], predict_list[i], label="predict")
-
-            node_colors = [
-                (
+            dot_string += f'  "{v}" -> "{predict_list[i]}" [label="predict"];\n'
+            
+            # Set node colors
+            for node in nodes:
+                fill_color = (
                     "gray"
                     if node != truth_list[i]
                     and node != class_individual_list[i]
@@ -167,37 +176,19 @@ def graph_maker(
                         else "#FC865A" if node == predict_list[i] else "#9DF1F0"
                     )
                 )
-                for node in G.nodes()
-            ]
-
-            # Draw the graph
-            plt.figure(figsize=(15, len(relations) * 3))
-            pos = nx.nx_pydot.graphviz_layout(G, prog="dot")
-            nx.draw(
-                G,
-                pos,
-                with_labels=True,
-                node_size=1500,
-                node_color=node_colors,
-                font_size=12,
-                font_weight="bold",
-            )
-            for edge, label in nx.get_edge_attributes(G, "label").items():
-                x = (pos[edge[0]][0] + pos[edge[1]][0]) / 2
-                y = (pos[edge[0]][1] + pos[edge[1]][1]) / 2
-                plt.text(
-                    x,
-                    y,
-                    label,
-                    horizontalalignment="center",
-                    verticalalignment="center",
-                )
-
-            plt.savefig(os.path.join(fig_directory, f"graph_{i}.png"), format="PNG")
+                if fill_color:
+                    dot_string += f'  "{node}" [style=filled,fillcolor="{fill_color}"];\n'                    
         
+            dot_string += "}\n"
+            
+            # Save DOT string to file
+            dot_file_path = os.path.join(fig_directory, f"graph_{i}.dot")
+            with open(dot_file_path, 'w') as f:
+                f.write(dot_string)
+                
     except Exception as e:
-        
         raise GraphException(f"Error creating graph: {str(e)}")
+
 
 
 def create_graph(ontology_name, algorithm, classifier):

@@ -66,7 +66,7 @@ export default function Dashboard({theme, addNotification}: DashboardProps) {
   const [displayGarbageMetric, setDisplayGarbageMetric] = React.useState<GarbageMetric[]>([]);
 
   type GarbageImage = {
-    image: string;
+    dot_file: string;
   };
   const [displayGarbageImage, setDisplayGarbageImage] = React.useState<GarbageImage[]>([]);
 

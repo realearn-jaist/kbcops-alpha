@@ -7,6 +7,7 @@ import StatCard from './displayDashboardComponents/StatCard';
 import Title from './displayDashboardComponents/Title';
 import GarbageMetrics from './displayDashboardComponents/GarbageMetrics';
 import InfoButton from './displayDashboardComponents/InfoButton';
+import Graphviz from 'graphviz-react';
 
 const SectionGrid = styled(Grid)(() => ({
   display: 'flex',
@@ -26,7 +27,7 @@ type GarbageMetric = {
 };
 
 type GarbageImage = {
-  image: string;
+  dot_file: string;
 };
 
 interface MainProps {
@@ -361,11 +362,15 @@ export default function DisplayDashboard({ ontology_name, onto_data, algo, class
                 flexDirection: 'column',
               }}
             >
-              <img
-                src={`data:image/png;base64,${garbage_image[garbageIndex].image}`}
-                alt="displayed"
-                style={{ maxHeight: '100%', maxWidth: '100%' }}
-              />
+              {garbage_image.length > 0 && (
+                <>
+                <Graphviz
+                  dot={garbage_image[garbageIndex].dot_file}
+                  options={{ width: '100%', height: '100%' }}
+                />
+                </>
+                
+              )}
             </Paper>
           </SectionGrid>
 
