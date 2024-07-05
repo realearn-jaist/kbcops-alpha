@@ -73,8 +73,9 @@ def upload():
 
     except Exception as e:
         exception = handle_exception(e)
-        return jsonify({"message": exception["message"]}), exception["error_code"]   
-    
+        return jsonify({"message": exception["message"]}), exception["error_code"]
+
+
 @ontology_blueprint.route("/extract/<ontology>", methods=["GET"])
 def extract(ontology):
     """Extracts the data from the ontology file and returns it as a JSON object
@@ -351,9 +352,3 @@ def delete_file(ontology_name):
         exception = handle_exception(e)
         logger.error("File deletion failed {}".format([ontology_name]))
         return jsonify({"message": exception["message"]}), exception["error_code"]
-
-
-@ontology_blueprint.route("/restart", methods=["GET"])
-def restart_app():
-    python = sys.executable
-    os.execl(python, python, *sys.argv)

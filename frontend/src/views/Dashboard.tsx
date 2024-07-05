@@ -113,6 +113,7 @@ export default function Dashboard({theme, addNotification}: DashboardProps) {
     
     // check onto_name is in ontologyList or not
     if (ontologyList.includes(onto_name)) {
+      addNotification({ message: "File name already existed: " + ontology_name , type: "error"});
       return;
     }
 
@@ -145,29 +146,12 @@ export default function Dashboard({theme, addNotification}: DashboardProps) {
 
     axios.get(`${BACKEND_URI}/api/extract/${ontology_name}`)
       .then((response) => {
-        axios.get(`${BACKEND_URI}/api/restart`)
-            .then((response) => {
-              console.log("Restart successful:", response.data);
-            })
-            .catch((error) => {
-              console.error("Restart failed:", error);
-            });
-        setTimeout(() => {
-          console.log("Extract successful:", response.data);
-          addNotification({ message: response.data.message, type: "success"});
-          getOntologyList();
-          
-          clearDisplay();
-  
-          setDisplayOntoName(ontology_name);
-          setDisplayOntoData(response.data.onto_data);
-          
-          // Continue processing the response or updating UI, etc.
-        }, 5000); // 5000 milliseconds = 5 seconds
-        
-
-
-
+        console.log("Extract successful:", response.data);
+        addNotification({ message: response.data.message, type: "success"});
+        getOntologyList();
+        clearDisplay();
+        setDisplayOntoName(ontology_name);
+        setDisplayOntoData(response.data.onto_data);
       })
       .catch((error) => {
         console.error("Extract failed:", error);
@@ -232,25 +216,14 @@ export default function Dashboard({theme, addNotification}: DashboardProps) {
 
     axios.get(`${BACKEND_URI}/api/evaluate/${ontology_name}/${algorithm}/${classifier}`)
       .then((response) => {
-
-        axios.get(`${BACKEND_URI}/api/restart`)
-        .then((response) => {
-          console.log("Restart successful:", response.data);
-        })
-        .catch((error) => {
-          console.error("Restart failed:", error);
-        });
-    setTimeout(() => {
-      console.log("Evaluate successful:", response.data);
-      addNotification({ message: response.data.message, type: "success"});
-      getOntologyStat(ontology_name);
-      setDisplayAlgo(algorithm);
-      setDisplayClassifier(classifier);
-      setDisplayEvalMetric(response.data.performance);
-      setDisplayGarbageMetric(response.data.garbage);
-      setDisplayGarbageImage(response.data.images);
-    }, 5000); // 5000 milliseconds = 5 seconds
-  
+        console.log("Evaluate successful:", response.data);
+        addNotification({ message: response.data.message, type: "success"});
+        getOntologyStat(ontology_name);
+        setDisplayAlgo(algorithm);
+        setDisplayClassifier(classifier);
+        setDisplayEvalMetric(response.data.performance);
+        setDisplayGarbageMetric(response.data.garbage);
+        setDisplayGarbageImage(response.data.images);
       })
       .catch((error) => {
         console.error("Evaluate failed:", error);
