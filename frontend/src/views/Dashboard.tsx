@@ -153,7 +153,6 @@ export default function Dashboard({theme, addNotification}: DashboardProps) {
               console.error("Restart failed:", error);
             });
         setTimeout(() => {
-          // Your code to handle the response after 5 seconds
           console.log("Extract successful:", response.data);
           addNotification({ message: response.data.message, type: "success"});
           getOntologyList();
@@ -233,14 +232,25 @@ export default function Dashboard({theme, addNotification}: DashboardProps) {
 
     axios.get(`${BACKEND_URI}/api/evaluate/${ontology_name}/${algorithm}/${classifier}`)
       .then((response) => {
-        console.log("Evaluate successful:", response.data);
-        addNotification({ message: response.data.message, type: "success"});
-        getOntologyStat(ontology_name);
-        setDisplayAlgo(algorithm);
-        setDisplayClassifier(classifier);
-        setDisplayEvalMetric(response.data.performance);
-        setDisplayGarbageMetric(response.data.garbage);
-        setDisplayGarbageImage(response.data.images);
+
+        axios.get(`${BACKEND_URI}/api/restart`)
+        .then((response) => {
+          console.log("Restart successful:", response.data);
+        })
+        .catch((error) => {
+          console.error("Restart failed:", error);
+        });
+    setTimeout(() => {
+      console.log("Evaluate successful:", response.data);
+      addNotification({ message: response.data.message, type: "success"});
+      getOntologyStat(ontology_name);
+      setDisplayAlgo(algorithm);
+      setDisplayClassifier(classifier);
+      setDisplayEvalMetric(response.data.performance);
+      setDisplayGarbageMetric(response.data.garbage);
+      setDisplayGarbageImage(response.data.images);
+    }, 5000); // 5000 milliseconds = 5 seconds
+  
       })
       .catch((error) => {
         console.error("Evaluate failed:", error);
