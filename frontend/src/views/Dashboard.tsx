@@ -283,7 +283,6 @@ export default function Dashboard({theme, addNotification}: DashboardProps) {
               flexDirection: 'column',
               flexGrow: 1,
               width: '100%',
-              maxWidth: 500,
             }}
           >
             <DashboardController
@@ -332,10 +331,10 @@ export default function Dashboard({theme, addNotification}: DashboardProps) {
             >
               <div>
                 <Typography variant="subtitle2" gutterBottom>
-                  Selected ontology
+                  Selected Ontology, Algorithm, Classifier
                 </Typography>
                 <Typography variant="body1">
-                  {ontologyList}
+                  {displayOntoName}, {displayAlgo}, {displayClassifier}
                 </Typography>
               </div>
               <DashboardControllerMobile

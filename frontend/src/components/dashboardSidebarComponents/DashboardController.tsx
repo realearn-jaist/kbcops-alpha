@@ -1,7 +1,7 @@
 import * as React from 'react';
 
 import { Divider, SelectChangeEvent } from '@mui/material';
-import EmbeddingForm from './EmbeddingForm';
+import EmbeddingSection from './EmbeddingSection';
 import FileUploadSection from './FileUploadSection';
 
 interface DrawerProps {
@@ -63,7 +63,7 @@ export default function DashboardController({
 
 
       {/* Embedding form component */}
-      <EmbeddingForm
+      <EmbeddingSection
         data_pack={{
           ontologyList: ontologyList,
           selectedOntology: selectedOntology,

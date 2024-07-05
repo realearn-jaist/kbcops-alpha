@@ -1,5 +1,5 @@
 import React from 'react';
-import { TextField, Button, Typography } from '@mui/material';
+import { TextField, Button, Typography, Grid } from '@mui/material';
 import { UploadFile } from '@mui/icons-material';
 import FileUpload from './FileUpload';
 
@@ -30,50 +30,61 @@ const FileUploadSection: React.FC<FileUploadSectionProps> = ({
   }
 
   return (
-    <>
+    <Grid container spacing={2}>
       {/* Title */}
-      <Typography variant='h6' sx={{ paddingLeft: '10px' }}>
-        Uploading
-      </Typography>
+      <Grid item xs={12}>
+        <Typography variant='h6' sx={{ paddingLeft: '10px' }}>
+          Uploading
+        </Typography>
+      </Grid>
 
-      {/* TextField for ontology name */}
-      <TextField
-        sx={{ margin: '10px' }}
-        required
-        id="owner_alias"
-        label="Owner's Alias"
-        onChange={(e) => setAlias(e.target.value)} // Update fileId state on change
-      />
+      {/* TextField for owner's alias */}
+      <Grid item xs={12}>
+        <TextField
+          fullWidth
+          required
+          id="owner_alias"
+          label="Owner's Alias"
+          value={alias}
+          onChange={(e) => setAlias(e.target.value)}
+        />
+      </Grid>
 
       {/* File upload component */}
-      <FileUpload onFilesSelected={handleFilesSelected} />
+      <Grid item xs={12}>
+        <FileUpload onFilesSelected={handleFilesSelected} />
+      </Grid>
 
       {/* TextField for ontology name */}
-      <TextField
-        sx={{ margin: '10px' }}
-        disabled={selectedFile === undefined}
-        required
-        id="ontology_name"
-        label="Ontology Name"
-        value={selectedFile !== undefined ? ontology_name : ''} // Show identifier only if one file is selected
-        onChange={(e) => setOntologyName(e.target.value)} // Update fileId state on change
-      />
+      <Grid item xs={12}>
+        <TextField
+          fullWidth
+          required
+          id="ontology_name"
+          label="Ontology Name"
+          value={ontology_name}
+          disabled={selectedFile === undefined}
+          onChange={(e) => setOntologyName(e.target.value)}
+        />
+      </Grid>
 
       {/* Button to upload file */}
-      <Button
-        component="label"
-        role={undefined}
-        variant="contained"
-        tabIndex={-1}
-        startIcon={<UploadFile />}
-        sx={{ margin: '10px', height: '50px' }}
-        disabled={selectedFile === undefined || ontology_name === '' || alias === ''}
-        onClick={clickUpload}
-      >
-        Upload file
-      </Button>
-
-    </>
+      <Grid item xs={12} sx={{ textAlign: 'center' }}>
+        <Button
+          component="label"
+          role={undefined}
+          variant="contained"
+          tabIndex={-1}
+          startIcon={<UploadFile />}
+          sx={{height: '50px' }}
+          disabled={selectedFile === undefined || ontology_name === '' || alias === ''}
+          onClick={clickUpload}
+          fullWidth
+        >
+          Upload file
+        </Button>
+      </Grid>
+    </Grid>
   );
 };
 
