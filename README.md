@@ -612,6 +612,69 @@ Follow these steps to successfully deploy the project on your server. If you enc
 
    Located in `kbcops-alpha/backend/owl2vec_star/RDF2Vec_Embed.py`.
 
+3. **Update in `Onto_Access.py`**:
+
+   Change:
+
+   ```python
+   def loadOntology(self, reasoner=Reasoner.NONE, memory_java='10240'):
+
+        #self.world = World()
+
+
+        #Method from owlready
+        self.onto = get_ontology(self.urionto).load()
+        #self.onto = self.world.get_ontology(self.urionto).load()
+        #self.onto.load()
+
+        #self.classifiedOnto = get_ontology(self.urionto + '_classified')
+   
+       ...
+   
+       ...
+   
+       ...
+   
+        #report problem with unsat (Nothing not declared....)
+        #print(list(self.onto.inconsistent_classes()))
+
+        self.graph = default_world.as_rdflib_graph()
+        logging.info("There are {} triples in the ontology".format(len(self.graph)))
+        # self.graph = self.world.as_rdflib_graph()
+   ```
+
+   To:
+
+   ```python
+   def loadOntology(self, reasoner=Reasoner.NONE, memory_java='10240'):
+
+        self.world = World()
+
+
+        #Method from owlready
+        # self.onto = get_ontology(self.urionto).load()
+        self.onto = self.world.get_ontology(self.urionto).load()
+        #self.onto.load()
+
+        #self.classifiedOnto = get_ontology(self.urionto + '_classified')
+   
+       ...
+   
+       ...
+   
+       ...
+   
+        #report problem with unsat (Nothing not declared....)
+        #print(list(self.onto.inconsistent_classes()))
+
+        # self.graph = default_world.as_rdflib_graph()
+        self.graph = self.world.as_rdflib_graph()
+        logging.info("There are {} triples in the ontology".format(len(self.graph)))
+        # self.graph = self.world.as_rdflib_graph()
+   ```
+
+   Located in `kbcops-alpha/backend/owl2vec_star/RDF2Vec_Embed.py`.
+
 ## Paper
 
 #### **Title:** Are Embeddings All We Need for Knowledge Base Completion? Insights from Description Logicians
