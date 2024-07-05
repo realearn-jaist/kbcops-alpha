@@ -9,7 +9,7 @@ def save_axioms(ontology_name, axioms):
     """Save axioms to a file
 
     Args:
-        id (str): The id of the ontology
+        ontology_name (str): The name of the ontology
         axioms (list): The list of axioms to save
     Returns:
         list: The list of axioms saved to the file
@@ -28,7 +28,7 @@ def save_classes(ontology_name, classes):
     """Save classes to a file
 
     Args:
-        id (str): The id of the ontology
+        ontology_name (str): The name of the ontology
         classes (list): The list of classes to save
     Returns:
         list: The list of classes saved to the file
@@ -47,7 +47,7 @@ def save_individuals(ontology_name, individuals):
     """Save individuals to a file
 
     Args:
-        id (str): The id of the ontology
+        ontology_name (str): The name of the ontology
         individuals (list): The list of individuals to save
     Returns:
         list: The list of individuals saved to the file
@@ -66,7 +66,7 @@ def save_annotations(ontology_name, annotations, projection):
     """Save annotations to a file
 
     Args:
-        id (str): The id of the ontology
+        ontology_name (str): The name of the ontology
         annotations (list): The list of annotations to save
         projection (Projection): The projection object
     Returns:
@@ -102,9 +102,9 @@ def load_multi_input_files(ontology_name, files_list):
 
     Args:
         ontology_name (str): The name of the ontology
-        input_file (str): The name of the input file
+        files_list (str): The name of the input file
     Returns:
-        list: The list of axioms loaded from the file
+        dict: The dictionary of axioms loaded from the files
     """
     try:
         files_dict = dict()
@@ -140,7 +140,7 @@ def save_infer(ontology_name, infers):
     """Save inferred ancestors to a file
 
     Args:
-        id (str): The id of the ontology
+        ontology_name (str): The name of the ontology
         infers (list): The list of inferred ancestors to save
     Returns:
         list: The list of inferred ancestors saved to the file
@@ -184,7 +184,13 @@ def load_train_test_validation(ontology_name, type=0):
 
 
 def coverage_class(ontology_name):
+    """Calculate the coverage of classes in the ontology
 
+    Args:
+        ontology_name (str): The name of the ontology
+    Returns:
+        float: The coverage percentage of classes in the ontology
+    """
     path = get_path(ontology_name, ontology_name + ".owl")
     onto = owlready2.get_ontology(path).load()
     coverage_class = set()

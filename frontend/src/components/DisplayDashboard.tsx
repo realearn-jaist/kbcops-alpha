@@ -320,9 +320,18 @@ export default function DisplayDashboard({ ontology_name, onto_data, algo, class
           <InfoButton
             title="Garbage Metrics"
             description={{
-              main_description: "Select and view details of garbage metrics.",
+              main_description: "Select and view details of garbage metrics for test individual/class that its rank differ most from the true classes (top 5)",
               sub_description: {
-                "Selected Garbage": garbage_metric.length > 0 ? (garbageIndex !== -1 ? garbage_metric[garbageIndex].Individual : "None selected") : "No garbage metrics available"
+                
+                "Color details (blue node)": "represents test individual/class for the prediction",
+                "Color details (green node)": "represents true class (ground truth) of the test",
+                "Color details (orange node)": "represent inferable node (garbage) that were predicted with higher score than the true class",
+                "Color details (gray node)": "represent classes other than the above in the extracted relations",
+                "Selected Garbage": garbage_metric.length > 0 ? (garbageIndex !== -1 ? garbage_metric[garbageIndex].Individual : "None selected") : "No garbage metrics available",
+                "Ground Truth Score": garbage_metric.length > 0 ? (garbageIndex !== -1 ? `${(Math.round(garbage_metric[garbageIndex].Score_true * 10000) / 100).toFixed(2)}%` : "None selected") : "None selected",
+                "Ground Truth Rank": garbage_metric.length > 0 ? (garbageIndex !== -1 ? `${garbage_metric[garbageIndex].True_rank}` : "None selected") : "None selected",
+                "Garbage Score": garbage_metric.length > 0 ? (garbageIndex !== -1 ? `${(Math.round(garbage_metric[garbageIndex].Score_predict * 10000) / 100).toFixed(2)}%` : "None selected") : "None selected",
+                "Garbage Rank": garbage_metric.length > 0 ? (garbageIndex !== -1 ? `${garbage_metric[garbageIndex].Predicted_rank}` : "None selected") : "None selected",
               }
             }}
           />

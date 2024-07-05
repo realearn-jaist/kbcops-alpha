@@ -6,6 +6,7 @@ import pandas as pd
 from utils.directory_utils import get_path
 from utils.exceptions import FileException
 
+
 def write_evaluate(ontology_name: str, algorithm: str, classifier: str, data: dict):
     """Writes the evaluation data to a json file
 
@@ -29,7 +30,7 @@ def read_evaluate(ontology_name: str, algorithm: str, classifier: str):
     """Reads the evaluation data from a json file
 
     Args:
-        ontology (str): The name of the ontology
+        ontology_name (str): The name of the ontology
         algorithm (str): The name of the algorithm
         classifier (str): The name of the classifier
     Returns:
@@ -46,16 +47,18 @@ def read_evaluate(ontology_name: str, algorithm: str, classifier: str):
         raise FileException(f"Error reading evaluation data: {str(e)}")
 
 
-def write_garbage_metrics(ontology_name: str, algorithm: str, classifier: str, data: list):
+def write_garbage_metrics(
+    ontology_name: str, algorithm: str, classifier: str, data: list
+):
     """Writes the garbage metrics data to a csv file
 
     Args:
-        ontology (str): The name of the ontology
+        ontology_name (str): The name of the ontology
         algorithm (str): The name of the algorithm
         classifier (str): The name of the classifier
         data (list): The garbage metrics data
     Returns:
-        None
+        list: The garbage metrics data
     """
     try:
         json_output = []
@@ -69,11 +72,12 @@ def write_garbage_metrics(ontology_name: str, algorithm: str, classifier: str, d
     except Exception as e:
         raise FileException(f"Error writing garbage metrics: {str(e)}")
 
+
 def read_garbage_metrics(ontology_name: str, algorithm: str, classifier: str):
     """Reads the garbage metrics data from a csv file
 
     Args:
-        ontology (str): The name of the ontology
+        ontology_name (str): The name of the ontology
         algorithm (str): The name of the algorithm
         classifier (str): The name of the classifier
     Returns:
@@ -109,7 +113,7 @@ def read_garbage_metrics_pd(ontology_name: str, algorithm: str, classifier: str)
     """Reads the garbage metrics data from a csv file
 
     Args:
-        ontology (str): The name of the ontology
+        ontology_name (str): The name of the ontology
         algorithm (str): The name of the algorithm
         classifier (str): The name of the classifier
     Returns:

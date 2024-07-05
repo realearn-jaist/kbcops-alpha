@@ -94,10 +94,7 @@ class TestOntologyModule(unittest.TestCase):
         """Test get_onto_stat function in ontology_controller.py
 
         Args:
-            mock_load_annotations: MagicMock object
-            mock_load_individuals: MagicMock object
-            mock_load_classes: MagicMock object
-            mock_load_axioms: MagicMock object
+            mock_load_multi_input_files: MagicMock object
         Returns:
             None
         """
@@ -152,10 +149,9 @@ class TestOntologyModule(unittest.TestCase):
         """Test extract_data function in ontology_controller.py
 
         Args:
-            mock_train_test_val_tbox: MagicMock object
-            mock_train_test_val_abox: MagicMock object
-            mocl_load_individuals: MagicMock object
-            mock_load_classes: MagicMock object
+            mock_train_test_val_gen_tbox: MagicMock object
+            mock_train_test_val_gen_abox: MagicMock object
+            mock_load_multi_input_files: MagicMock object
             mock_save_infer: MagicMock object
             mock_abox_infer: MagicMock object
             mock_tbox_infer: MagicMock object

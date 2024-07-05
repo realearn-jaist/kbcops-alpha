@@ -21,25 +21,25 @@ from utils.exceptions import EvaluationException, FileException
 #############################################################################################
 
 
-def get_subfix(value: str):
-    """Get the subfix of a string by delimiter because in ontology the class and individual id are separated by # or /
+def get_suffix(value: str):
+    """Get the suffix of a string by delimiter because in ontology the class and individual id are separated by # or /
 
     Args:
-        value (str): The string to get the subfix of
+        value (str): The string to get the suffix of
     Returns:
-        str: The subfix of the string
+        str: The suffix of the string
     """
     try:
         delimiter = "#" if "#" in value else "/"
-        subfix = value.rsplit(delimiter, 1)[-1]
-        return subfix
+        suffix = value.rsplit(delimiter, 1)[-1]
+        return suffix
     except IndexError as e:
         raise EvaluationException(
-            f"Invalid input format in get_subfix function: {str(e)}"
+            f"Invalid input format in get_suffix function: {str(e)}"
         )
     except Exception as e:
         raise EvaluationException(
-            f"Internal server error in get_subfix function: {str(e)}"
+            f"Internal server error in get_suffix function: {str(e)}"
         )
 
 
@@ -137,10 +137,10 @@ class InclusionEvaluator(Evaluator):
                     DLcount += 1
                     data.append(
                         {
-                            "Individual": get_subfix(sub),
-                            "Predicted": get_subfix(predicted_inf),
+                            "Individual": get_suffix(sub),
+                            "Predicted": get_suffix(predicted_inf),
                             "Predicted_rank": predicted_inf_rank,
-                            "True": get_subfix(sorted_classes_non[rank_non - 1]),
+                            "True": get_suffix(sorted_classes_non[rank_non - 1]),
                             "True_rank": rank_non,
                             "Score_predict": score[predicted_inf_rank - 1],
                             "Score_true": score[rank_non - 1],
@@ -245,8 +245,9 @@ def predict_func(
     """Predict the ontology with the algorithm
 
     Args:
-        ontology (str): The name of the ontology
+        ontology_name (str): The name of the ontology
         algorithm (str): The name of the algorithm
+        classifier (str): The name of the classifier
     Returns:
         dict: The result of the prediction
     """

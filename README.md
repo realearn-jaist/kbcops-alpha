@@ -60,7 +60,25 @@ In backend/
 
 ## Online Application
 
-Link :
+:point_right: [Link](http://52.65.181.24/) :point_left:
+
+## How to use application
+![image](https://github.com/Chaphowasit/kbcops-alpha/assets/83391695/00e92772-0cbb-4e8a-8314-3c7fe32d8814)
+
+![upload](https://github.com/Chaphowasit/kbcops-alpha/assets/83391695/2e340bdf-1f53-4040-b614-239d9361183e)
+
+![after_upload](https://github.com/Chaphowasit/kbcops-alpha/assets/83391695/ea73f743-501d-4142-a64d-44706263164c)
+
+![embedding and classify](https://github.com/Chaphowasit/kbcops-alpha/assets/83391695/9f05c136-e284-4e95-8fe1-3f0335537984)
+
+![dowload](https://github.com/Chaphowasit/kbcops-alpha/assets/83391695/6866f028-0b25-4890-af9b-c961fb68f5d2)
+
+In the admin account, you can delete files. <br>
+where the default administrator account is <br>
+username: admin <br>
+password: password <br>
+
+![image](https://github.com/Chaphowasit/kbcops-alpha/assets/83391695/5c8c5bbd-a1a3-41a7-b472-8aa6a33cf318)
 
 ## Requirements
 
@@ -137,6 +155,8 @@ zipp==3.19.2
 
 ## Hyperparameter for Classifier Model
 
+**Note** : Train size = 70%, Test size = 20% and Validate size = 10%
+
 ### Random Forest
 
 - `n_estimators`: 200
@@ -190,7 +210,11 @@ zipp==3.19.2
    ```bash
    cd backend
    ```
-2. Start the backend server:
+2. Copy .env-example and edit with your config:
+   ```bash
+   cp .env-example .env
+   ```
+3. Start the backend server:
    ```bash
    python app.py
    ```
@@ -201,11 +225,15 @@ zipp==3.19.2
    ```bash
    cd frontend
    ```
-2. Install the dependencies (first time only):
+2. Copy .env-example and edit with your config:
+   ```bash
+   cp .env-example .env
+   ```
+3. Install the dependencies (first time only):
    ```bash
    npm install
    ```
-3. Start the frontend development server:
+4. Start the frontend development server:
    ```bash
    npm run dev
    ```
@@ -410,10 +438,10 @@ This guide will walk you through deploying our project on an EC2 instance.
    ```bash
    sudo systemctl start nginx
    cd backend
-   python3 app.py
+   gunicorn --bind 0.0.0.0:5000 --workers 4 --timeout 0 wsgi:app
    ```
 
-   **Note** : After modifying the Nginx configuration files, it's important to check the syntax and then reload the Nginx service to apply the changes.
+   **Note** : After modifying the Nginx configuration files, it's important to check the syntax and then reload the Nginx service to apply the changes. Setting the timeout to 0 results in an infinite timeout. In case you want the number of workers to be more or less, adjust the number as you want.
 
 - Check the Nginx configuration for syntax errors:
 
@@ -454,7 +482,7 @@ source venv/bin/activate
 cd backend/
 
 sudo systemctl start nginx # run nginx
-python3 app.py # run our flask
+gunicorn --bind 0.0.0.0:5000 --workers 4 --timeout 0 wsgi:app # run gunicorn
 
 # Check if the "Shutdown" tag is set to "True" to determine whether to shut down the instance
 Shutdown="$(aws ec2 describe-tags --region "ap-southeast-2" --filters "Name=resource-id,Values=your_instance_id" "Name=key,Values=Shutdown" --query 'Tags[*].Value' --output text)"
@@ -583,6 +611,69 @@ Follow these steps to successfully deploy the project on your server. If you enc
    ```
 
    Located in `kbcops-alpha/backend/owl2vec_star/RDF2Vec_Embed.py`.
+
+3. **Update in `Onto_Access.py`**:
+
+   Change:
+
+   ```python
+   def loadOntology(self, reasoner=Reasoner.NONE, memory_java='10240'):
+
+        #self.world = World()
+
+
+        #Method from owlready
+        self.onto = get_ontology(self.urionto).load()
+        #self.onto = self.world.get_ontology(self.urionto).load()
+        #self.onto.load()
+
+        #self.classifiedOnto = get_ontology(self.urionto + '_classified')
+   
+       ...
+   
+       ...
+   
+       ...
+   
+        #report problem with unsat (Nothing not declared....)
+        #print(list(self.onto.inconsistent_classes()))
+
+        self.graph = default_world.as_rdflib_graph()
+        logging.info("There are {} triples in the ontology".format(len(self.graph)))
+        # self.graph = self.world.as_rdflib_graph()
+   ```
+
+   To:
+
+   ```python
+   def loadOntology(self, reasoner=Reasoner.NONE, memory_java='10240'):
+
+        self.world = World()
+
+
+        #Method from owlready
+        # self.onto = get_ontology(self.urionto).load()
+        self.onto = self.world.get_ontology(self.urionto).load()
+        #self.onto.load()
+
+        #self.classifiedOnto = get_ontology(self.urionto + '_classified')
+   
+       ...
+   
+       ...
+   
+       ...
+   
+        #report problem with unsat (Nothing not declared....)
+        #print(list(self.onto.inconsistent_classes()))
+
+        # self.graph = default_world.as_rdflib_graph()
+        self.graph = self.world.as_rdflib_graph()
+        logging.info("There are {} triples in the ontology".format(len(self.graph)))
+        # self.graph = self.world.as_rdflib_graph()
+   ```
+
+   Located in `kbcops-alpha/backend\owl2vec_star\Onto_Access.py`.
 
 ## Paper
 

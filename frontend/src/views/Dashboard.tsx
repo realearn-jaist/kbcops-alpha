@@ -99,13 +99,32 @@ export default function Dashboard({theme, addNotification}: DashboardProps) {
 
 
   // Handle file upload
-  const handleUpload = (file: File, fileId: string, alias: string) => {
+  const handleUpload = (selectedFile: File, ontology_name: string, alias: string) => {
+    getOntologyList();
+
+    let onto_name: string = ontology_name;
+    
+    if (onto_name) {
+      //check if ontology_name ends with .owl then remove it
+      if (onto_name.endsWith(".owl")) {
+        onto_name = onto_name.slice(0, -4);
+      }
+    }
+    
+    // check onto_name is in ontologyList or not
+    if (ontologyList.includes(onto_name)) {
+      addNotification({ message: "File name already existed: " + ontology_name , type: "error"});
+      return;
+    }
+
+
+    const file = selectedFile;
     const formData = new FormData();
     formData.append('owl_file', file);
-    formData.append('ontology_name', fileId);
+    formData.append('ontology_name', onto_name);
     formData.append('alias', alias);
   
-    addNotification({ message: "upload: " + fileId, type: "waiting" });
+    addNotification({ message: "upload: " + onto_name, type: "waiting" });
   
     axios.post(`${BACKEND_URI}/api/upload`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' }
@@ -130,9 +149,7 @@ export default function Dashboard({theme, addNotification}: DashboardProps) {
         console.log("Extract successful:", response.data);
         addNotification({ message: response.data.message, type: "success"});
         getOntologyList();
-        
         clearDisplay();
-
         setDisplayOntoName(ontology_name);
         setDisplayOntoData(response.data.onto_data);
       })

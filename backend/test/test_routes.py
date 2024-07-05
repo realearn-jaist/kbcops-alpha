@@ -73,6 +73,7 @@ class TestRoutes(unittest.TestCase):
 
         Args:
             mock_upload_ontology: MagicMock object
+            mock_remove_dir: MagicMock object
         Returns:
             None
         """
@@ -155,7 +156,7 @@ class TestRoutes(unittest.TestCase):
         """Test that the list_ontologies route works successfully when ontologies are listed successfully
 
         Args:
-            mock_getAll_ontology: MagicMock object
+            mock_get_all_ontology: MagicMock object
         Returns:
             None
         """

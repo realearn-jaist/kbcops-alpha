@@ -31,7 +31,7 @@ def upload_ontology(file, ontology_name: str):
         file (File): The ontology file to upload
         ontology_name (str): The name of the ontology
     Returns:
-        ontology_name (str): The name of the ontology
+        ontology_name (str): The name of the ontology that was saved
     """
     if ontology_name.endswith(".owl"):
         ontology_name = ontology_name[:-4]
@@ -73,10 +73,6 @@ def get_onto_stat(ontology_name: str):
         "no_axiom": len(files["axioms"]),
         "no_annotation": len(files["uri_labels"] + files["annotations"]),
     }
-
-
-## Refactor code from https://github.com/KRR-Oxford/OWL2Vec-Star/blob/master/OWL2Vec_Standalone.py  ###########
-###############################################################################################################
 
 
 ## Refactor code from https://github.com/KRR-Oxford/OWL2Vec-Star/blob/master/OWL2Vec_Standalone.py  ###########
@@ -145,11 +141,13 @@ def extract_data(ontology_name: str):
         annotations = save_annotations(ontology_name, annotations, projection)
 
         # extract axiom, entity, annotation
-        onto = get_ontology(get_path(ontology_name, ontology_name + ".owl")).load()
+        world = World()
+        onto = world.get_ontology(
+            get_path(ontology_name, ontology_name + ".owl")
+        ).load()
 
         print("start run sync reasoner")
         start_time = time.time()
-
         sync_reasoner(onto)
         print(
             f"sync reasoner time usage for {ontology_name}:", time.time() - start_time
@@ -183,11 +181,11 @@ def extract_data(ontology_name: str):
         }
 
     except FileNotFoundError as e:
-        
+
         raise FileException(f"File not found: {e}", 404)
 
     except Exception as e:
-        
+
         raise ExtractionException(f"Error extracting data: {e}")
 
 
@@ -406,7 +404,7 @@ def read_infer_classes(file):
     Args:
         file (File): The infer_classes file
     Returns:
-        dict: The dictionary mapping individuals to their inferred classes
+        dict: The dictionary mapping cls/ind to their inferred classes
     """
     infer_dict = {}
     try:
@@ -560,7 +558,7 @@ def train_test_val_gen_abox(onto: Ontology, ontology_name: str):
 
     Args:
         onto (Ontology): The ontology to generate the training, test, and validation sets from
-        id (str): The id of the ontology
+        ontology_name (str): The id of the ontology
     Returns:
         None
     """

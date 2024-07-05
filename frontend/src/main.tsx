@@ -66,7 +66,7 @@ const App = () => {
         <Route path="/info" element={
           <>
             <NavigatorBar mode={mode} toggleColorMode={toggleColorMode} theme={checkoutTheme} notiList={notiList} />
-            <Info theme={checkoutTheme} isAuthenticated={isAuthenticated} handleSignOut={handleSignOut} />
+            <Info theme={checkoutTheme} />
           </>
         }
         />

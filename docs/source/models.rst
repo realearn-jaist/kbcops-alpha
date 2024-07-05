@@ -44,6 +44,14 @@ models.ontology\_model module
    :undoc-members:
    :show-inheritance:
 
+models.log\_model module
+-----------------------------
+
+.. automodule:: models.log_model
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 Module contents
 ---------------
 

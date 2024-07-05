@@ -52,7 +52,7 @@ def find_parents_with_relations(cls, splitter, relation_list=None):
         relation_list (list, optional): The list of relations to append to. Defaults to None.
 
     Returns:
-        list: List of relations in the form of [child_class_name, "subclassOf", parent_class_name]
+        list: list of relations
     """
     if relation_list is None:
         relation_list = []
@@ -126,8 +126,6 @@ def graph_maker(
         None
     """
     try:
-        sync_reasoner(onto_file)
-        
         for i, v in enumerate(class_individual_list):
             entity_uri = entity_prefix + v
             entity = onto_file.search(iri=entity_uri)[0]
@@ -187,6 +185,7 @@ def graph_maker(
                 f.write(dot_string)
                 
     except Exception as e:
+
         raise GraphException(f"Error creating graph: {str(e)}")
 
 
@@ -195,8 +194,9 @@ def create_graph(ontology_name, algorithm, classifier):
     # ontology_name, algorithm
     """Create a graph for each class and individual in the ontology
     Args:
-        onto (str): The name of the ontology
-        algo (str): The name of the algorithm
+        ontology_name (str): The name of the ontology
+        algorithm (str): The name of the algorithm
+        classifier (str): The name of the classifier
     Returns:
         list: The list of graph fig
     """
@@ -211,9 +211,10 @@ def create_graph(ontology_name, algorithm, classifier):
         onto_type = "abox" if coverage_class_percentage > 10 else "tbox"
 
         # Load ontology file
+        world = World()
         onto_file_path = get_path(ontology_name, ontology_name + ".owl")
-        onto = get_ontology(onto_file_path).load()
-
+        onto = world.get_ontology(onto_file_path).load()
+        sync_reasoner(onto)
         input_files = ["individuals", "classes"]
         files = load_multi_input_files(ontology_name, input_files)
 
@@ -227,7 +228,7 @@ def create_graph(ontology_name, algorithm, classifier):
 
         entity_prefix = get_prefix(tmp_class_ind)
         entity = onto.search(iri=tmp_class_ind)[0]
-        entity_split = str(entity).rsplit(".")[0] + "."
+        entity_split = ".".join(str(entity).rsplit(".")[:-1]) + "."
 
         # Read garbage metrics file
         garbage_file = read_garbage_metrics_pd(ontology_name, algorithm, classifier)
