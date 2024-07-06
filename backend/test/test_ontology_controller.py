@@ -111,71 +111,65 @@ class TestOntologyModule(unittest.TestCase):
             ["axioms", "classes", "individuals", "uri_labels", "annotations"],
         )
 
-    @patch("controllers.ontology_controller.get_path")
-    @patch("controllers.ontology_controller.OntologyProjection")
-    @patch("controllers.ontology_controller.save_axioms")
-    @patch("controllers.ontology_controller.save_classes")
-    @patch("controllers.ontology_controller.save_individuals")
-    @patch("controllers.ontology_controller.save_annotations")
-    @patch("controllers.ontology_controller.get_ontology")
-    @patch("controllers.ontology_controller.tbox_infer")
-    @patch("controllers.ontology_controller.abox_infer")
-    @patch("controllers.ontology_controller.save_infer")
-    @patch(
-        "controllers.ontology_controller.load_multi_input_files",
-        return_value={
-            "classes": ["class1", "class2"],
-            "individuals": ["individual1", "individual2"],
-        },
-    )
     @patch("controllers.ontology_controller.train_test_val_gen_abox")
     @patch("controllers.ontology_controller.train_test_val_gen_tbox")
+    @patch("controllers.ontology_controller.load_multi_input_files")
+    @patch("controllers.ontology_controller.save_infer")
+    @patch("controllers.ontology_controller.abox_infer")
+    @patch("controllers.ontology_controller.tbox_infer")
+    @patch("controllers.ontology_controller.World")
+    @patch("controllers.ontology_controller.save_annotations")
+    @patch("controllers.ontology_controller.save_individuals")
+    @patch("controllers.ontology_controller.save_classes")
+    @patch("controllers.ontology_controller.save_axioms")
+    @patch("controllers.ontology_controller.OntologyProjection")
+    @patch("controllers.ontology_controller.get_path")
     def test_extract_data(
         self,
+        mock_get_path,
+        mock_OntologyProjection,
+        mock_save_axioms,
+        mock_save_classes,
+        mock_save_individuals,
+        mock_save_annotations,
+        mock_World,
+        mock_tbox_infer,
+        mock_abox_infer,
+        mock_save_infer,
+        mock_load_multi_input_files,
         mock_train_test_val_gen_tbox,
         mock_train_test_val_gen_abox,
-        mock_load_multi_input_files,
-        mock_save_infer,
-        mock_abox_infer,
-        mock_tbox_infer,
-        mock_get_ontology,
-        mock_save_annotations,
-        mock_save_individuals,
-        mock_save_classes,
-        mock_save_axioms,
-        mock_OntologyProjection,
-        mock_get_path,
     ):
         """Test extract_data function in ontology_controller.py
 
         Args:
+            mock_get_path: MagicMock object
+            mock_OntologyProjection: MagicMock object
+            mock_save_axioms: MagicMock object
+            mock_save_classes: MagicMock object
+            mock_save_individuals: MagicMock object
+            mock_save_annotations: MagicMock object
+            mock_World: MagicMock object
+            mock_tbox_infer: MagicMock object
+            mock_abox_infer: MagicMock object
+            mock_save_infer: MagicMock object
+            mock_load_multi_input_files: MagicMock object
             mock_train_test_val_gen_tbox: MagicMock object
             mock_train_test_val_gen_abox: MagicMock object
-            mock_load_multi_input_files: MagicMock object
-            mock_save_infer: MagicMock object
-            mock_abox_infer: MagicMock object
-            mock_tbox_infer: MagicMock object
-            mock_get_ontology: MagicMock object
-            mock_save_annotations: MagicMock object
-            mock_save_individuals: MagicMock object
-            mock_save_classes: MagicMock object
-            mock_save_axioms: MagicMock object
-            mock_OntologyProjection: MagicMock object
-            mock_get_path: MagicMock object
         Returns:
             None
         """
+
+        # Setup mocks
         mock_get_path.return_value = "path_to_ontology"
-        mock_get_ontology.return_value = MagicMock()
+        mock_world_instance = MagicMock()
+        mock_World.return_value = mock_world_instance
+        mock_ontology_instance = MagicMock()
+        mock_world_instance.get_ontology.return_value = mock_ontology_instance
+        mock_ontology_instance.load.return_value = mock_ontology_instance
+
         mock_projection_instance = MagicMock()
         mock_OntologyProjection.return_value = mock_projection_instance
-        mock_abox_infer.return_value = []
-        mock_tbox_infer.return_value = []
-        mock_save_infer.return_value = None
-
-        mock_train_test_val_gen_tbox.return_value = None
-        mock_train_test_val_gen_abox.return_value = None
-
         mock_projection_instance.createManchesterSyntaxAxioms.return_value = None
         mock_projection_instance.axioms_manchester = ["axiom1", "axiom2"]
         mock_projection_instance.getClassURIs.return_value = {"class1", "class2"}
@@ -198,15 +192,32 @@ class TestOntologyModule(unittest.TestCase):
             ["ind1", "Label2"],
             ["ind2", "Label3"],
         ]
+        mock_abox_infer.return_value = []
+        mock_tbox_infer.return_value = []
+        mock_save_infer.return_value = None
+        mock_train_test_val_gen_tbox.return_value = None
+        mock_train_test_val_gen_abox.return_value = None
 
-        id = "ontology_name"
-        result = extract_data(id)
+        mock_load_multi_input_files.return_value = {
+            "classes": {"class1", "class2"},
+            "individuals": {"ind1", "ind2"},
+        }
 
+        # Call the function
+        ontology_name = "ontology_name"
+        result = extract_data(ontology_name)
+
+        # Assert results
         self.assertEqual(
             result,
-            {"no_class": 2, "no_individual": 2, "no_axiom": 2, "no_annotation": 3},
+            {
+                "no_class": 2,
+                "no_individual": 2,
+                "no_axiom": 2,
+                "no_annotation": 3,
+            },
         )
-        mock_get_path.assert_called()
+
         mock_OntologyProjection.assert_called_once_with(
             "path_to_ontology",
             reasoner=Reasoner.STRUCTURAL,
@@ -218,14 +229,15 @@ class TestOntologyModule(unittest.TestCase):
             additional_synonyms_annotations=set(),
             memory_reasoner="13351",
         )
-
+        mock_World.assert_called_once()
+        mock_world_instance.get_ontology.assert_called_once_with("path_to_ontology")
+        mock_ontology_instance.load.assert_called_once()
         mock_load_multi_input_files.assert_called_once_with(
-            "ontology_name", ["classes", "individuals"]
+            ontology_name, ["classes", "individuals"]
         )
-        mock_save_axioms.assert_called_once_with(id, ["axiom1", "axiom2"])
-        mock_save_classes.assert_called_once_with(id, {"class1", "class2"})
-        mock_save_individuals.assert_called_once_with(id, {"ind1", "ind2"})
-
+        mock_save_axioms.assert_called_once_with(ontology_name, ["axiom1", "axiom2"])
+        mock_save_classes.assert_called_once_with(ontology_name, {"class1", "class2"})
+        mock_save_individuals.assert_called_once_with(ontology_name, {"ind1", "ind2"})
         self.assertTrue(mock_save_annotations.called)
 
 

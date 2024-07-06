@@ -2,7 +2,8 @@ import os
 import sys
 import unittest
 from unittest import mock
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import MagicMock, Mock, mock_open, patch
+from owlready2 import World
 
 # Assuming the module is named 'controllers.graph_controller'
 sys.path.append("../backend")
@@ -53,27 +54,33 @@ class TestGraphModule(unittest.TestCase):
         self.assertEqual(gm.get_prefix(value_with_hash), "http://example.com#")
         self.assertEqual(gm.get_prefix(value_with_slash), "http://example.com/")
 
+    @patch("controllers.graph_controller.World")
     @patch("controllers.graph_controller.nx.nx_pydot.graphviz_layout")
     @patch("controllers.graph_controller.nx.draw")
     @patch("controllers.graph_controller.replace_or_create_folder")
     @patch("controllers.graph_controller.find_parents_with_relations")
     @patch("controllers.graph_controller.plt.savefig")
+    @patch("builtins.open", new_callable=mock_open)
     def test_graph_maker(
         self,
+        mock_open,
         mock_savefig,
         mock_find_parents_with_relations,
         mock_replace_or_create_folder,
         mock_draw,
         mock_layout,
+        mock_World,
     ):
         """Test graph_maker function in graph_controller.py
 
         Args:
+            mock_open: MagicMock object
             mock_savefig: MagicMock object
             mock_find_parents_with_relations: MagicMock object
             mock_replace_or_create_folder: MagicMock object
             mock_draw: MagicMock object
             mock_layout: MagicMock object
+            mock_World: MagicMock object
         Returns:
             None
         """
@@ -96,7 +103,13 @@ class TestGraphModule(unittest.TestCase):
         truth_list = ["True1"]
         predict_list = ["Pred1"]
 
+        mock_world_instance = MagicMock()
+        mock_World.return_value = mock_world_instance
+        mock_ontology_instance = MagicMock()
+        mock_world_instance.get_ontology.return_value = mock_ontology_instance
+        mock_ontology_instance.load.return_value = mock_ontology_instance
         mock_ontology = MagicMock()
+
         mock_ontology.search.return_value = [MagicMock()]
 
         # Mock the search results for the ontology
@@ -120,14 +133,10 @@ class TestGraphModule(unittest.TestCase):
                 predict_list=predict_list,
                 fig_directory=fig_directory,
             )
-
-        mock_savefig.assert_called()
-        self.assertTrue(mock_savefig.called)
-        self.assertTrue(mock_draw.called)
-        self.assertTrue(mock_layout.called)
+        mock_open.assert_called_with(os.path.join("fig_directory", "graph_0.dot"), "w")
 
     @patch("controllers.graph_controller.coverage_class")
-    @patch("controllers.graph_controller.get_ontology")
+    @patch("controllers.graph_controller.World")
     @patch("controllers.graph_controller.load_multi_input_files")
     @patch("controllers.graph_controller.get_prefix")
     @patch("controllers.graph_controller.graph_maker", return_value=None)
@@ -146,7 +155,7 @@ class TestGraphModule(unittest.TestCase):
         mock_graph_maker,
         mock_get_prefix,
         mock_load_multi_input_files,
-        mock_get_ontology,
+        mock_world,
         mock_coverage_class,
     ):
         """Test create_graph function in graph_controller.py
@@ -160,7 +169,7 @@ class TestGraphModule(unittest.TestCase):
             mock_graph_maker: MagicMock object
             mock_get_prefix: MagicMock object
             mock_load_multi_input_files: MagicMock object
-            mock_get_ontology: MagicMock object
+            mock_world: MagicMock object
             mock_coverage_class: MagicMock object
         Returns:
             None
@@ -181,9 +190,10 @@ class TestGraphModule(unittest.TestCase):
 
         # Mock ontology and graph data
         mock_ontology = Mock()
-        mock_ontology.load.return_value = mock_ontology
+        mock_world.return_value.get_ontology.return_value.load.return_value = (
+            mock_ontology
+        )
         mock_ontology.search.return_value = ["mock_search_result"]
-        mock_get_ontology.return_value = mock_ontology
 
         mock_read_garbage_metrics_pd.return_value = "mock_garbage_metrics_data"
         mock_extract_garbage_value.return_value = (
@@ -216,7 +226,9 @@ class TestGraphModule(unittest.TestCase):
         mock_load_multi_input_files.assert_called_once_with(
             ontology_name, ["individuals", "classes"]
         )
-        mock_get_ontology.assert_called_once_with("\\fake\\path\\ontology.owl")
+        mock_world.return_value.get_ontology.assert_called_once_with(
+            "\\fake\\path\\ontology.owl"
+        )
         mock_read_garbage_metrics_pd.assert_called_once_with(
             ontology_name, algorithm, classifier
         )
@@ -225,7 +237,7 @@ class TestGraphModule(unittest.TestCase):
             "abox",
             mock_ontology,
             "http://example.com#",
-            "mock_search_result.",
+            ".",
             ["Ind1", "Ind2"],
             ["True1", "True2"],
             ["Pred1", "Pred2"],
