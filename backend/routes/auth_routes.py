@@ -17,6 +17,7 @@ def get_credentials():
     credentials_path = os.path.join(
         current_app.config["STORAGE_FOLDER"], "admin_credential.json"
     )
+    # Check if the file exists then read the credentials
     if os.path.exists(credentials_path):
         with open(credentials_path, "r") as file:
             return json.load(file)
@@ -35,6 +36,7 @@ def save_credentials(username, password_hash):
     credentials_path = os.path.join(
         current_app.config["STORAGE_FOLDER"], "admin_credential.json"
     )
+    # Save the credentials to the file
     with open(credentials_path, "w") as file:
         json.dump({"username": username, "password": password_hash}, file)
 
@@ -60,6 +62,7 @@ def update_credentials():
 
     credentials = get_credentials()
 
+    # Check if the current password is correct then update the credentials
     if current_username != credentials.get("username") or not check_password_hash(
         credentials.get("password"), current_password
     ):
@@ -79,6 +82,7 @@ def get_username():
     Returns:
         dict: The username
     """
+    # Get the username from the JWT token
     current_username = get_jwt_identity()
     return jsonify({"username": current_username}), 200
 
@@ -101,6 +105,7 @@ def signin():
     ):
         return jsonify({"message": "Invalid credentials"}), 401
 
+    # Create a JWT token with a 1-day expiry
     expires = datetime.timedelta(days=1)
     access_token = create_access_token(identity=username, expires_delta=expires)
     return jsonify({"token": access_token}), 200
@@ -115,6 +120,7 @@ def initialize_default_user(directory):
     Returns:
         None
     """
+    # creating the default user
     if not os.path.exists(directory):
         os.makedirs(directory)
 

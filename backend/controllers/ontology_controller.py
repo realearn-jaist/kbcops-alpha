@@ -33,6 +33,7 @@ def upload_ontology(file, ontology_name: str):
     Returns:
         ontology_name (str): The name of the ontology that was saved
     """
+    # Remove file extension if it exists
     if ontology_name.endswith(".owl"):
         ontology_name = ontology_name[:-4]
 
@@ -52,6 +53,7 @@ def get_all_ontology():
     Returns:
         list: The list of ontology in the database
     """
+    # Get all ontology in the database
     return list_ontology()
 
 
@@ -63,7 +65,7 @@ def get_onto_stat(ontology_name: str):
     Returns:
         dict: The statistics of the ontology
     """
-
+    # Get the statistics of the ontology
     files_list = ["axioms", "classes", "individuals", "uri_labels", "annotations"]
     files = load_multi_input_files(ontology_name, files_list)
 
@@ -135,6 +137,7 @@ def extract_data(ontology_name: str):
                         annotation = [e] + v.split()
                         annotations.append(annotation)
 
+        # save to files
         axioms = save_axioms(ontology_name, axioms)
         classes = save_classes(ontology_name, classes)
         individuals = save_individuals(ontology_name, individuals)
@@ -148,6 +151,7 @@ def extract_data(ontology_name: str):
 
         print("start run sync reasoner")
         start_time = time.time()
+        # run hermit reasoner
         sync_reasoner(onto)
         print(
             f"sync reasoner time usage for {ontology_name}:", time.time() - start_time
@@ -156,6 +160,7 @@ def extract_data(ontology_name: str):
         tbox_results = tbox_infer(onto)
         abox_results = abox_infer(onto)
 
+        # save inferred classes to file
         save_infer(ontology_name, tbox_results + abox_results)
 
         files_list = ["classes", "individuals"]
@@ -203,9 +208,11 @@ def get_all_superclasses(cls, cache: dict):
         list: The list of superclasses of the class
     """
     try:
+        # Check if the superclasses are already in the cache
         if cls in cache:
             return cache[cls]
 
+        # Get all superclasses of the class
         superclasses = []
         for sc in cls.is_a:
             if sc != owl.Thing:
@@ -231,6 +238,7 @@ def abox_infer(onto: Ontology):
     results = []
 
     try:
+        # get all inferred classes of the individuals
         for ind in tqdm(onto.individuals(), desc="Processing individuals"):
             ind_uri = ind.iri
             inferred_classes = get_all_superclasses(ind, superclass_cache)
@@ -261,6 +269,7 @@ def tbox_infer(onto: Ontology):
     results = []
 
     try:
+        # get all inferred classes of the classes
         for cls in tqdm(onto.classes(), desc="Processing classes"):
             cls_uri = cls.iri
             inferred_classes = get_all_superclasses(cls, superclass_cache)
@@ -285,6 +294,7 @@ def get_ground_truth(class_or_individuals):
         list: The list of ground truth of the class or individual
     """
     try:
+        # get the ground truth of the class or individual
         immediate_superclasses = []
         for sc in class_or_individuals.is_a:
             if sc != owl.Thing:
@@ -311,6 +321,7 @@ def train_test_val(class_or_individuals: list):
         if len(class_or_individuals) == 0:
             raise OntologyException("Empty list provided")
 
+        # Split the classes or individuals into train, test, and val sets
         train_proportion = 0.7
         test_proportion = 0.2
 
@@ -352,6 +363,7 @@ def write_positive_samples_to_csv(
         if not os.access(os.path.dirname(csv_path), os.W_OK):
             raise FileException(f"Cannot write to {csv_path}. Permission denied.")
 
+        # Write the positive samples to the CSV file
         with open(csv_path, "w") as f:
             for ind in classes_or_individuals:
                 ind_ground_truth = get_ground_truth(ind)
@@ -385,6 +397,7 @@ def write_negative_samples_to_csv(csv_path: str, negative_samples: list):
         None
     """
     try:
+        # write the negative samples to the CSV file
         with open(csv_path, "a") as f:
             for ind, negative_class, label in negative_samples:
                 ind_uri = ind.iri
@@ -399,7 +412,7 @@ def write_negative_samples_to_csv(csv_path: str, negative_samples: list):
 
 def read_infer_classes(file):
     """
-    Reads the infer_classes file and returns a dictionary mapping individuals to their inferred classes.
+    Reads the infer_classes file and returns a dictionary mapping individuals/classes to their inferred classes.
 
     Args:
         file (File): The infer_classes file

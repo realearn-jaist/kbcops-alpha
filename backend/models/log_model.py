@@ -7,8 +7,6 @@ from logging.handlers import TimedRotatingFileHandler
 def configure_logging():
     """Configure app logging.
 
-    Args:
-        None
     Returns:
         logger (logging.Logger): The logger object
     """
@@ -23,9 +21,7 @@ def configure_logging():
     # Create a logger
     logger = logging.getLogger("KBCOps")
     if not logger.hasHandlers():
-        logger.setLevel(
-            logging.DEBUG
-        )  # Set the logging level to DEBUG for this example
+        logger.setLevel(logging.DEBUG)  # Set the logging level to DEBUG
 
         # Create a TimedRotatingFileHandler
         handler = TimedRotatingFileHandler(

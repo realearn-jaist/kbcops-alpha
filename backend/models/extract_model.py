@@ -104,7 +104,7 @@ def load_multi_input_files(ontology_name, files_list):
         ontology_name (str): The name of the ontology
         files_list (str): The name of the input file
     Returns:
-        dict: The dictionary of axioms loaded from the files
+        dict: The dictionary of types of input loaded from the files
     """
     try:
         files_dict = dict()
@@ -123,7 +123,7 @@ def load_input_file(ontology_name, input_file):
         ontology_name (str): The name of the ontology
         input_file (str): The name of the input file
     Returns:
-        list: The list of axioms loaded from the file
+        list: The list of content loaded from the file
     """
     try:
         path = get_path(ontology_name, input_file + ".txt")

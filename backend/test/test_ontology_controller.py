@@ -66,7 +66,7 @@ class TestOntologyModule(unittest.TestCase):
 
     @patch("controllers.ontology_controller.list_ontology")
     def test_getAll_ontology(self, mock_list_ontology):
-        """Test getAll_ontology function in ontology_controller.py
+        """Test get_all_ontology function in ontology_controller.py
 
         Args:
             mock_list_ontology: MagicMock object

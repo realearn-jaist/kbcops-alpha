@@ -30,6 +30,7 @@ def get_suffix(value: str):
         str: The suffix of the string
     """
     try:
+        # get suffix by delimiter # or /
         delimiter = "#" if "#" in value else "/"
         suffix = value.rsplit(delimiter, 1)[-1]
         return suffix
@@ -242,7 +243,7 @@ def predict_func(
     algorithm: str,
     classifier: str,
 ):
-    """Predict the ontology with the algorithm
+    """Predict the ontology with the algorithm and classifier
 
     Args:
         ontology_name (str): The name of the ontology
@@ -315,6 +316,7 @@ def predict_func(
             onto_type,
         )
 
+        # Run classifier
         classifiers = {
             "mlp": evaluate.run_mlp,
             "logistic-regression": evaluate.run_logistic_regression,

@@ -27,7 +27,9 @@ def extract_garbage_value(onto_data):
     Args:
         onto_data (pd.DataFrame): The garbage metrics file
     Returns:
-        individual_list (list): The list of individuals
+        class_individual_list (list): The list of individuals
+        truth_list (list): The list of ground truth values
+        predict_list (list): The list of predicted values
     """
     try:
         # Extract columns into lists
@@ -47,19 +49,19 @@ def find_parents_with_relations(cls, splitter, relation_list=None):
     """Find the parents of a class and its relations
 
     Args:
-        cls (owlready2.entity.ThingClass): The class to find the parents of
+        cls (owlready2.entity.ThingClass): The class/ind to find the parents of
         splitter (str): The string used to split class names
         relation_list (list, optional): The list of relations to append to. Defaults to None.
 
     Returns:
         list: list of relations
     """
+    # Initialize relation_list if not provided
     if relation_list is None:
         relation_list = []
 
     try:
-        # Splitter is assumed to be defined elsewhere in your code
-
+        # Find parents and add to relation_list
         parents = cls.is_a
         for parent in parents:
             if parent != owl.Thing:
@@ -95,6 +97,7 @@ def get_prefix(value):
     Returns:
         prefix (str): The prefix of the value
     """
+    # Get the delimiter # or /
     delimiter = "#" if "#" in value else "/"
     prefix = value.rsplit(delimiter, 1)[0] + delimiter
     return prefix
@@ -126,6 +129,7 @@ def graph_maker(
         None
     """
     try:
+        # Create a graph for each individual/class
         for i, v in enumerate(class_individual_list):
             entity_uri = entity_prefix + v
             entity = onto_file.search(iri=entity_uri)[0]
@@ -150,17 +154,16 @@ def graph_maker(
             ]
 
             dot_string = "digraph G {\n"
-            
+
             nodes = set()
             for rel in relations:
                 source, relation, target = rel
                 dot_string += f'  "{source}" -> "{target}" [label="{relation}"];\n'
                 nodes.add(source)
                 nodes.add(target)
-                
 
             dot_string += f'  "{v}" -> "{predict_list[i]}" [label="predict"];\n'
-            
+
             # Set node colors
             for node in nodes:
                 fill_color = (
@@ -175,19 +178,20 @@ def graph_maker(
                     )
                 )
                 if fill_color:
-                    dot_string += f'  "{node}" [style=filled,fillcolor="{fill_color}"];\n'                    
-        
+                    dot_string += (
+                        f'  "{node}" [style=filled,fillcolor="{fill_color}"];\n'
+                    )
+
             dot_string += "}\n"
-            
+
             # Save DOT string to file
             dot_file_path = os.path.join(fig_directory, f"graph_{i}.dot")
-            with open(dot_file_path, 'w') as f:
+            with open(dot_file_path, "w") as f:
                 f.write(dot_string)
-                
+
     except Exception as e:
 
         raise GraphException(f"Error creating graph: {str(e)}")
-
 
 
 def create_graph(ontology_name, algorithm, classifier):

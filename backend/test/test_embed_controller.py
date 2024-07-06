@@ -51,7 +51,7 @@ class TestEmbedFunctions(unittest.TestCase):
             self: TestEmbedFunctions object
             mock_Word2Vec: MagicMock object
             mock_save_model: MagicMock object
-            mock_load_annotations: MagicMock object
+            mock_load_multi_input_files: MagicMock object
         Returns:
             None
         """
@@ -95,7 +95,7 @@ class TestEmbedFunctions(unittest.TestCase):
             self: TestEmbedFunctions object
             mock_Word2Vec: MagicMock object
             mock_save_model: MagicMock object
-            mock_load_annotations: MagicMock object
+            mock_load_multi_input_files: MagicMock object
         Returns:
             None
         """
@@ -137,9 +137,9 @@ class TestEmbedFunctions(unittest.TestCase):
 
         Args:
             self: TestEmbedFunctions object
-            mock_Word2Vec: MagicMock object
+            mock_get_rdf2vec_embed: MagicMock object
             mock_save_model: MagicMock object
-            mock_load_annotations: MagicMock object
+            mock_load_multi_input_files: MagicMock object
         Returns:
             None
         """

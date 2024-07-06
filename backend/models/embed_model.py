@@ -95,7 +95,7 @@ def load_embedding_value(ontology_name: str, algorithm: str):
         ontology_name (str): The name of the ontology
         algorithm (str): The name of the algorithm
     Returns:
-        numpy.ndarray: The embedding saved
+        numpy.ndarray: The embedding loaded
     """
     try:
         no_class = len(load_multi_input_files(ontology_name, ["classes"])["classes"])

@@ -93,6 +93,7 @@ def owl2vec_star(ontology_name, config_file, algorithm):
     """
 
     try:
+        # get config
         config = configparser.ConfigParser()
         config.read(config_file)
 
@@ -244,6 +245,7 @@ def rdf2vec(ontology_name, config_file, algorithm):
         str: The result of the embedding process
     """
     try:
+        # get config
         config = configparser.ConfigParser()
         config.read(config_file)
 
@@ -291,8 +293,10 @@ def embed_func(ontology_name, algorithm):
             result = f"{algorithm} model already exists for {ontology_name} ontology"
             return result
 
+        # get config file
         config_file = os.path.join("controllers", "default.cfg")
 
+        # embedding algorithms
         algorithms = {
             "owl2vec-star": owl2vec_star,
             "rdf2vec": rdf2vec,
@@ -330,6 +334,7 @@ def retrieval_embed_owl2vec(model: gensim.models.Word2Vec, instances):
         list: The list of embedded instances
     """
     try:
+        # get the embedding of the instances
         feature_vectors = []
         for instance in instances:
             v_uri = (
@@ -355,6 +360,7 @@ def retrieval_embed_opa2vec_onto2vec(model: gensim.models.Word2Vec, instances):
         list: The list of embedded instances
     """
     try:
+        # get the embedding of the instances
         feature_vectors = [
             (
                 model.wv.get_vector(c.lower())
