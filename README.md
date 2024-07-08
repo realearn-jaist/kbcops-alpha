@@ -58,6 +58,8 @@ In backend/
 
 - **app.py**: Typically the entry point of the application or the main application module.
 
+**Note** : Our program uses the initial training dataset stored in "train-infer-0.csv". Here, "0" indicates that the inferred class is considered a negative prediction. We also have a separate dataset named "train-infer-1.csv" where inferred classes are considered positive predictions. You can adjust the program if you want.
+
 ## Online Application
 
 :point_right: [Link](http://52.65.181.24/) :point_left:
