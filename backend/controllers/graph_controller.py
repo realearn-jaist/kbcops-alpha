@@ -128,9 +128,9 @@ def graph_maker(
     Returns:
         None
     """
-    try:
-        # Create a graph for each individual/class
-        for i, v in enumerate(class_individual_list):
+    # Create a graph for each individual/class
+    for i, v in enumerate(class_individual_list):
+        try:
             entity_uri = entity_prefix + v
             entity = onto_file.search(iri=entity_uri)[0]
             subs = entity.INDIRECT_is_a
@@ -189,9 +189,8 @@ def graph_maker(
             with open(dot_file_path, "w") as f:
                 f.write(dot_string)
 
-    except Exception as e:
-
-        raise GraphException(f"Error creating graph: {str(e)}")
+        except Exception as e:
+            raise GraphException(f"Error creating graph: {str(e)}")
 
 
 def create_graph(ontology_name, algorithm, classifier):
