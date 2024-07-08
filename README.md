@@ -58,11 +58,14 @@ In backend/
 
 - **app.py**: Typically the entry point of the application or the main application module.
 
+**Note** : Our program uses the initial training dataset stored in "train-infer-0.csv". Here, "0" indicates that the inferred class is considered a negative prediction. We also have a separate dataset named "train-infer-1.csv" where inferred classes are considered positive predictions. You can adjust the program if you want.
+
 ## Online Application
 
-:point_right: [Link](http://52.65.181.24/) :point_left:
+:point_right: [KBCOps](http://52.65.181.24/) :point_left:
 
 ## How to use application
+
 ![image](https://github.com/Chaphowasit/kbcops-alpha/assets/83391695/00e92772-0cbb-4e8a-8314-3c7fe32d8814)
 
 ![upload](https://github.com/Chaphowasit/kbcops-alpha/assets/83391695/2e340bdf-1f53-4040-b614-239d9361183e)
@@ -155,7 +158,12 @@ zipp==3.19.2
 
 ## Hyperparameter for Classifier Model
 
-**Note** : Train size = 70%, Test size = 20% and Validate size = 10%
+**Note1** : Train size = 70%, Test size = 20% and Validate size = 10%
+
+**Note2**: We split the training files into two categories:
+
+- **train-infer-0**: We use negative sampling and consider incorrect inferences as 0 (the inference prediction is not good).
+- **train-infer-1**: We use negative sampling and consider incorrect inferences as 1 (the inference prediction is good).
 
 ### Random Forest
 
@@ -628,13 +636,13 @@ Follow these steps to successfully deploy the project on your server. If you enc
         #self.onto.load()
 
         #self.classifiedOnto = get_ontology(self.urionto + '_classified')
-   
+
        ...
-   
+
        ...
-   
+
        ...
-   
+
         #report problem with unsat (Nothing not declared....)
         #print(list(self.onto.inconsistent_classes()))
 
@@ -657,13 +665,13 @@ Follow these steps to successfully deploy the project on your server. If you enc
         #self.onto.load()
 
         #self.classifiedOnto = get_ontology(self.urionto + '_classified')
-   
+
        ...
-   
+
        ...
-   
+
        ...
-   
+
         #report problem with unsat (Nothing not declared....)
         #print(list(self.onto.inconsistent_classes()))
 
