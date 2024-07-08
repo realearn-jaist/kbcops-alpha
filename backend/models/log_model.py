@@ -38,4 +38,5 @@ def configure_logging():
 
         # Add the handler to the logger
         logger.addHandler(handler)
+        logging.shutdown()
     return logger
