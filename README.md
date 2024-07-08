@@ -62,7 +62,7 @@ In backend/
 
 ## Online Application
 
-:point_right: [Link](http://52.65.181.24/) :point_left:
+:point_right: [KBCOps](http://52.65.181.24/) :point_left:
 
 ## How to use application
 
