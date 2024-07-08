@@ -50,20 +50,20 @@ interface MainProps {
     average_garbage_Rank: number;
     average_Rank: number;
   };
+  setGarbageIndex: (value: number) => void;
+  garbageIndex: number;
   garbage_metric: GarbageMetric[];
   garbage_image: GarbageImage[];
 }
 
 
-export default function DisplayDashboard({ ontology_name, onto_data, algo, classifier, eval_metric, garbage_metric, garbage_image }: MainProps) {
+export default function DisplayDashboard({ ontology_name, onto_data, algo, classifier, eval_metric, setGarbageIndex, garbageIndex, garbage_metric, garbage_image }: MainProps) {
   const StatCards = [
     { name: 'Classes', data: onto_data.no_class },
     { name: 'Individuals', data: onto_data.no_individual },
     { name: 'Axioms', data: onto_data.no_axiom },
     { name: 'Annotations', data: onto_data.no_annotation }
   ];
-
-  const [garbageIndex, setGarbageIndex] = React.useState<number>(0);
 
   React.useEffect(() => {
     // Check if garbageIndex is out of bounds
@@ -322,7 +322,7 @@ export default function DisplayDashboard({ ontology_name, onto_data, algo, class
             description={{
               main_description: "Select and view details of garbage metrics for test individual/class that its rank differ most from the true classes (top 5)",
               sub_description: {
-                
+
                 "Color details (blue node)": "represents test individual/class for the prediction",
                 "Color details (green node)": "represents true class (ground truth) of the test",
                 "Color details (orange node)": "represent inferable node (garbage) that were predicted with higher score than the true class",
@@ -369,16 +369,14 @@ export default function DisplayDashboard({ ontology_name, onto_data, algo, class
                 p: 2,
                 display: 'flex',
                 flexDirection: 'column',
+                backgroundColor: 'white',
+                alignItems: 'center',
               }}
             >
               {garbage_image.length > 0 && (
-                <>
                 <Graphviz
                   dot={garbage_image[garbageIndex].dot_file}
-                  options={{ width: '100%', height: '100%' }}
                 />
-                </>
-                
               )}
             </Paper>
           </SectionGrid>

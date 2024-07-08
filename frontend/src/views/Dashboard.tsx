@@ -80,6 +80,7 @@ export default function Dashboard({theme, addNotification}: DashboardProps) {
   }, []);
 
   // Effect to update the height of the container
+  const [garbageIndex, setGarbageIndex] = React.useState<number>(0);
   React.useEffect(() => {
     const updateContainerHeight = () => {
       if (secondGridRef.current) {
@@ -94,7 +95,7 @@ export default function Dashboard({theme, addNotification}: DashboardProps) {
     return () => {
       window.removeEventListener('resize', updateContainerHeight);
     };
-  }, []);
+  }, [displayGarbageImage, garbageIndex]);
 
 
 
@@ -364,6 +365,8 @@ export default function Dashboard({theme, addNotification}: DashboardProps) {
               algo={displayAlgo}
               classifier={displayClassifier}
               eval_metric={displayEvalMetric}
+              setGarbageIndex={setGarbageIndex}
+              garbageIndex={garbageIndex}
               garbage_metric={displayGarbageMetric}
               garbage_image={displayGarbageImage}
             />
