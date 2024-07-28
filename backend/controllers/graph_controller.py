@@ -2,12 +2,23 @@ import networkx as nx
 import pandas as pd
 import os
 import matplotlib.pyplot as plt
+import pydot
 from models.graph_model import load_graph
-from utils.file_handler import replace_or_create_folder
+from utils.directory_utils import get_path, replace_or_create_folder
 from models.evaluator_model import read_garbage_metrics_pd
-from models.ontology_model import get_path_ontology, get_path_ontology_directory
-from models.extract_model import load_classes, load_individuals
+from models.extract_model import load_multi_input_files, coverage_class
 from owlready2 import *
+
+from utils.exceptions import (
+    FileException,
+    ModelException,
+    EvaluationException,
+    ExtractionException,
+    GraphException,
+)
+
+## Refactor code from https://github.com/realearn-jaist/kbc-ops/blob/main/app.py  ###########
+#############################################################################################
 
 
 def extract_garbage_value(onto_data):
@@ -16,59 +27,77 @@ def extract_garbage_value(onto_data):
     Args:
         onto_data (pd.DataFrame): The garbage metrics file
     Returns:
-        individual_list (list): The list of individuals
+        class_individual_list (list): The list of individuals
+        truth_list (list): The list of ground truth values
+        predict_list (list): The list of predicted values
     """
-    # Extract columns into lists
-    individual_list = onto_data["Individual"].tolist()
-    truth_list = onto_data["True"].tolist()
-    predict_list = onto_data["Predicted"].tolist()
+    try:
+        # Extract columns into lists
+        class_individual_list = onto_data["Individual"].tolist()
+        truth_list = onto_data["True"].tolist()
+        predict_list = onto_data["Predicted"].tolist()
 
-    return individual_list, truth_list, predict_list
+        return class_individual_list, truth_list, predict_list
+
+    except KeyError as e:
+        raise GraphException(f"KeyError: {str(e)} occurred while extracting data")
+    except Exception as e:
+        raise GraphException(f"Error extracting garbage metrics: {str(e)}")
 
 
-def find_parents_with_relations(cls, relation_list):
+def find_parents_with_relations(cls, splitter, relation_list=None):
     """Find the parents of a class and its relations
 
     Args:
-        cls (owlready2.entity.ThingClass): The class to find the parents of
-        relation_list (list): The list of relations to append to
+        cls (owlready2.entity.ThingClass): The class/ind to find the parents of
+        splitter (str): The string used to split class names
+        relation_list (list, optional): The list of relations to append to. Defaults to None.
+
     Returns:
-        None
+        list: list of relations
     """
-    # find its relations
-    temp = "obo." # this hard code for foodon dataset
+    # Initialize relation_list if not provided
+    if relation_list is None:
+        relation_list = []
+
     try:
+        # Find parents and add to relation_list
         parents = cls.is_a
         for parent in parents:
             if parent != owl.Thing:
                 relation_list.append(
                     [
-                        str(cls).split(temp)[-1].split(")")[0],
+                        str(cls).split(splitter)[-1].split(")")[0],
                         "subclassOf",
-                        str(parent).split(temp)[-1].split(")")[0],
+                        str(parent).split(splitter)[-1].split(")")[0],
                     ]
                 )
-                find_parents_with_relations(parent, relation_list)
+                # Recursively find parents' relations
+                relation_list.extend(find_parents_with_relations(parent, splitter))
             else:
                 relation_list.append(
                     [
-                        str(cls).split(temp)[-1].split(")")[0],
+                        str(cls).split(splitter)[-1].split(")")[0],
                         "subclassOf",
-                        str(parent).split(temp)[-1].split(")")[0],
+                        str(parent).split(splitter)[-1].split(")")[0],
                     ]
                 )
+
+        return relation_list
+
     except Exception as e:
-        pass
+        raise GraphException(f"Error in finding parents with relations: {str(e)}")
 
 
 def get_prefix(value):
-    """Get the prefix of the value
+    """Get the prefix of the value because in ontology the class and individual id are separated by # or /
 
     Args:
         value (str): The value to get the prefix of
     Returns:
         prefix (str): The prefix of the value
     """
+    # Get the delimiter # or /
     delimiter = "#" if "#" in value else "/"
     prefix = value.rsplit(delimiter, 1)[0] + delimiter
     return prefix
@@ -78,131 +107,160 @@ def graph_maker(
     onto_type,
     onto_file,
     entity_prefix,
-    individual_list,
+    entity_split,
+    class_individual_list,
     truth_list,
     predict_list,
     fig_directory,
 ):
-    """Create a graph for each individual in the individual list
+    """Create a DOT file for each individual.
 
     Args:
-        onto_type (str): The type of ontology
-        onto_file (owlready2.namespace.Ontology): The ontology file
-        entity_prefix (str): The prefix of the entity
-        individual_list (list): The list of individuals
-        truth_list (list): The list of true values
-        predict_list (list): The list of predicted values
-        fig_directory (str): The directory to save the graph figures
+        onto_type (str): The type of ontology "abox" or "tbox".
+        onto_file (owlready2.namespace.Ontology): The ontology file.
+        entity_prefix (str): The prefix of the entity.
+        entity_split (str): The splitter for entity names.
+        class_individual_list (list): The list of individuals.
+        truth_list (list): The list of ground truth values.
+        predict_list (list): The list of predicted values.
+        fig_directory (str): The directory to save the DOT files.
+
     Returns:
         None
     """
-    replace_or_create_folder(fig_directory)
-    for i, v in enumerate(individual_list):
-        entity_uri = entity_prefix + v
-        entity = onto_file.search(iri=entity_uri)[0]
-        subs = entity.INDIRECT_is_a
+    # Create a graph for each individual/class
+    for i, v in enumerate(class_individual_list):
+        try:
+            entity_uri = entity_prefix + v
+            entity = onto_file.search(iri=entity_uri)[0]
+            subs = entity.INDIRECT_is_a
 
-        relations = list()
+            relations = []
 
-        if onto_type == "TBox":
-            find_parents_with_relations(entity, relations)
-        else:
-            subs = sorted(list(subs), key=lambda sub: len(list(sub.INDIRECT_is_a)))
-            subs = [
-                str(sub).split(".")[-1] if str(sub) != "owl.Thing" else str(sub)
-                for sub in subs
+            if onto_type == "tbox":
+                relations = find_parents_with_relations(entity, entity_split)
+            else:
+                subs = sorted(list(subs), key=lambda sub: len(list(sub.INDIRECT_is_a)))
+                subs = [
+                    str(sub).split(".")[-1] if str(sub) != "owl.Thing" else str(sub)
+                    for sub in subs
+                ]
+                for j in range(len(subs) - 1):
+                    relations.append([subs[j + 1], "subclassOf", subs[j]])
+                relations.append([str(entity).split(".")[-1], "isA", subs[-1]])
+
+            relations = [
+                relation for relation in relations if relation[0] != relation[2]
             ]
-            for j in range(len(subs) - 1):
-                relations.append([subs[j + 1], "subclassOf", subs[j]])
-            relations.append([str(entity).split(".")[-1], "isA", subs[-1]])
 
-        relations = [relation for relation in relations if relation[0] != relation[2]]
+            dot_string = "digraph G {\n"
 
-        G = nx.DiGraph()
-        for rel in relations:
-            source, relation, target = rel
-            G.add_edge(source, target, label=relation)
-            G.add_nodes_from([source, target])
+            nodes = set()
+            for rel in relations:
+                source, relation, target = rel
+                dot_string += f'  "{source}" -> "{target}" [label="{relation}"];\n'
+                nodes.add(source)
+                nodes.add(target)
 
-        node_colors = [
-            (
-                "gray"
-                if node != truth_list[i]
-                and node != individual_list[i]
-                and node != predict_list[i]
-                else (
-                    "#94F19C"
-                    if node == truth_list[i]
-                    else "#FC865A" if node == predict_list[i] else "#9DF1F0"
+            dot_string += f'  "{v}" -> "{predict_list[i]}" [label="predict"];\n'
+
+            # Set node colors
+            for node in nodes:
+                fill_color = (
+                    "gray"
+                    if node != truth_list[i]
+                    and node != class_individual_list[i]
+                    and node != predict_list[i]
+                    else (
+                        "#94F19C"
+                        if node == truth_list[i]
+                        else "#FC865A" if node == predict_list[i] else "#9DF1F0"
+                    )
                 )
-            )
-            for node in G.nodes()
-        ]
+                if fill_color:
+                    dot_string += (
+                        f'  "{node}" [style=filled,fillcolor="{fill_color}"];\n'
+                    )
 
-        # Draw the graph
-        plt.figure(figsize=(20, len(relations) * 2))
-        pos = nx.nx_pydot.graphviz_layout(G, prog="dot")
-        nx.draw(
-            G,
-            pos,
-            with_labels=True,
-            node_size=1500,
-            node_color=node_colors,
-            font_size=12,
-            font_weight="bold",
-        )
+            dot_string += "}\n"
 
-        for edge, label in nx.get_edge_attributes(G, "label").items():
-            x = (pos[edge[0]][0] + pos[edge[1]][0]) / 2
-            y = (pos[edge[0]][1] + pos[edge[1]][1]) / 2
-            plt.text(
-                x, y, label, horizontalalignment="center", verticalalignment="center"
-            )
+            # Save DOT string to file
+            dot_file_path = os.path.join(fig_directory, f"graph_{i}.dot")
+            with open(dot_file_path, "w") as f:
+                f.write(dot_string)
 
-        
-        plt.savefig(f"{fig_directory}\graph_{i}.png", format="PNG")
+        except Exception as e:
+            raise GraphException(f"Error creating graph: {str(e)}")
 
 
-def create_graph(ontology_name, algorithm):
+def create_graph(ontology_name, algorithm, classifier):
     # ontology_name, algorithm
-    """Create a graph for each individual in the individual list
-
+    """Create a graph for each class and individual in the ontology
     Args:
-        onto (str): The name of the ontology
-        algo (str): The name of the algorithm
+        ontology_name (str): The name of the ontology
+        algorithm (str): The name of the algorithm
+        classifier (str): The name of the classifier
     Returns:
         list: The list of graph fig
     """
-    # load individuals for checking whether it Tbox or not, and finding its prefix.
-    fig_directory = os.path.join(
-        get_path_ontology_directory(ontology_name), algorithm, "graph_fig"
-    )  # where graph fig is save
-    replace_or_create_folder(fig_directory)
+    try:
+        # load individuals for checking whether it Tbox or not, and finding its prefix.
+        fig_directory = get_path(ontology_name, algorithm, classifier, "graph_fig")
+        replace_or_create_folder(fig_directory)
 
-    individuals = load_individuals(ontology_name)
-    individuals_count = len(individuals)
+        # check onto type
+        # consider as a ABox iff individuals_count is excess 10 percent of classes amount
+        coverage_class_percentage = coverage_class(ontology_name)
+        onto_type = "abox" if coverage_class_percentage > 10 else "tbox"
 
-    classes = [line.strip() for line in load_classes(ontology_name)]
+        # Load ontology file
+        world = World()
+        onto_file_path = get_path(ontology_name, ontology_name + ".owl")
+        onto = world.get_ontology(onto_file_path).load()
+        sync_reasoner(onto)
+        input_files = ["individuals", "classes"]
+        files = load_multi_input_files(ontology_name, input_files)
 
-    # check onto type
-    # consider as a ABox iff individuals_count is excess 10 percent of classes amount
-    onto_type = "ABox" if individuals_count > int(0.1 * len(classes)) else "TBox"
+        # get prefix and its splitter
+        if onto_type == "ABox":
+            individuals = files["individuals"]
+            tmp_class_ind = individuals[0]
+        else:
+            classes = files["classes"]
+            tmp_class_ind = classes[0]
 
-    entity_prefix = get_prefix(individuals[0])
+        entity_prefix = get_prefix(tmp_class_ind)
+        entity = onto.search(iri=tmp_class_ind)[0]
+        entity_split = ".".join(str(entity).rsplit(".")[:-1]) + "."
 
-    onto_file_path = get_path_ontology(ontology_name)
-    onto = get_ontology(onto_file_path).load()
-    garbage_file = read_garbage_metrics_pd(ontology_name, algorithm)
+        # Read garbage metrics file
+        garbage_file = read_garbage_metrics_pd(ontology_name, algorithm, classifier)
+        class_individual_list, truth_list, predict_list = extract_garbage_value(
+            garbage_file
+        )
 
-    individual_list, truth_list, predict_list = extract_garbage_value(garbage_file)
-    graph_maker(
-        onto_type,
-        onto,
-        entity_prefix,
-        individual_list,
-        truth_list,
-        predict_list,
-        fig_directory,
-    )
+        # Create graphs for each class and individual
+        graph_maker(
+            onto_type,
+            onto,
+            entity_prefix,
+            entity_split,
+            class_individual_list,
+            truth_list,
+            predict_list,
+            fig_directory,
+        )
 
-    return load_graph(ontology_name, algorithm)
+        # Load and return generated graph figures
+        return load_graph(ontology_name, algorithm, classifier)
+
+    except FileNotFoundError as e:
+        raise FileException(f"File not found: {str(e)}", 404)
+    except ValueError as e:
+        raise GraphException(f"Input error: {str(e)}")
+    except Exception as e:
+        raise GraphException(f"Unexpected error: {str(e)}")
+
+
+#############################################################################################
+#############################################################################################

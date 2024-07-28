@@ -4,7 +4,7 @@ from io import BytesIO
 from unittest.mock import patch
 
 sys.path.append("../backend")
-from app import create_app
+from main import create_app
 
 
 class TestRoutes(unittest.TestCase):
@@ -33,15 +33,16 @@ class TestRoutes(unittest.TestCase):
         """
         data = {
             "owl_file": (BytesIO(b"mock owl data"), "test.owl"),
-            "onto_id": "test_id.owl",
+            "ontology_name": "test_id.owl",
+            "alias": "test_alias",
         }
         mock_upload_ontology.return_value = "test_id"
         response = self.app.post(
-            "/upload", data=data, content_type="multipart/form-data"
+            "/api/upload", data=data, content_type="multipart/form-data"
         )
         self.assertEqual(response.status_code, 200)
         self.assertIn("File uploaded successfully", response.get_json()["message"])
-        self.assertIn("test_id", response.get_json()["onto_id"])
+        self.assertIn("test_id", response.get_json()["ontology_name"])
 
     @patch("routes.routes.upload_ontology")
     def test_upload_success_idWithoutOwl(self, mock_upload_ontology):
@@ -54,36 +55,39 @@ class TestRoutes(unittest.TestCase):
         """
         data = {
             "owl_file": (BytesIO(b"mock owl data"), "test.owl"),
-            "onto_id": "test_id",
+            "ontology_name": "test_id",
+            "alias": "test_alias",
         }
         mock_upload_ontology.return_value = "test_id"
         response = self.app.post(
-            "/upload", data=data, content_type="multipart/form-data"
+            "/api/upload", data=data, content_type="multipart/form-data"
         )
         self.assertEqual(response.status_code, 200)
         self.assertIn("File uploaded successfully", response.get_json()["message"])
-        self.assertIn("test_id", response.get_json()["onto_id"])
+        self.assertIn("test_id", response.get_json()["ontology_name"])
 
+    @patch("routes.routes.remove_dir")
     @patch("routes.routes.upload_ontology")
-    def test_upload_failure_cannot_upload(self, mock_upload_ontology):
+    def test_upload_failure_cannot_upload(self, mock_upload_ontology, mock_remove_dir):
         """Test that the upload route fails when the file cannot be uploaded
 
         Args:
             mock_upload_ontology: MagicMock object
+            mock_remove_dir: MagicMock object
         Returns:
             None
         """
         mock_upload_ontology.return_value = None  # Ensure upload_ontology returns None
-
+        mock_remove_dir.return_value = None  # Ensure remove_dir returns None
         data = {
             "owl_file": (BytesIO(b"mock owl data"), "test.owl"),
-            "onto_id": "test_id.owl",
+            "ontology_name": "test_id.owl",
+            "alias": "test_alias",
         }
         response = self.app.post(
-            "/upload", data=data, content_type="multipart/form-data"
+            "/api/upload", data=data, content_type="multipart/form-data"
         )
         self.assertEqual(response.status_code, 500)
-        self.assertIn("File upload failed", response.get_json()["message"])
 
     def test_upload_failure_no_file(self):
         """Test that the upload route fails when no file is uploaded
@@ -93,9 +97,9 @@ class TestRoutes(unittest.TestCase):
         Returns:
             None
         """
-        data = {"onto_id": "test_id.owl"}
+        data = {"ontology_name": "test_id.owl"}
         response = self.app.post(
-            "/upload", data=data, content_type="multipart/form-data"
+            "/api/upload", data=data, content_type="multipart/form-data"
         )
         self.assertEqual(response.status_code, 400)
         self.assertIn("No file part", response.get_json()["message"])
@@ -115,7 +119,7 @@ class TestRoutes(unittest.TestCase):
             "no_axiom": 3,
             "no_annotation": 4,
         }
-        response = self.app.get("/extract/test_ontology.owl")
+        response = self.app.get("/api/extract/test_ontology.owl")
 
         # Assert the status code
         self.assertEqual(response.status_code, 200)
@@ -144,21 +148,20 @@ class TestRoutes(unittest.TestCase):
             None
         """
         mock_extract_data.return_value = None
-        response = self.app.get("/extract/test_ontology")
+        response = self.app.get("/api/extract/test_ontology")
         self.assertEqual(response.status_code, 500)
-        self.assertIn("Extraction failed", response.get_json()["message"])
 
-    @patch("routes.routes.getAll_ontology")
-    def test_list_ontologies(self, mock_getAll_ontology):
+    @patch("routes.routes.get_all_ontology")
+    def test_list_ontologies(self, mock_get_all_ontology):
         """Test that the list_ontologies route works successfully when ontologies are listed successfully
 
         Args:
-            mock_getAll_ontology: MagicMock object
+            mock_get_all_ontology: MagicMock object
         Returns:
             None
         """
-        mock_getAll_ontology.return_value = ["ontology1", "ontology2"]
-        response = self.app.get("/ontology")
+        mock_get_all_ontology.return_value = ["ontology1", "ontology2"]
+        response = self.app.get("/api/ontology")
         self.assertEqual(response.status_code, 200)
         self.assertIn("Ontologies listed successfully", response.get_json()["message"])
         self.assertEqual(["ontology1", "ontology2"], response.get_json()["onto_list"])
@@ -178,9 +181,11 @@ class TestRoutes(unittest.TestCase):
             "no_axiom": 2,
             "no_annotation": 3,
         }
-        response = self.app.get("/ontology/test_ontology")
+        response = self.app.get("/api/ontology/test_ontology")
         self.assertEqual(response.status_code, 200)
-        self.assertIn("Ontologies listed successfully", response.get_json()["message"])
+        self.assertIn(
+            "load Ontologies Stats successfully", response.get_json()["message"]
+        )
         self.assertEqual(
             {
                 "no_class": 0,
@@ -205,7 +210,7 @@ class TestRoutes(unittest.TestCase):
         )
         with patch("os.path.exists") as mock_exists:
             mock_exists.return_value = True
-            response = self.app.get("/embed/test_ontology?algo=test_algo")
+            response = self.app.get("/api/embed/test_ontology?algo=test_algo")
             self.assertEqual(response.status_code, 200)
             self.assertIn(
                 "test_algo model already exists for test_ontology ontology",
@@ -224,13 +229,13 @@ class TestRoutes(unittest.TestCase):
         mock_embed_func.return_value = "test_algo embedded success!!"
         with patch("os.path.exists") as mock_exists:
             mock_exists.return_value = False
-            response = self.app.get("/embed/test_ontology?algo=test_algo")
-            print("embed re", response.get_json())
+            response = self.app.get("/api/embed/test_ontology?algo=test_algo")
+
             self.assertEqual(response.status_code, 200)
             self.assertIn(
                 "test_algo embedded success!!", response.get_json()["message"]
             )
-            self.assertIn("test_ontology", response.get_json()["onto_id"])
+            self.assertIn("test_ontology", response.get_json()["ontology_name"])
             self.assertIn("test_algo", response.get_json()["algo"])
 
     @patch("routes.routes.predict_func")
@@ -257,8 +262,10 @@ class TestRoutes(unittest.TestCase):
             "garbage": [],
             "images": [],
         }
-        response = self.app.get("/evaluate/test_ontology/test_model")
-        print("predict re", response.get_json())
+        response = self.app.get(
+            "/api/evaluate/test_ontology/test_model/test_classifier"
+        )
+
         self.assertEqual(response.status_code, 200)
         self.assertIn("evaluate successful!", response.get_json()["message"])
         self.assertEqual(

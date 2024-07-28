@@ -1,10 +1,12 @@
+import os
 import sys
 import unittest
 from configparser import ConfigParser
 from unittest.mock import MagicMock, patch
 
+from main import create_app
+
 sys.path.append("../backend")
-from app import create_app
 from controllers.embed_controller import opa2vec_or_onto2vec, owl2vec_star, rdf2vec
 
 
@@ -20,40 +22,28 @@ class TestEmbedFunctions(unittest.TestCase):
         Returns:
             None
         """
+
         self.app = create_app()
+        self.app.config["STORAGE_FOLDER"] = "storage"
         self.app.testing = True
         self.client = self.app.test_client()
         self.app_context = self.app.app_context()
         self.app_context.push()
 
     @patch(
-        "controllers.embed_controller.load_axioms", return_value=["axiom1", "axiom2"]
-    )
-    @patch(
-        "controllers.embed_controller.load_classes",
-        return_value=["class1", "class2"],
-    )
-    @patch(
-        "controllers.embed_controller.load_individuals",
-        return_value=["individual1", "individual2"],
-    )
-    @patch(
-        "controllers.embed_controller.load_annotations",
-        return_value=(
-            ["uri1 label1", "uri2 label2 label3"],
-            ["uri1 annotation1", "uri2 annotation2"],
-        ),
+        "controllers.embed_controller.load_multi_input_files",
+        return_value={
+            "axioms": ["axiom1", "axiom2"],
+            "classes": ["class1", "class2"],
+            "individuals": ["individual1", "individual2"],
+            "uri_labels": ["uri1 label1", "uri2 label2 label3"],
+            "annotations": ["uri1 annotation1", "uri2 annotation2"],
+        },
     )
     @patch("controllers.embed_controller.save_model", return_value=None)
     @patch("controllers.embed_controller.gensim.models.Word2Vec")
     def test_opa2vec_or_onto2vec(
-        self,
-        mock_Word2Vec,
-        mock_save_model,
-        mock_load_annotations,
-        mock_load_individuals,
-        mock_load_classes,
-        mock_load_axioms,
+        self, mock_Word2Vec, mock_save_model, mock_load_multi_input_files
     ):
         """Test opa2vec_or_onto2vec function in embed_controller.py
 
@@ -61,10 +51,7 @@ class TestEmbedFunctions(unittest.TestCase):
             self: TestEmbedFunctions object
             mock_Word2Vec: MagicMock object
             mock_save_model: MagicMock object
-            mock_load_annotations: MagicMock object
-            mock_load_individuals: MagicMock object
-            mock_load_classes: MagicMock object
-            mock_load_axioms: MagicMock object
+            mock_load_multi_input_files: MagicMock object
         Returns:
             None
         """
@@ -78,26 +65,21 @@ class TestEmbedFunctions(unittest.TestCase):
             result = opa2vec_or_onto2vec("ontology_name", "config_file", "opa2vec")
 
             self.assertEqual(result, "opa2vec embedded success!!")
-            mock_load_axioms.assert_called_once_with("ontology_name")
-            mock_load_classes.assert_called_once_with("ontology_name")
-            mock_load_individuals.assert_called_once_with("ontology_name")
-            mock_load_annotations.assert_called_once_with("ontology_name")
+            mock_load_multi_input_files.assert_called_once_with(
+                "ontology_name",
+                ["axioms", "classes", "individuals", "uri_labels", "annotations"],
+            )
             mock_Word2Vec.assert_called_once()
 
     @patch(
-        "controllers.embed_controller.load_axioms", return_value=["axiom1", "axiom2"]
-    )
-    @patch(
-        "controllers.embed_controller.load_classes",
-        return_value=["class1", "class2"],
-    )
-    @patch(
-        "controllers.embed_controller.load_individuals",
-        return_value=["individual1", "individual2"],
-    )
-    @patch(
-        "controllers.embed_controller.load_annotations",
-        return_value=["annotation1", "annotation2"],
+        "controllers.embed_controller.load_multi_input_files",
+        return_value={
+            "axioms": ["axiom1", "axiom2"],
+            "classes": ["class1", "class2"],
+            "individuals": ["individual1", "individual2"],
+            "uri_labels": ["uri1 label1", "uri2 label2 label3"],
+            "annotations": ["uri1 annotation1", "uri2 annotation2"],
+        },
     )
     @patch("controllers.embed_controller.save_model", return_value=None)
     @patch("controllers.embed_controller.gensim.models.Word2Vec")
@@ -105,10 +87,7 @@ class TestEmbedFunctions(unittest.TestCase):
         self,
         mock_Word2Vec,
         mock_save_model,
-        mock_load_annotations,
-        mock_load_individuals,
-        mock_load_classes,
-        mock_load_axioms,
+        mock_load_multi_input_files,
     ):
         """Test owl2vec_star function in embed_controller.py
 
@@ -116,10 +95,7 @@ class TestEmbedFunctions(unittest.TestCase):
             self: TestEmbedFunctions object
             mock_Word2Vec: MagicMock object
             mock_save_model: MagicMock object
-            mock_load_annotations: MagicMock object
-            mock_load_individuals: MagicMock object
-            mock_load_classes: MagicMock object
-            mock_load_axioms: MagicMock object
+            mock_load_multi_input_files: MagicMock object
         Returns:
             None
         """
@@ -133,26 +109,18 @@ class TestEmbedFunctions(unittest.TestCase):
             result = owl2vec_star("ontology_name", "config_file", "owl2vec-star")
 
             self.assertEqual(result, "owl2vec-star embedded success!!")
-            mock_load_axioms.assert_called_once_with("ontology_name")
-            mock_load_classes.assert_called_once_with("ontology_name")
-            mock_load_individuals.assert_called_once_with("ontology_name")
-            mock_load_annotations.assert_called_once_with("ontology_name")
+            mock_load_multi_input_files.assert_called_once_with(
+                "ontology_name",
+                ["axioms", "classes", "individuals", "uri_labels", "annotations"],
+            )
             mock_Word2Vec.assert_called_once()
 
     @patch(
-        "controllers.embed_controller.load_axioms", return_value=["axiom1", "axiom2"]
-    )
-    @patch(
-        "controllers.embed_controller.load_classes",
-        return_value=["class1", "class2"],
-    )
-    @patch(
-        "controllers.embed_controller.load_individuals",
-        return_value=["individual1", "individual2"],
-    )
-    @patch(
-        "controllers.embed_controller.load_annotations",
-        return_value=["annotation1", "annotation2"],
+        "controllers.embed_controller.load_multi_input_files",
+        return_value={
+            "classes": ["class1", "class2"],
+            "individuals": ["individual1", "individual2"],
+        },
     )
     @patch("controllers.embed_controller.save_model", return_value=None)
     @patch(
@@ -163,10 +131,7 @@ class TestEmbedFunctions(unittest.TestCase):
         self,
         mock_get_rdf2vec_embed,
         mock_save_model,
-        mock_load_annotations,
-        mock_load_individuals,
-        mock_load_classes,
-        mock_load_axioms,
+        mock_load_multi_input_files,
     ):
         """Test rdf2vec function in embed_controller.py
 
@@ -174,10 +139,7 @@ class TestEmbedFunctions(unittest.TestCase):
             self: TestEmbedFunctions object
             mock_get_rdf2vec_embed: MagicMock object
             mock_save_model: MagicMock object
-            mock_load_annotations: MagicMock object
-            mock_load_individuals: MagicMock object
-            mock_load_classes: MagicMock object
-            mock_load_axioms: MagicMock object
+            mock_load_multi_input_files: MagicMock object
         Returns:
             None
         """
@@ -190,10 +152,9 @@ class TestEmbedFunctions(unittest.TestCase):
             result = rdf2vec("ontology_name", "config_file", "rdf2vec")
 
             self.assertEqual(result, "rdf2vec embedded success!!")
-            mock_load_axioms.assert_called_once_with("ontology_name")
-            mock_load_classes.assert_called_once_with("ontology_name")
-            mock_load_individuals.assert_called_once_with("ontology_name")
-            mock_load_annotations.assert_called_once_with("ontology_name")
+            mock_load_multi_input_files.assert_called_once_with(
+                "ontology_name", ["classes", "individuals"]
+            )
             mock_get_rdf2vec_embed.assert_called_once()
 
 

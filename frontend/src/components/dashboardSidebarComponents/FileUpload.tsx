@@ -45,7 +45,7 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFilesSelected }) => {
         ) : (
           <p>Upload file<br />(.owl)</p> // Default message
         )}
-        {file && <p>Selected file: {file.name}</p>} {/* Display selected file name */}
+        {file && <p style={{ color: 'red' }}>Selected file: {file.name}</p>} {/* Display selected file name */}
       </div>
     </Paper>
   );

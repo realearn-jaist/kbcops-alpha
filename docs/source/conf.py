@@ -21,7 +21,7 @@ autodoc_typehints = "description"
 
 project = " KBCOps (Knowledge Base Completion Operations)"
 copyright = "2024,"
-author = "Chaphowasit Mahayossanan only"
+author = "Chaphowasit Mahayossanan"
 release = "English version 1.0.0"
 
 # -- General configuration ---------------------------------------------------

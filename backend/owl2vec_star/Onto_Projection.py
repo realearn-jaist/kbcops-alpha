@@ -511,7 +511,7 @@ class OntologyProjection(object):
 
 
             if (not self.only_taxonomy):
-                ## 10. Extract named inverses and create/propagate new reversed triples. TBOx and ABox
+                ## 10. Extract named inverses and create/propagate new reversed triples. tbox and abox
                 #logging.info("\t\tExtracting inverses for " + str(prop.name))
                 results = self.onto.queryGraph(self.getQueryForInverses(prop.iri))
                 for row in results:
@@ -521,7 +521,7 @@ class OntologyProjection(object):
 
 
 
-                ## 11. Propagate property equivalences only not subproperties (object). TBOx and ABox
+                ## 11. Propagate property equivalences only not subproperties (object). tbox and abox
                 #logging.info("\t\tExtracting equivalences for " + str(prop.name))
                 results = self.onto.queryGraph(self.getQueryForAtomicEquivalentObjectProperties(prop.iri))
                 for row in results:
@@ -587,7 +587,7 @@ class OntologyProjection(object):
             self.__processPropertyResults__(prop.iri, results, False, self.include_literals)
 
 
-            ## 12d. Propagate property equivalences only not subproperties (data). ABox
+            ## 12d. Propagate property equivalences only not subproperties (data). abox
             results = self.onto.queryGraph(self.getQueryForAtomicEquivalentDataProperties(prop.iri))
             for row in results:
                 #print("\t" + row[0])

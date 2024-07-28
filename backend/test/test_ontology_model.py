@@ -4,10 +4,8 @@ import unittest
 from unittest.mock import MagicMock, patch
 
 sys.path.append("../backend")
-from app import create_app
+from main import create_app
 from models.ontology_model import (
-    get_path_ontology,
-    get_path_ontology_directory,
     list_ontology,
     save_ontology,
 )
@@ -33,14 +31,12 @@ class TestOntologyModel(unittest.TestCase):
 
     @patch("models.ontology_model.current_app")
     @patch("models.ontology_model.replace_or_create_folder")
-    @patch("models.ontology_model.save_file")
     def test_save_ontology(
-        self, mock_save_file, mock_replace_or_create_folder, mock_current_app
+        self, mock_replace_or_create_folder, mock_current_app
     ):
         """Test save_ontology function in ontology_model.py
 
         Args:
-            mock_save_file: MagicMock object
             mock_replace_or_create_folder: MagicMock object
             mock_current_app: MagicMock object
         Returns:
@@ -58,9 +54,6 @@ class TestOntologyModel(unittest.TestCase):
 
         expected_path = os.path.join("\\fake\\storage", id)
         mock_replace_or_create_folder.assert_called_once_with(expected_path)
-        mock_save_file.assert_called_once_with(
-            file, os.path.join(expected_path, filename)
-        )
 
     @patch("models.ontology_model.current_app")
     @patch("os.listdir")
@@ -86,47 +79,6 @@ class TestOntologyModel(unittest.TestCase):
 
         mock_listdir.assert_called_once_with(expected_path)
         self.assertEqual(result, ["ontology1", "ontology2"])
-
-    @patch("models.ontology_model.current_app")
-    def test_get_path_ontology(self, mock_current_app):
-        """Test get_path_ontology function in ontology_model.py
-
-        Args:
-            mock_current_app: MagicMock object
-        Returns:
-            None
-        """
-        app = create_app()
-        app.config["STORAGE_FOLDER"] = "\\fake\\storage"
-        mock_current_app.config = app.config
-
-        id = "test_id"
-        filename = id + ".owl"
-        expected_path = os.path.join("\\fake\\storage", id, filename)
-
-        result = get_path_ontology(id)
-
-        self.assertEqual(result, expected_path)
-
-    @patch("models.ontology_model.current_app")
-    def test_get_path_ontology_directory(self, mock_current_app):
-        """Test get_path_ontology_directory function in ontology_model.py
-
-        Args:
-            mock_current_app: MagicMock object
-        Returns:
-            None
-        """
-        app = create_app()
-        app.config["STORAGE_FOLDER"] = "\\fake\\storage"
-        mock_current_app.config = app.config
-
-        id = "test_id"
-        expected_path = os.path.join("\\fake\\storage", id)
-
-        result = get_path_ontology_directory(id)
-
-        self.assertEqual(result, expected_path)
 
 
 if __name__ == "__main__":
